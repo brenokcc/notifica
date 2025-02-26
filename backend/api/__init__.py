@@ -4,7 +4,7 @@ from slth.application import Application
 class ApiApplication(Application):
     def __init__(self):
         super().__init__()
-        self.title = "Nofica"
+        self.title = "Nofica Dourados/MS"
         self.subtitle = "Sistema de notificação de casos de dengue e chikungunya"
         self.icon = "/static/images/logo.png"
         self.logo = "/static/images/logo.png"
@@ -14,7 +14,10 @@ class ApiApplication(Application):
             "pushsubscription.pushsubscriptions", "job.jobs",
             "deletion.deletions", "auth.logout"
         )
-        self.dashboard.boxes.add('notificacao.notificacoes')
+        self.dashboard.boxes.add(
+            'notificacaoindividual.notificacoesindividuais',
+            'notificacaosurto.notificacoessurto'
+        )
         
         self.menu.add({
             'Doenças': 'doenca.doencas',
@@ -25,14 +28,16 @@ class ApiApplication(Application):
             'Hospitais': 'hospital.hospitais',
             'Locais de Infecção': 'localinfeccao.locaisinfeccao',
             'Municípios': 'municipio.municipios',
-            'Notificações': 'notificacao.notificacoes',
+            'Notificações': {
+                'Individuais': 'notificacaoindividual.notificacoesindividuais',
+                'Surto': 'notificacaosurto.notificacoessurto'
+            },
             'Notificantes': 'notificante.notificantes',
             'Períodos de Gestação': 'periodogestacao.periodosgestacao',
             'Raças': 'raca.racas',
             'Sexos': 'sexo.sexos',
             'Sinais Clínicos': 'sinalclinico.sinaisclinicos',
             'Tipos de Local': 'tipolocal.tiposlocal',
-            'Tipos de Notificação': 'tiponotificacao.tiposnotificacao',
             'Unidades de Saúde': 'unidadesaude.unidadessaude',
             'Zonas': 'zona.zonas',
             'Sair': 'auth.logout'
