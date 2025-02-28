@@ -8,7 +8,7 @@ class ApiApplication(Application):
         self.subtitle = "Sistema de notificação de casos de dengue e chikungunya"
         self.icon = "/static/images/logo.png"
         self.logo = "/static/images/logo.png"
-        self.groups.add(administrador='Administrador', operador= "Operador")
+        self.groups.add(administrador='Administrador', operador= "Operador", notificante="Notificante")
         self.dashboard.usermenu.add(
             "dev.icons", "user.users", "log.logs", "email.emails",
             "pushsubscription.pushsubscriptions", "job.jobs",
@@ -28,11 +28,11 @@ class ApiApplication(Application):
             'Hospitais': 'hospital.hospitais',
             'Locais de Infecção': 'localinfeccao.locaisinfeccao',
             'Municípios': 'municipio.municipios',
-            'Notificações': {
-                'Individuais': 'notificacaoindividual.notificacoesindividuais',
-                'Surto': 'notificacaosurto.notificacoessurto'
-            },
+            'Notificações Individuais': 'notificacaoindividual.notificacoesindividuais',
+            'Notificações de Surto': 'notificacaosurto.notificacoessurto',
             'Notificantes': 'notificante.notificantes',
+            'Ocupações': 'ocupacao.ocupacoes',
+            'Países': 'pais.paises',
             'Períodos de Gestação': 'periodogestacao.periodosgestacao',
             'Raças': 'raca.racas',
             'Sexos': 'sexo.sexos',

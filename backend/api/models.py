@@ -52,6 +52,30 @@ class Doenca(models.Model):
         return self.nome
 
 
+class Ocupacao(models.Model):
+    codigo = models.CharField(verbose_name='Código')
+    nome = models.CharField(verbose_name='Nome')
+
+    class Meta:
+        verbose_name = 'Ocupação'
+        verbose_name_plural = 'Ocupações'
+
+    def __str__(self):
+        return self.nome
+    
+
+class Pais(models.Model):
+    nome = models.CharField(verbose_name='Nome')
+
+    class Meta:
+        verbose_name = 'País'
+        verbose_name_plural = 'Países'
+
+
+    def __str__(self):
+        return self.nome
+
+
 class Estado(models.Model):
     codigo = models.CharField(verbose_name='Código IBGE', max_length=2, unique=True)
     sigla = models.CharField(verbose_name='Sigla', max_length=2, unique=True)
@@ -83,11 +107,13 @@ class Municipio(models.Model):
         return "%s/%s" % (self.nome, self.estado.sigla)
 
 
+@role('notificante', username='notificantes__cpf', unidade='pk')
 class UnidadeSaude(models.Model):
     codigo = models.CharField(verbose_name='Código')
     nome = models.CharField(verbose_name='Nome')
 
     municipio = models.ForeignKey(Municipio, verbose_name='Município', on_delete=models.CASCADE)
+    notificantes = models.ManyToManyField(Notificante, blank=True)
 
     class Meta:
         verbose_name = 'Unidade de Saúde'
@@ -204,7 +230,7 @@ class Hospital(models.Model):
 
 class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
-        return self.fields('get_numero', 'notificante', 'data', 'notificante').filters('municipio', 'unidade')
+        return self.fields('get_numero', 'notificante', 'data', 'notificante').filters('municipio', 'unidade', 'validada')
 
 
 class NotificacaoIndividual(models.Model):
@@ -217,6 +243,8 @@ class NotificacaoIndividual(models.Model):
     data_primeiros_sintomas = models.DateField(verbose_name='Data dos Primeiros Sintomas')
 
     # Dados do Indivíduo
+    cpf = models.CharField(verbose_name='CPF', null=True, blank=True)
+    cartao_sus = models.CharField(verbose_name='Cartão SUS', null=True, blank=True)
     nome = models.CharField(verbose_name='Nome')
     data_nascimento = models.DateField(verbose_name='Data de Nascimento', null=True, blank=True)
     idade = models.IntegerField(verbose_name='Idade', null=True, blank=True)
@@ -224,18 +252,17 @@ class NotificacaoIndividual(models.Model):
     periodo_gestacao = models.ForeignKey(PeriodoGestacao, verbose_name='Período de Gestação', on_delete=models.CASCADE, pick=True)
     raca = models.ForeignKey(Raca, verbose_name='Raça', on_delete=models.CASCADE, pick=True)
     escolaridade = models.ForeignKey(Escolaridade, verbose_name='Escolaridade', on_delete=models.CASCADE, pick=True)
-    cartao_sus = models.CharField(verbose_name='Cartão SUS')
     nome_mae = models.CharField(verbose_name='Nome da Mãe')
 
     # Dados Residenciais
-    pais = models.CharField(verbose_name='País', default='Brasil')
-    cep = models.CharField(verbose_name='CEP')
-    municipio = models.ForeignKey(Municipio, verbose_name='Município', on_delete=models.CASCADE, related_name='s2')
+    pais = models.ForeignKey(Pais, verbose_name='País', on_delete=models.CASCADE, null=True, related_name='s1')
+    cep = models.CharField(verbose_name='CEP', null=True, blank=True)
+    municipio_residencia = models.ForeignKey(Municipio, verbose_name='Município da Residência', on_delete=models.CASCADE, related_name='s2', null=True, blank=True)
     distrito = models.CharField(verbose_name='Distrito', null=True, blank=True)
-    bairro = models.CharField(verbose_name='Bairro')
-    logradouro = models.CharField(verbose_name='Logradouro')
+    bairro = models.CharField(verbose_name='Bairro', null=True, blank=True)
+    logradouro = models.CharField(verbose_name='Logradouro', null=True, blank=True)
     codigo_logradouro = models.CharField(verbose_name='Código do Logradouro', null=True, blank=True)
-    numero_residencia = models.CharField(verbose_name='Número da Residência')
+    numero_residencia = models.CharField(verbose_name='Número da Residência', null=True, blank=True)
     complemento = models.CharField(verbose_name='Complemento', null=True, blank=True)
     latitude = models.CharField(verbose_name='Latitude', null=True, blank=True)
     longitude = models.CharField(verbose_name='Longitude', null=True, blank=True)
@@ -243,7 +270,7 @@ class NotificacaoIndividual(models.Model):
 
     # Investigação
     data_investigacao = models.DateField(verbose_name='Data da Investigação')
-    ocupacao_investigacao = models.CharField(verbose_name='Ocupação')
+    ocupacao_investigacao = models.ForeignKey(Ocupacao, verbose_name='Ocupação', on_delete=models.CASCADE, null=True)
 
     # Dados Clínicos
     sinais_clinicos = models.ManyToManyField(SinalClinico, verbose_name='Sinais Clínicos', pick=True, blank=True)
@@ -291,10 +318,13 @@ class NotificacaoIndividual(models.Model):
     hospital = models.ForeignKey(Hospital, verbose_name='Hospital', on_delete=models.CASCADE, null=True, blank=True)
 
     # Infecção
-    pais_infeccao = models.CharField(verbose_name='País da Infecção', default='Brasil')
+    pais_infeccao = models.ForeignKey(Pais, verbose_name='País da Infecção', on_delete=models.CASCADE, null=True, blank=True, related_name='s2')
     municipio_infeccao = models.ForeignKey(Municipio, verbose_name='Município da Infecção', on_delete=models.CASCADE, null=True, blank=True, related_name='s3')
     distrito_infeccao = models.CharField(verbose_name='Distrito da Infecção', null=True, blank=True)
     bairro_infeccao = models.CharField(verbose_name='Bairro da Infecção', null=True, blank=True)
+
+    validada = models.BooleanField(verbose_name='Validada', null=True, blank=True)
+    observacao = models.TextField(verbose_name='Observação', null=True, blank=True)
 
     objects = NotificacaoIndividualQuerySet()
 
@@ -311,7 +341,28 @@ class NotificacaoIndividual(models.Model):
         return (
             super().formfactory()
             .fieldset('Dados Gerais', ('doenca', 'data', ('notificante', 'municipio'), ('unidade', 'data_primeiros_sintomas')))
-            .fieldset('Dados do Indivíduo', ('nome', ('data_nascimento', 'idade'), 'sexo', 'periodo_gestacao', 'raca', 'escolaridade', 'cartao_sus', 'nome_mae'))
+            .fieldset('Dados do Indivíduo', (('cpf', 'cartao_sus'), 'nome', ('data_nascimento', 'idade'), 'sexo', 'periodo_gestacao', 'raca', 'escolaridade', 'nome_mae'))
+            .fieldset('Dados Residenciais', ('pais:pais.cadastrar', ('cep', 'municipio:municipio.cadastrar'), ('distrito', 'bairro'), ('logradouro', 'codigo_logradouro'), ('numero_residencia', 'complemento'), ('latitude', 'longitude'), 'referencia'))
+            .fieldset('Investigação', ('data_investigacao', 'ocupacao_investigacao'))
+            .fieldset('Dados Clínicos', ('sinais_clinicos', 'doencas_pre_existentes'))
+            .fieldset('Sorologia (IgM) Chikungunya', ('data_primeira_amostra_chikungunya', 'resultado_primeira_amostra_chikungunya', 'data_segunda_amostra_chikungunya', 'resultado_segunda_amostra_chikungunya'))
+            .fieldset('Exame PRNT', ('data_coleta_exame_prnt', 'resultado_exame_prnt'))
+            .fieldset('Sorologia (IgM) Dengue', ('data_amostra_dengue', 'resultado_amostra_dengue'))
+            .fieldset('Exame NS1', ('data_exame_ns1', 'resultado_exame_ns1'))
+            .fieldset('Isolamento', ('data_isolamento', 'resultado_isolamento'))
+            .fieldset('RT-PCR', ('data_rt_pcr', 'resultado_rt_pcr', 'sorotipo'))
+            .fieldset('Histopatologia', ('histopatologia',))
+            .fieldset('Imunohistoquímica', ('imunohistoquímica',))
+            .fieldset('Vacinação', ('vacinado', 'data_ultima_vacina'))
+            .fieldset('Hospitalização', ('hospitalizacao', 'data_hospitalizacao', 'hospital'))
+            .fieldset('Infecção', ('pais_infeccao:pais.cadastrar', 'municipio_infeccao:municipio.cadastrar', ('distrito_infeccao', 'bairro_infeccao')))
+        )
+    
+    def serializer(self):
+        return (
+            super().serializer()
+            .fieldset('Dados Gerais', ('doenca', 'data', ('notificante', 'municipio'), ('unidade', 'data_primeiros_sintomas')))
+            .fieldset('Dados do Indivíduo', (('cpf', 'cartao_sus'), 'nome', ('data_nascimento', 'idade'), 'sexo', 'periodo_gestacao', 'raca', 'escolaridade', 'nome_mae'))
             .fieldset('Dados Residenciais', ('pais', ('cep', 'municipio'), ('distrito', 'bairro'), ('logradouro', 'codigo_logradouro'), ('numero_residencia', 'complemento'), ('latitude', 'longitude'), 'referencia'))
             .fieldset('Investigação', ('data_investigacao', 'ocupacao_investigacao'))
             .fieldset('Dados Clínicos', ('sinais_clinicos', 'doencas_pre_existentes'))
@@ -328,6 +379,8 @@ class NotificacaoIndividual(models.Model):
             .fieldset('Infecção', ('pais_infeccao', 'municipio_infeccao', ('distrito_infeccao', 'bairro_infeccao')))
         )
 
+    def __str__(self):
+        return f"Notificação {self.pk}"
 
 class NotificacaoSurto(models.Model):
     data_primeiros_sintomas = models.DateField(verbose_name='Data dos 1º Sintomas do 1º Caso Suspeito')

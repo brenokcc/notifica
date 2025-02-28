@@ -22,6 +22,9 @@ class Cadastrar(endpoints.AddEndpoint[Municipio]):
             super().get()
         )
     
+    def check_permission(self):
+        return self.check_role('notificante')
+    
 
 class Editar(endpoints.EditEndpoint[Municipio]):
     class Meta:

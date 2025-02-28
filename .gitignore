@@ -7,6 +7,6 @@ local.env
 src/frontend/dist
 src/frontend/node_modules
 *.pyc
-
+docs
 backend/static
 
