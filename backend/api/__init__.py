@@ -20,6 +20,9 @@ class ApiApplication(Application):
         )
         
         self.menu.add({
+            'Apresentações Clínicas': 'apresentacaoclinica.apresentacoesclinicas',
+            'Classificações de Infecção': 'classificacaoinfeccao.classificacoesinfeccao',
+            'Critérios de Confirmação': 'criterioconfirmacao.criteriosconfirmacao',
             'Doenças': 'doenca.doencas',
             'Doenças Pré-Existentes': 'doencapreexistente.doencaspreexistentes',
             'Escolaridades': 'escolaridade.escolaridades',
@@ -36,7 +39,12 @@ class ApiApplication(Application):
             'Períodos de Gestação': 'periodogestacao.periodosgestacao',
             'Raças': 'raca.racas',
             'Sexos': 'sexo.sexos',
+            'Sinais de Alarme': 'sinalalarme.sinaisalarme',
             'Sinais Clínicos': 'sinalclinico.sinaisclinicos',
+            'Sinais de Comprometimento dos Órgãos': 'sinalcomprometimentoorgao.sinaiscomprometimentoorgaos',
+            'Sinais de Extravasamento do Plasma': 'sinalextravasamentoplasma.sinaisextravasamentoplasma',
+            'Sinais de Sangramento Grave': 'sinalsangramentograve.sinaissangramentograve',
+            'Tipos de Evoluação': 'tipoevolucao.tiposevolucao',
             'Tipos de Local': 'tipolocal.tiposlocal',
             'Unidades de Saúde': 'unidadesaude.unidadessaude',
             'Zonas': 'zona.zonas',

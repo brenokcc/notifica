@@ -427,7 +427,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("cpf", slth.db.models.CharField(max_length=255, verbose_name="CPF")),
+                ("cpf", slth.db.models.CharField(max_length=255, verbose_name="CPF", blank=False)),
                 ("nome", slth.db.models.CharField(max_length=255, verbose_name="Nome")),
                 (
                     "funcao",
