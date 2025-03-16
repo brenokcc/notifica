@@ -13,7 +13,7 @@ class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
     def get(self):
         return (
             super().get()
-            .actions('notificacaoindividual.cadastrar', 'notificacaoindividual.visualizar', 'notificacaoindividual.editar', 'notificacaoindividual.excluir')
+            .actions('notificacaoindividual.cadastrar', 'notificacaoindividual.visualizar', 'notificacaoindividual.editar', 'notificacaoindividual.excluir', 'notificacaoindividual.imprimir')
         )
     
     def check_permission(self):
@@ -33,6 +33,18 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
     def check_permission(self):
         return self.check_role('notificante')
 
+
+class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    class Meta:
+        icon = 'pdf'
+        modal = False
+        verbose_name = 'Imprimir Notificação Individual'
+
+    def get(self):
+        return self.render(dict(obj=self), "ficha.html", pdf=True)
+    
+    def check_permission(self):
+        return 1 or self.check_role('notificante')
 
 class Mixin:
     def on_data_nascimento_change(self, data_nascimento):

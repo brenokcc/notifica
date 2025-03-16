@@ -1,0 +1,661 @@
+<html>
+    <head>
+        <style>
+
+            @page {
+            size: A4;
+            margin: 0.5cm;
+            }
+            @page {
+                @bottom-right {
+                    content: "Página " counter(page);
+                }
+            }
+            table{
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            .bordered{
+                border: solid 1px black;
+            }
+            .cabecalho td{
+                text-align: center;
+                font-weight: bold;
+            }
+            .bloco{
+                padding: 10px;
+            }
+            .item {
+                border-left: solid 1px black;
+                border-bottom: solid 1px black;
+                border-right: solid 1px black;
+                border-radius: 5px;
+                display: inline-block;
+                height: 40px;
+                margin-top: 3px;
+            }
+            .item .cell, .group{
+                display: inline-block;
+            }
+            .item .cell.first{
+                width: 65%;
+                border-right: solid 1px #BBB;
+            }
+            .item label{
+                font-weight: bold;
+            }
+            .item .number{
+                border: solid 1px #BBB;
+                width: 20px;
+                height: 20px;
+                font-weight: bold;
+                float: left;
+                text-align: center;
+                margin-left: 3px;
+                margin-right: 3px;
+            }
+            .center{
+                text-align: center;
+            }
+            .title{
+                font-weight: bold;
+                font-size: 120%;
+            }
+            .subtitle{
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <table class="cabecalho">
+            <tr><td>SINAN</td></tr>
+            <tr><td>SISTEMA DE INFORMAÇÃO DE AGRAVOS DE NOTIFICAÇÃO</td></tr>
+            <tr><td>FICHA DE INVESTIGAÇÃO - DENGUE E FEBRE DE CHIKUNGUNYA - Nº 123</td></tr>
+        </table>
+        <table class="bordered">
+            <tr>
+                <td>
+                <b>Caso suspeito de Dengue: </b> pessoa que viva ou tenha viajado nos últimos 14 dias para área onde esteja ocorrendo
+                transmissão de dengue ou tenha presença de Ae.aegypti que apresente febre, usualmente entre 2 e 7 dias, e
+                apresente duas ou mais das seguintes manifestações: náuseas, vômitos, exantema, mialgias, cefaléia, dor
+                retroorbital, petéquias ou prova do laço positiva e leucopenia.
+                </td>
+            </tr>
+        </table>
+        <table class="bordered">
+            <tr>
+                <td>
+                    <b>Caso suspeito de Chikungunya: </b> febre de início súbito e artralgia ou artrite intensa com inicio agudo, não explicado
+                por outras condições, que resida ou tenha viajado para áreas endêmicas ou epidêmicas até 14 dias antes do
+                início dos sintomas, ou que tenha vínculo epidemiológico com um caso importado confirmado.
+                </td>
+            </tr>
+        </table>
+
+        <div class="subtitle center">Dados Gerais</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 99%">
+                <div class="number">1</div>
+                <div class="cell">
+                    <label>Tipo de Notificação:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 65%">
+                <div class="number">2</div>
+                <div class="cell first">
+                    <label>Agravo/doença:</label><div>xxxx</div>
+                </div>
+                <div class="cell">
+                    <label>(CID10):</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 33%">
+                <div class="number">3</div>
+                <div class="cell">
+                    <label>Data da Notificação:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 33%">
+                <div class="number">4</div>
+                <div class="cell">
+                    <label>UF:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 65%">
+                <div class="number">5</div>
+                <div class="cell first">
+                    <label>Município de Notificação:</label><div>xxxx</div>
+                </div>
+                <div class="cell">
+                    <label>Código (IBGE):</label><div>xxxx</div>
+                </div>
+            </div>
+
+            
+            <div class="item" style="width: 65%">
+                <div class="number">6</div>
+                <div class="cell first">
+                    <label>Unidade de Saúde / Fonte Notificadora:</label><div>xxxx</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 33%">
+                <div class="number">7</div>
+                <div class="cell">
+                    <label>Data dos Primeiros Sintomas:</label><div>xxxx</div>
+                </div>
+            </div>
+
+        </div>
+        <div class="subtitle center">Notificação Individual</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 65%">
+                <div class="number">8</div>
+                <div class="cell">
+                    <label>Nome do Paciente:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 32%">
+                <div class="number">9</div>
+                <div class="cell">
+                    <label>Data de Nascimento:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 24%">
+                <div class="number">10</div>
+                <div class="cell">
+                    <label>Idade:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 24%">
+                <div class="number">11</div>
+                <div class="cell">
+                    <label>Sexo:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 24%">
+                <div class="number">12</div>
+                <div class="cell">
+                    <label>Gestante:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 23%">
+                <div class="number">13</div>
+                <div class="cell">
+                    <label>Raça/Cor:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 98%">
+                <div class="number">14</div>
+                <div class="cell">
+                    <label>Escolaridade:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 33%">
+                <div class="number">15</div>
+                <div class="cell">
+                    <label>Número do Cartão SUS:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 64%">
+                <div class="number">16</div>
+                <div class="cell">
+                    <label>Nome da Mãe:</label><div>xxxx</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="subtitle center">Dados Residenciais</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 15%">
+                <div class="number">17</div>
+                <div class="cell">
+                    <label>UF:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 50%">
+                <div class="number">18</div>
+                <div class="cell first">
+                    <label>Município de Residência:</label><div>xxxx</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 33%">
+                <div class="number">19</div>
+                <div class="cell">
+                    <label>Distrito:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 30%">
+                <div class="number">20</div>
+                <div class="cell">
+                    <label>Bairro:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 68%">
+                <div class="number">21</div>
+                <div class="cell first">
+                    <label>Logradouro (rua, avenida):</label><div>xxxx</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 15%">
+                <div class="number">22</div>
+                <div class="cell">
+                    <label>Número:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 60%">
+                <div class="number">23</div>
+                <div class="cell">
+                    <label>Complemento:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 22%">
+                <div class="number">24</div>
+                <div class="cell">
+                    <label>Geo campo 1:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 22%">
+                <div class="number">25</div>
+                <div class="cell">
+                    <label>Geo campo 2:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 50%">
+                <div class="number">26</div>
+                <div class="cell">
+                    <label>Referência:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 25%">
+                <div class="number">27</div>
+                <div class="cell">
+                    <label>CEP:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 33%">
+                <div class="number">28</div>
+                <div class="cell">
+                    <label>Telefone:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 32%">
+                <div class="number">29</div>
+                <div class="cell">
+                    <label>Zona:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 32%">
+                <div class="number">30</div>
+                <div class="cell">
+                    <label>País:</label><div>xxxx</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="title center">Dados clínicos e Laboratoriais</div>
+        <div class="subtitle center">Investigação</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 32%">
+                <div class="number">31</div>
+                <div class="cell">
+                    <label>Data da Investigação:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 66%">
+                <div class="number">32</div>
+                <div class="cell">
+                    <label>Ocupação:</label><div>xxxx</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="subtitle center">Dados Clínicos</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 100%">
+                <div class="number">33</div>
+                <div class="cell">
+                    <label>Sinais Clínicos:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 100%">
+                <div class="number">34</div>
+                <div class="cell">
+                    <label>Doenças Pré-existentes:</label><div>xxxx</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="subtitle center">Dados Laboratoriais</div>
+        <div class="bloco bordered">
+            <div class="group" style="width: 55%">
+                <div>Sorologia (IgM) Chikungunya</div>
+                <div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">35</div>
+                        <div class="cell">
+                            <label>Primeira Coleta (S1):</label><div>xxxx</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">36</div>
+                        <div class="cell">
+                            <label>Segunda Coleta (S2):</label><div>xxxx</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="group" style="width: 43%">
+                <div>Exame PRNT</div>
+                <div class="item" style="width: 100%">
+                    <div class="number">37</div>
+                    <div class="cell">
+                        <label>Data da Coleta:</label><div>xxxx</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 98%">
+                <div class="number">38</div>
+                <div class="cell">
+                    <label>Resultado</label><div><b>S1</b> - xxxx <b>S2</b> - xxxx <b>PRNT</b> - xxxx </div>
+                </div>
+            </div>
+
+            <div class="group" style="width: 49%">
+                <div>Sorologia (IgM) Dengue</div>
+                <div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">39</div>
+                        <div class="cell">
+                            <label>Data da Coleta:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">40</div>
+                        <div class="cell">
+                            <label>Resultado:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="group" style="width: 49%">
+                <div>Exame NS1</div>
+                <div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">41</div>
+                        <div class="cell">
+                            <label>Data da Coleta:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">42</div>
+                        <div class="cell">
+                            <label>Resultado:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="group" style="width: 49%">
+                <div>Isolamento</div>
+                <div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">43</div>
+                        <div class="cell">
+                            <label>Data da Coleta:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 49%">
+                        <div class="number">44</div>
+                        <div class="cell">
+                            <label>Resultado:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="group" style="width: 49%">
+                <div>RT-PCR</div>
+                <div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">45</div>
+                        <div class="cell">
+                            <label>Data da Coleta:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 49%">
+                        <div class="number">46</div>
+                        <div class="cell">
+                            <label>Resultado:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 22%">
+                <div class="number">47</div>
+                <div class="cell">
+                    <label>Sorotipo:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 37%">
+                <div class="number">48</div>
+                <div class="cell">
+                    <label>Histopatologia:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 38%">
+                <div class="number">49</div>
+                <div class="cell">
+                    <label>Imunohistoquímica:</label><div>xxxx</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="subtitle center">Hospitalização</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 28%">
+                <div class="number">50</div>
+                <div class="cell">
+                    <label>Ocorreu Hospitalização:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 15%">
+                <div class="number">51</div>
+                <div class="cell">
+                    <label>Data:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 10%">
+                <div class="number">52</div>
+                <div class="cell">
+                    <label>UF:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 43%">
+                <div class="number">53</div>
+                <div class="cell first">
+                    <label>Município:</label><div>xxxx</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 75%">
+                <div class="number">54</div>
+                <div class="cell first">
+                    <label>Nome do Hospital:</label><div>xxxx</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 23%">
+                <div class="number">55</div>
+                <div class="cell">
+                    <label>Telefone:</label><div>xxxx</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="subtitle center">Conclusão</div>
+        <div class="subtitle center">Local Provável de Infecção (no período de 15 dias)</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 50%">
+                <div class="number">60</div>
+                <div class="cell">
+                    <label>O caso é autóctone do município de residência?:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 15%">
+                <div class="number">57</div>
+                <div class="cell">
+                    <label>Uf:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 32%">
+                <div class="number">58</div>
+                <div class="cell">
+                    <label>País:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 50%">
+                <div class="number">59</div>
+                <div class="cell first">
+                    <label>Município:</label><div>xxxx</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 24%">
+                <div class="number">60</div>
+                <div class="cell">
+                    <label>Distrito:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 23%">
+                <div class="number">61</div>
+                <div class="cell">
+                    <label>Bairro:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 27%">
+                <div class="number">62</div>
+                <div class="cell">
+                    <label>Classificação:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 45%">
+                <div class="number">63</div>
+                <div class="cell">
+                    <label>Critério de Confirmação/Descarte:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 25%">
+                <div class="number">64</div>
+                <div class="cell">
+                    <label>Apresentação Clínica:</label><div>xxxx</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 40%">
+                <div class="number">65</div>
+                <div class="cell">
+                    <label>Evolução:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 23%">
+                <div class="number">66</div>
+                <div class="cell">
+                    <label>Data do Óbito:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 34%">
+                <div class="number">67</div>
+                <div class="cell">
+                    <label>Data do Encerramento:</label><div>xxxx</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="title center">Sinais de Alarme e Dengue Grave</div>
+        <div class="subtitle center">Sinais de Alarme</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 70%">
+                <div class="number">68</div>
+                <div class="cell">
+                    <label>Dengue com sinais de alarme:</label><div>xxxx</div>
+                </div>
+            </div>
+            <div class="item" style="width: 28%">
+                <div class="number">69</div>
+                <div class="cell">
+                    <label>Data dos Sinais:</label><div>xxxx</div>
+                </div>
+            </div>
+        </div>
+        <div class="subtitle center">Dengue Grave</div>
+        <div class="bloco bordered">
+            <div class="group" style="width: 100%">
+                    <div class="item" style="width: 49%">
+                        <div class="number">70</div>
+                        <div class="cell">
+                            <label>Dengue com sinais de alarme</label><div>xxxx</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 49%">
+                        <div class="cell">
+                            <label>Sangramento grave:</label><div>xxxx</div>
+                        </div>
+                    </div>
+
+                    <div class="item" style="width: 49%">
+                        <div class="cell">
+                            <label>Extravasamento grave de plasma:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 49%">
+                        <div class="cell">
+                            <label>Compromentimento grave de órgãos</label><div>xxxx</div>
+                        </div>
+                    </div>
+
+                    <div class="item" style="width: 99%">
+                        <div class="cell">
+                            <label>Data de início dos sinais de gravidade:</label><div>xxxx</div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    
+        <br><br>
+
+        <div class="title center">Informações Complementares e Observações</div>
+        <div class="bloco bordered" style="height: 200px;">
+            
+        </div>
+        
+    </body>
+</html>
