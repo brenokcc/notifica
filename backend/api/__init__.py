@@ -21,36 +21,46 @@ class ApiApplication(Application):
         )
         
         self.menu.add({
-            'Apresentações Clínicas': 'apresentacaoclinica.apresentacoesclinicas',
-            'Classificações de Infecção': 'classificacaoinfeccao.classificacoesinfeccao',
-            'Critérios de Confirmação': 'criterioconfirmacao.criteriosconfirmacao',
-            'Doenças': 'doenca.doencas',
-            'Doenças Pré-Existentes': 'doencapreexistente.doencaspreexistentes',
-            'Escolaridades': 'escolaridade.escolaridades',
-            'Estados': 'estado.estados',
-            'Funções': 'funcao.funcoes',
-            'Hospitais': 'hospital.hospitais',
-            'Locais de Infecção': 'localinfeccao.locaisinfeccao',
-            'Municípios': 'municipio.municipios',
-            'Notificações Individuais': 'notificacaoindividual.notificacoesindividuais',
-            'Notificações de Surto': 'notificacaosurto.notificacoessurto',
-            'Notificantes': 'notificante.notificantes',
-            'Ocupações': 'ocupacao.ocupacoes',
-            'Países': 'pais.paises',
-            'Períodos de Gestação': 'periodogestacao.periodosgestacao',
-            'Raças': 'raca.racas',
-            'Sexos': 'sexo.sexos',
-            'Sinais de Alarme': 'sinalalarme.sinaisalarme',
-            'Sinais Clínicos': 'sinalclinico.sinaisclinicos',
-            'Sinais de Comprometimento dos Órgãos': 'sinalcomprometimentoorgao.sinaiscomprometimentoorgaos',
-            'Sinais de Extravasamento do Plasma': 'sinalextravasamentoplasma.sinaisextravasamentoplasma',
-            'Sinais de Sangramento Grave': 'sinalsangramentograve.sinaissangramentograve',
-            'Tipos de Evoluação': 'tipoevolucao.tiposevolucao',
-            'Tipos de Local': 'tipolocal.tiposlocal',
-            'Unidades de Saúde': 'unidadesaude.unidadessaude',
-            'Zonas': 'zona.zonas',
-            'Sair': 'auth.logout'
+            'list-ul:Cadastros Gerais': {
+                'Funções': 'funcao.funcoes',
+                'Períodos de Gestação': 'periodogestacao.periodosgestacao',
+                'Raças': 'raca.racas',
+                'Sexos': 'sexo.sexos',
+                'Escolaridades': 'escolaridade.escolaridades',
+                'Ocupações': 'ocupacao.ocupacoes',
+            },
+            'thermometer-quarter:Doenças': {
+                'Cadastro de Doenças': 'doenca.doencas',
+                'Doenças Pré-Existentes': 'doencapreexistente.doencaspreexistentes',
+                'Sinais de Alarme': 'sinalalarme.sinaisalarme',
+                'Sinais Clínicos': 'sinalclinico.sinaisclinicos',
+                'Sinais de Comprometimento dos Órgãos': 'sinalcomprometimentoorgao.sinaiscomprometimentoorgaos',
+                'Sinais de Extravasamento do Plasma': 'sinalextravasamentoplasma.sinaisextravasamentoplasma',
+                'Sinais de Sangramento Grave': 'sinalsangramentograve.sinaissangramentograve',
+                'Tipos de Evoluação': 'tipoevolucao.tiposevolucao',
+            },
+            'map-marker-alt:Locais': {
+                'Países': 'pais.paises',
+                'Estados': 'estado.estados',
+                'Municípios': 'municipio.municipios',
+                'Zonas': 'zona.zonas',
+                'Tipos de Local': 'tipolocal.tiposlocal',
+                'Locais de Infecção': 'localinfeccao.locaisinfeccao',
+            },
+            'book-medical:Infeção': {
+                'Apresentações Clínicas': 'apresentacaoclinica.apresentacoesclinicas',
+                'Classificações': 'classificacaoinfeccao.classificacoesinfeccao',
+                'Critérios de Confirmação': 'criterioconfirmacao.criteriosconfirmacao',
+            },
+            'hospital-symbol:Hospitais': 'hospital.hospitais',
+            
+            'person:Notificações Individuais': 'notificacaoindividual.notificacoesindividuais',
+            'people-line:Notificações de Surto': 'notificacaosurto.notificacoessurto',
+            'contact-book:Notificantes': 'notificante.notificantes',
+            'building:Unidades de Saúde': 'unidadesaude.unidadessaude',
+            'sign-out-alt:Sair': 'auth.logout'
         })
         self.theme.light.default.update(color="#033770")
         self.theme.light.primary.update(color="#033770", background="#033770")
         self.theme.light.auxiliary.update(color="#f9c72a", background="#fceab7")
+        self.theme.light.success.update(color="#033770", background="#FFCC29")

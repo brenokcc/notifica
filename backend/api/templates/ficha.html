@@ -482,44 +482,44 @@
             <div class="item" style="width: 28%">
                 <div class="number">50</div>
                 <div class="cell">
-                    <label>Ocorreu Hospitalização:</label><div>{{ obj.pk }}</div>
+                    <label>Ocorreu Hospitalização:</label><div>{{ obj.hospitalizacao|yesno:"Sim,Não" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 15%">
                 <div class="number">51</div>
                 <div class="cell">
-                    <label>Data:</label><div>{{ obj.pk }}</div>
+                    <label>Data:</label><div>{{ obj.data_hospitalizacao|date:"d/m/Y"|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 10%">
                 <div class="number">52</div>
                 <div class="cell">
-                    <label>UF:</label><div>{{ obj.pk }}</div>
+                    <label>UF:</label><div>{{ obj.hospital.municipio.estado.sigla|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 43%">
                 <div class="number">53</div>
                 <div class="cell first">
-                    <label>Município:</label><div>{{ obj.pk }}</div>
+                    <label>Município:</label><div>{{ obj.hospital.municipio.nome|default:"-" }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>{{ obj.pk }}</div>
+                    <label>Código:</label><div>{{ obj.hospital.municipio.codigo|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 75%">
                 <div class="number">54</div>
                 <div class="cell first">
-                    <label>Nome do Hospital:</label><div>{{ obj.pk }}</div>
+                    <label>Nome do Hospital:</label><div>{{ obj.hospital.nome|default:"-" }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>{{ obj.pk }}</div>
+                    <label>Código:</label><div>{{ obj.hospital.codigo|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
                 <div class="number">55</div>
                 <div class="cell">
-                    <label>Telefone:</label><div>{{ obj.pk }}</div>
+                    <label>Telefone:</label><div>{{ obj.hospital.telefone|default:"-" }}</div>
                 </div>
             </div>
         </div>
@@ -530,79 +530,79 @@
             <div class="item" style="width: 50%">
                 <div class="number">60</div>
                 <div class="cell">
-                    <label>O caso é autóctone do município de residência?:</label><div>{{ obj.pk }}</div>
+                    <label>O caso é autóctone do município de residência?:</label><div>{{ obj.autoctone|yesno:"Sim,Não" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 15%">
                 <div class="number">57</div>
                 <div class="cell">
-                    <label>Uf:</label><div>{{ obj.pk }}</div>
+                    <label>Uf:</label><div>{{ obj.municipio_infeccao.estado.sigla }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
                 <div class="number">58</div>
                 <div class="cell">
-                    <label>País:</label><div>{{ obj.pk }}</div>
+                    <label>País:</label><div>{{ obj.pais_infeccao }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 50%">
                 <div class="number">59</div>
                 <div class="cell first">
-                    <label>Município:</label><div>{{ obj.pk }}</div>
+                    <label>Município:</label><div>{{ obj.municipio_infeccao.nome }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>{{ obj.pk }}</div>
+                    <label>Código:</label><div>{{ obj.municipio_infeccao.codigo }}</div>
                 </div>
             </div>
             <div class="item" style="width: 24%">
                 <div class="number">60</div>
                 <div class="cell">
-                    <label>Distrito:</label><div>{{ obj.pk }}</div>
+                    <label>Distrito:</label><div>{{ obj.distrito_infeccao }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
                 <div class="number">61</div>
                 <div class="cell">
-                    <label>Bairro:</label><div>{{ obj.pk }}</div>
+                    <label>Bairro:</label><div>{{ obj.bairro_infeccao }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 27%">
                 <div class="number">62</div>
                 <div class="cell">
-                    <label>Classificação:</label><div>{{ obj.pk }}</div>
+                    <label>Classificação:</label><div>{{ obj.classificacao_infeccao }}</div>
                 </div>
             </div>
             <div class="item" style="width: 45%">
                 <div class="number">63</div>
                 <div class="cell">
-                    <label>Critério de Confirmação/Descarte:</label><div>{{ obj.pk }}</div>
+                    <label>Critério de Confirmação/Descarte:</label><div>{{ obj.criterio_confirmacao }}</div>
                 </div>
             </div>
             <div class="item" style="width: 25%">
                 <div class="number">64</div>
                 <div class="cell">
-                    <label>Apresentação Clínica:</label><div>{{ obj.pk }}</div>
+                    <label>Apresentação Clínica:</label><div>{{ obj.apresentacao_clinica }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 40%">
                 <div class="number">65</div>
                 <div class="cell">
-                    <label>Evolução:</label><div>{{ obj.pk }}</div>
+                    <label>Evolução:</label><div>{{ obj.evolucao_caso }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
                 <div class="number">66</div>
                 <div class="cell">
-                    <label>Data do Óbito:</label><div>{{ obj.pk }}</div>
+                    <label>Data do Óbito:</label><div>{{ obj.data_obito|date:"d/m/Y"|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 34%">
                 <div class="number">67</div>
                 <div class="cell">
-                    <label>Data do Encerramento:</label><div>{{ obj.pk }}</div>
+                    <label>Data do Encerramento:</label><div>{{ obj.data_encerramento|date:"d/m/Y"|default:"-" }}</div>
                 </div>
             </div>
         </div>
@@ -613,13 +613,19 @@
             <div class="item" style="width: 70%">
                 <div class="number">68</div>
                 <div class="cell">
-                    <label>Dengue com sinais de alarme:</label><div>{{ obj.pk }}</div>
+                    <label>Dengue com sinais de alarme:</label>
+                    <div>
+                        {{ obj.dengue_com_sinais_de_alarme|yesno:"Sim,Não" }}
+                        {% if obj.dengue_com_sinais_de_alarme %}
+                            ({% for item in obj.sinais_alarme_dengue.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% endfor %})
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             <div class="item" style="width: 28%">
                 <div class="number">69</div>
                 <div class="cell">
-                    <label>Data dos Sinais:</label><div>{{ obj.pk }}</div>
+                    <label>Data dos Sinais:</label><div>{{ obj.data_inicio_sinais_alarme|date:"d/m/Y"|default:"-"  }}</div>
                 </div>
             </div>
         </div>
@@ -629,29 +635,31 @@
                     <div class="item" style="width: 49%">
                         <div class="number">70</div>
                         <div class="cell">
-                            <label>Dengue com sinais de alarme</label><div>{{ obj.pk }}</div>
+                            <label>Dengue com sinais de gravidade</label><div>
+                                {{ obj.dengue_grave|yesno:"Sim,Não" }}
+                            </div>
                         </div>
                     </div>
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Sangramento grave:</label><div>{{ obj.pk }}</div>
+                            <label>Sangramento grave:</label><div>{% for item in obj.sinais_sangramento_grave.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% endfor %}</div>
                         </div>
                     </div>
 
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Extravasamento grave de plasma:</label><div>{{ obj.pk }}</div>
+                            <label>Extravasamento grave de plasma:</label><div>{% for item in obj.sinais_extravasamento_plasma.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% endfor %}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Compromentimento grave de órgãos</label><div>{{ obj.pk }}</div>
+                            <label>Compromentimento grave de órgãos</label><div>{% for item in obj.sinais_comprometimento_orgaos.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% endfor %}</div>
                         </div>
                     </div>
 
                     <div class="item" style="width: 99%">
                         <div class="cell">
-                            <label>Data de início dos sinais de gravidade:</label><div>{{ obj.pk }}</div>
+                            <label>Data de início dos sinais de gravidade:</label><div>{{ obj.data_inicio_sinais_graves|date:"d/m/Y"|default:"-" }}</div>
                         </div>
                     </div>
                 </div>
@@ -661,7 +669,7 @@
 
         <div class="title center">Informações Complementares e Observações</div>
         <div class="bloco bordered" style="height: 200px;">
-            
+            {{ obj.observacao|linebreaks }}
         </div>
         
     </body>

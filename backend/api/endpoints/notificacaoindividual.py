@@ -43,7 +43,7 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def get(self):
         if self.request.GET.get('view'):
-            return self.render(dict(obj=self.instance), "ficha.html", pdf=False)
+            return self.render(dict(obj=self.instance), "ficha.html", pdf=True)
         else:
             return FileViewer(self.get_api_url(self.instance.pk) + '?view=1')
     

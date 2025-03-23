@@ -317,6 +317,7 @@ class Hospital(models.Model):
     nome = models.CharField(verbose_name='Nome')
     codigo = models.CharField(verbose_name='Código')
     municipio = models.ForeignKey(Municipio, verbose_name='Município', on_delete=models.CASCADE, null=True, blank=True)
+    telefone = models.CharField(verbose_name='Telefone', null=True, blank=True)
 
     class Meta:
         verbose_name = 'Hospital'
@@ -419,6 +420,7 @@ class NotificacaoIndividual(models.Model):
     hospital = models.ForeignKey(Hospital, verbose_name='Hospital', on_delete=models.CASCADE, null=True, blank=True)
 
     # Conclusão
+    autoctone = models.BooleanField(verbose_name="O caso é autóctone do município de residência?", null=True)
     pais_infeccao = models.ForeignKey(Pais, verbose_name='País da Infecção', on_delete=models.CASCADE, null=True, blank=True, related_name='s2')
     municipio_infeccao = models.ForeignKey(Municipio, verbose_name='Município da Infecção', on_delete=models.CASCADE, null=True, blank=True, related_name='s3')
     distrito_infeccao = models.CharField(verbose_name='Distrito da Infecção', null=True, blank=True)
@@ -427,6 +429,8 @@ class NotificacaoIndividual(models.Model):
     criterio_confirmacao = models.ForeignKey(CriterioConfirmacao, verbose_name='Critério de Confirmação/Descarte', on_delete=models.CASCADE, null=True, pick=True)
     apresentacao_clinica = models.ForeignKey(ApresentacaoClinica, verbose_name='Apresentação Clínica', on_delete=models.CASCADE, null=True, pick=True)
     evolucao_caso = models.ForeignKey(TipoEvolucao, verbose_name='Evolução do Caso', on_delete=models.CASCADE, null=True, pick=True)
+    data_obito = models.DateField(verbose_name='Data do Óbito', null=True, blank=True)
+    data_encerramento = models.DateField(verbose_name='Data do Encerramento', null=True, blank=True)
 
     # Dados Clínicos - Sinais de Alarme
     dengue_com_sinais_de_alarme = models.BooleanField(verbose_name='Dengue com Sinais de Alarme', blank=True, null=True)
@@ -477,7 +481,7 @@ class NotificacaoIndividual(models.Model):
             .fieldset('Isolamento', ('data_isolamento', 'resultado_isolamento'))
             .fieldset('Vacinação', ('vacinado', 'vacinado2', 'data_ultima_vacina'))
             .fieldset('Hospitalização', ('hospitalizacao', 'data_hospitalizacao', 'hospital'))
-            .fieldset('Conclusão', (('pais_infeccao:pais.cadastrar', 'municipio_infeccao:municipio.cadastrar'), ('distrito_infeccao', 'bairro_infeccao'), ('classificacao_infeccao', 'criterio_confirmacao'), ('apresentacao_clinica', 'evolucao_caso')))
+            .fieldset('Conclusão', (('pais_infeccao:pais.cadastrar', 'municipio_infeccao:municipio.cadastrar'), ('distrito_infeccao', 'bairro_infeccao'), ('classificacao_infeccao', 'criterio_confirmacao'), ('apresentacao_clinica', 'evolucao_caso'), ('data_obito', 'data_encerramento')))
             .fieldset('Dados Clínicos - Sinais de Alarme', ('dengue_com_sinais_de_alarme', 'sinais_alarme_dengue', 'data_inicio_sinais_alarme'))
             .fieldset('Dados Clínicos - Sinais de Gravidade', ('dengue_grave', 'sinais_extravasamento_plasma', 'sinais_sangramento_grave', 'sinais_comprometimento_orgaos', 'outros_orgaos_afetados', 'data_inicio_sinais_graves'))
             .fieldset('Observação', ('observacao',))
@@ -501,7 +505,7 @@ class NotificacaoIndividual(models.Model):
             .fieldset('RT-PCR', ('data_rt_pcr', 'resultado_rt_pcr', 'sorotipo'))
             .fieldset('Vacinação', ('vacinado', 'vacinado2', 'data_ultima_vacina'))
             .fieldset('Hospitalização', ('hospitalizacao', 'data_hospitalizacao', 'hospital'))
-            .fieldset('Conclusão', (('pais_infeccao', 'municipio_infeccao'), ('distrito_infeccao', 'bairro_infeccao'), ('classificacao_infeccao', 'criterio_confirmacao'), ('apresentacao_clinica', 'evolucao_caso')))
+            .fieldset('Conclusão', (('pais_infeccao', 'municipio_infeccao'), ('distrito_infeccao', 'bairro_infeccao'), ('classificacao_infeccao', 'criterio_confirmacao'), ('apresentacao_clinica', 'evolucao_caso'), ('data_obito', 'data_encerramento')))
             .fieldset('Dados Clínicos - Sinais de Alarme', ('dengue_com_sinais_de_alarme', 'sinais_alarme_dengue', 'data_inicio_sinais_alarme'))
             .fieldset('Dados Clínicos - Sinais de Gravidade', ('dengue_grave', 'sinais_extravasamento_plasma', 'sinais_sangramento_grave', 'sinais_comprometimento_orgaos', 'outros_orgaos_afetados', 'data_inicio_sinais_graves'))
             .fieldset('Outras Informações', ('observacao', 'validada'))
