@@ -4,6 +4,7 @@ from ..models import *
 from ..utils import buscar_endereco
 from slth.integrations.google import places
 from slth.utils import age
+from slth.components import FileViewer
 
 
 class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
@@ -37,11 +38,14 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
 class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     class Meta:
         icon = 'pdf'
-        modal = False
+        modal = True
         verbose_name = 'Imprimir Notificação Individual'
 
     def get(self):
-        return self.render(dict(obj=self), "ficha.html", pdf=True)
+        if self.request.GET.get('view'):
+            return self.render(dict(obj=self.instance), "ficha.html", pdf=False)
+        else:
+            return FileViewer(self.get_api_url(self.instance.pk) + '?view=1')
     
     def check_permission(self):
         return 1 or self.check_role('notificante')
@@ -71,6 +75,7 @@ class Mixin:
 class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
     class Meta:
         modal = False
+        icon = 'plus'
         verbose_name = 'Cadastrar Notificação Individual'
 
     def get(self):
@@ -97,7 +102,6 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         logradouro, numero, municipio = self.form.controller.get('logradouro', 'numero_residencia', 'municipio_residencia')
         if logradouro and numero and municipio:
             geolocation = places.geolocation('{}, {}, {}'.format(logradouro, numero, municipio))
-            print(geolocation, 88888)
             if geolocation:
                 self.form.controller.set(latitude=geolocation[0], longitude=geolocation[1])
         print(self.form.controller.values())

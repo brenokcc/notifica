@@ -4,10 +4,11 @@ from slth.application import Application
 class ApiApplication(Application):
     def __init__(self):
         super().__init__()
-        self.title = "Nofica Dourados/MS"
-        self.subtitle = "Sistema de notificação de casos de dengue e chikungunya"
+        self.title = "ArboNotifica"
+        self.subtitle = "Sistema de notificação de arboviroses da cidade de Dourados/MS"
         self.icon = "/static/images/logo.png"
         self.logo = "/static/images/logo.png"
+        self.brand = "/static/images/brand.png"
         self.groups.add(administrador='Administrador', operador= "Operador", notificante="Notificante")
         self.dashboard.usermenu.add(
             "dev.icons", "user.users", "log.logs", "email.emails",
@@ -50,3 +51,6 @@ class ApiApplication(Application):
             'Zonas': 'zona.zonas',
             'Sair': 'auth.logout'
         })
+        self.theme.light.default.update(color="#033770")
+        self.theme.light.primary.update(color="#033770", background="#033770")
+        self.theme.light.auxiliary.update(color="#f9c72a", background="#fceab7")

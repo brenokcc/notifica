@@ -1,0 +1,14 @@
+.brand img{
+    height: 50px;
+}
+header{
+    border-bottom: solid 2px #fac939;
+}
+.menu .item:hover{
+    color: #033770;
+    background-color: #fac939;
+}
+
+table tbody tr:nth-child(odd){
+    background-color: #f8f8f8;
+}

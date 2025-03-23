@@ -11,6 +11,10 @@
                     content: "Página " counter(page);
                 }
             }
+            body{
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 14px;
+            }
             table{
                 width: 100%;
                 margin-bottom: 5px;
@@ -60,15 +64,18 @@
             .title{
                 font-weight: bold;
                 font-size: 120%;
+                margin-top: 10px;
             }
             .subtitle{
                 font-weight: bold;
+                color: #033770;
+                margin-top: 5px;
             }
         </style>
     </head>
     <body>
         <table class="cabecalho">
-            <tr><td>SINAN</td></tr>
+            <tr><td><img style="height:50px" src="http://localhost:8000/static/images/brand.png"/></td></tr>
             <tr><td>SISTEMA DE INFORMAÇÃO DE AGRAVOS DE NOTIFICAÇÃO</td></tr>
             <tr><td>FICHA DE INVESTIGAÇÃO - DENGUE E FEBRE DE CHIKUNGUNYA - Nº 123</td></tr>
         </table>
@@ -97,39 +104,39 @@
             <div class="item" style="width: 99%">
                 <div class="number">1</div>
                 <div class="cell">
-                    <label>Tipo de Notificação:</label><div>xxxx</div>
+                    <label>Tipo de Notificação:</label><div>Individual</div>
                 </div>
             </div>
 
             <div class="item" style="width: 65%">
                 <div class="number">2</div>
                 <div class="cell first">
-                    <label>Agravo/doença:</label><div>xxxx</div>
+                    <label>Agravo/doença:</label><div>{{ obj.doenca.nome }}</div>
                 </div>
                 <div class="cell">
-                    <label>(CID10):</label><div>xxxx</div>
+                    <label>(CID10):</label><div>{{ obj.doenca.cid10 }}</div>
                 </div>
             </div>
             <div class="item" style="width: 33%">
                 <div class="number">3</div>
                 <div class="cell">
-                    <label>Data da Notificação:</label><div>xxxx</div>
+                    <label>Data da Notificação:</label><div>{{ obj.data|date:"d/m/Y" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 33%">
                 <div class="number">4</div>
                 <div class="cell">
-                    <label>UF:</label><div>xxxx</div>
+                    <label>UF:</label><div>{{ obj.municipio.estado.sigla }}</div>
                 </div>
             </div>
             <div class="item" style="width: 65%">
                 <div class="number">5</div>
                 <div class="cell first">
-                    <label>Município de Notificação:</label><div>xxxx</div>
+                    <label>Município de Notificação:</label><div>{{ obj.municipio.nome }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código (IBGE):</label><div>xxxx</div>
+                    <label>Código (IBGE):</label><div>{{ obj.municipio.codigo }}</div>
                 </div>
             </div>
 
@@ -137,16 +144,16 @@
             <div class="item" style="width: 65%">
                 <div class="number">6</div>
                 <div class="cell first">
-                    <label>Unidade de Saúde / Fonte Notificadora:</label><div>xxxx</div>
+                    <label>Unidade de Saúde / Fonte Notificadora:</label><div>{{ obj.unidade.nome }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>xxxx</div>
+                    <label>Código:</label><div>{{ obj.unidade.codigo }}</div>
                 </div>
             </div>
             <div class="item" style="width: 33%">
                 <div class="number">7</div>
                 <div class="cell">
-                    <label>Data dos Primeiros Sintomas:</label><div>xxxx</div>
+                    <label>Data dos Primeiros Sintomas:</label><div>{{ obj.data_primeiros_sintomas|date:"d/m/Y" }}</div>
                 </div>
             </div>
 
@@ -156,58 +163,58 @@
             <div class="item" style="width: 65%">
                 <div class="number">8</div>
                 <div class="cell">
-                    <label>Nome do Paciente:</label><div>xxxx</div>
+                    <label>Nome do Paciente:</label><div>{{ obj.nome }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
                 <div class="number">9</div>
                 <div class="cell">
-                    <label>Data de Nascimento:</label><div>xxxx</div>
+                    <label>Data de Nascimento:</label><div>{{ obj.data_nascimento|date:"d/m/Y" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 24%">
                 <div class="number">10</div>
                 <div class="cell">
-                    <label>Idade:</label><div>xxxx</div>
+                    <label>Idade:</label><div>{{ obj.get_idade }}</div>
                 </div>
             </div>
             <div class="item" style="width: 24%">
                 <div class="number">11</div>
                 <div class="cell">
-                    <label>Sexo:</label><div>xxxx</div>
+                    <label>Sexo:</label><div>{{ obj.sexo }}</div>
                 </div>
             </div>
             <div class="item" style="width: 24%">
                 <div class="number">12</div>
                 <div class="cell">
-                    <label>Gestante:</label><div>xxxx</div>
+                    <label>Gestante:</label><div>{{ obj.periodo_gestacao|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
                 <div class="number">13</div>
                 <div class="cell">
-                    <label>Raça/Cor:</label><div>xxxx</div>
+                    <label>Raça/Cor:</label><div>{{ obj.raca }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 98%">
                 <div class="number">14</div>
                 <div class="cell">
-                    <label>Escolaridade:</label><div>xxxx</div>
+                    <label>Escolaridade:</label><div>{{ obj.escolaridade }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 33%">
                 <div class="number">15</div>
                 <div class="cell">
-                    <label>Número do Cartão SUS:</label><div>xxxx</div>
+                    <label>Número do Cartão SUS:</label><div>{{ obj.cartao_sus }}</div>
                 </div>
             </div>
             <div class="item" style="width: 64%">
                 <div class="number">16</div>
                 <div class="cell">
-                    <label>Nome da Mãe:</label><div>xxxx</div>
+                    <label>Nome da Mãe:</label><div>{{ obj.nome_mae }}</div>
                 </div>
             </div>
         </div>
@@ -217,95 +224,95 @@
             <div class="item" style="width: 15%">
                 <div class="number">17</div>
                 <div class="cell">
-                    <label>UF:</label><div>xxxx</div>
+                    <label>UF:</label><div>{{ obj.municipio_residencia.estado.sigla }}</div>
                 </div>
             </div>
             <div class="item" style="width: 50%">
                 <div class="number">18</div>
                 <div class="cell first">
-                    <label>Município de Residência:</label><div>xxxx</div>
+                    <label>Município de Residência:</label><div>{{ obj.municipio_residencia.nome }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>xxxx</div>
+                    <label>Código:</label><div>{{ obj.municipio_residencia.codigo}}</div>
                 </div>
             </div>
             <div class="item" style="width: 33%">
                 <div class="number">19</div>
                 <div class="cell">
-                    <label>Distrito:</label><div>xxxx</div>
+                    <label>Distrito:</label><div>{{ obj.distrito }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 30%">
                 <div class="number">20</div>
                 <div class="cell">
-                    <label>Bairro:</label><div>xxxx</div>
+                    <label>Bairro:</label><div>{{ obj.bairro }}</div>
                 </div>
             </div>
             <div class="item" style="width: 68%">
                 <div class="number">21</div>
                 <div class="cell first">
-                    <label>Logradouro (rua, avenida):</label><div>xxxx</div>
+                    <label>Logradouro (rua, avenida):</label><div>{{ obj.logradouro }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>xxxx</div>
+                    <label>Código:</label><div>{{ obj.codigo_logradouro }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 15%">
                 <div class="number">22</div>
                 <div class="cell">
-                    <label>Número:</label><div>xxxx</div>
+                    <label>Número:</label><div>{{ obj.numero_residencia }}</div>
                 </div>
             </div>
             <div class="item" style="width: 60%">
                 <div class="number">23</div>
                 <div class="cell">
-                    <label>Complemento:</label><div>xxxx</div>
+                    <label>Complemento:</label><div>{{ obj.complemento }}</div>
                 </div>
             </div>
             <div class="item" style="width: 22%">
                 <div class="number">24</div>
                 <div class="cell">
-                    <label>Geo campo 1:</label><div>xxxx</div>
+                    <label>Geo campo 1:</label><div>{{ obj.latitude }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 22%">
                 <div class="number">25</div>
                 <div class="cell">
-                    <label>Geo campo 2:</label><div>xxxx</div>
+                    <label>Geo campo 2:</label><div>{{ obj.longitude }}</div>
                 </div>
             </div>
             <div class="item" style="width: 50%">
                 <div class="number">26</div>
                 <div class="cell">
-                    <label>Referência:</label><div>xxxx</div>
+                    <label>Referência:</label><div>{{ obj.referencia }}</div>
                 </div>
             </div>
             <div class="item" style="width: 25%">
                 <div class="number">27</div>
                 <div class="cell">
-                    <label>CEP:</label><div>xxxx</div>
+                    <label>CEP:</label><div>{{ obj.cep }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 33%">
                 <div class="number">28</div>
                 <div class="cell">
-                    <label>Telefone:</label><div>xxxx</div>
+                    <label>Telefone:</label><div>{{ obj.telefone }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
                 <div class="number">29</div>
                 <div class="cell">
-                    <label>Zona:</label><div>xxxx</div>
+                    <label>Zona:</label><div>{{ obj.zona }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
                 <div class="number">30</div>
                 <div class="cell">
-                    <label>País:</label><div>xxxx</div>
+                    <label>País:</label><div>{{ obj.pais }}</div>
                 </div>
             </div>
         </div>
@@ -316,13 +323,13 @@
             <div class="item" style="width: 32%">
                 <div class="number">31</div>
                 <div class="cell">
-                    <label>Data da Investigação:</label><div>xxxx</div>
+                    <label>Data da Investigação:</label><div>{{ obj.data_investigacao|date:"d/m/Y" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 66%">
                 <div class="number">32</div>
                 <div class="cell">
-                    <label>Ocupação:</label><div>xxxx</div>
+                    <label>Ocupação:</label><div>{{ obj.ocupacao_investigacao }}</div>
                 </div>
             </div>
         </div>
@@ -332,14 +339,14 @@
             <div class="item" style="width: 100%">
                 <div class="number">33</div>
                 <div class="cell">
-                    <label>Sinais Clínicos:</label><div>xxxx</div>
+                    <label>Sinais Clínicos:</label><div>{% for item in obj.sinais_clinicos.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% endfor %}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 100%">
                 <div class="number">34</div>
                 <div class="cell">
-                    <label>Doenças Pré-existentes:</label><div>xxxx</div>
+                    <label>Doenças Pré-existentes:</label><div>{% for item in obj.doencas_pre_existentes.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% endfor %}</div>
                 </div>
             </div>
         </div>
@@ -352,13 +359,13 @@
                     <div class="item" style="width: 48%">
                         <div class="number">35</div>
                         <div class="cell">
-                            <label>Primeira Coleta (S1):</label><div>xxxx</div>
+                            <label>Primeira Coleta (S1):</label><div>{{ obj.data_primeira_amostra_chikungunya|date:"d/m/Y"|default:"-" }}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 48%">
                         <div class="number">36</div>
                         <div class="cell">
-                            <label>Segunda Coleta (S2):</label><div>xxxx</div>
+                            <label>Segunda Coleta (S2):</label><div>{{ obj.data_segunda_amostra_chikungunya|date:"d/m/Y"|default:"-" }}</div>
                         </div>
                     </div>
                 </div>
@@ -368,7 +375,7 @@
                 <div class="item" style="width: 100%">
                     <div class="number">37</div>
                     <div class="cell">
-                        <label>Data da Coleta:</label><div>xxxx</div>
+                        <label>Data da Coleta:</label><div>{{ obj.data_coleta_exame_prnt|date:"d/m/Y"|default:"-" }}</div>
                     </div>
                 </div>
             </div>
@@ -376,7 +383,7 @@
             <div class="item" style="width: 98%">
                 <div class="number">38</div>
                 <div class="cell">
-                    <label>Resultado</label><div><b>S1</b> - xxxx <b>S2</b> - xxxx <b>PRNT</b> - xxxx </div>
+                    <label>Resultado</label><div><b>S1</b> - {{ obj.get_resultado_primeira_amostra_chikungunya_display|default:"" }} | <b>S2</b> - {{ obj.get_resultado_segunda_amostra_chikungunya_display|default:""}} | <b>PRNT</b> - {{ obj.get_resultado_exame_prnt_display|default:"" }} </div>
                 </div>
             </div>
 
@@ -386,13 +393,13 @@
                     <div class="item" style="width: 48%">
                         <div class="number">39</div>
                         <div class="cell">
-                            <label>Data da Coleta:</label><div>xxxx</div>
+                            <label>Data da Coleta:</label><div>{{ obj.data_amostra_dengue|date:"d/m/Y"|default:"-" }}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 48%">
                         <div class="number">40</div>
                         <div class="cell">
-                            <label>Resultado:</label><div>xxxx</div>
+                            <label>Resultado:</label><div>{{ obj.get_resultado_amostra_dengue_display|default:"-" }}</div>
                         </div>
                     </div>
                 </div>
@@ -403,13 +410,13 @@
                     <div class="item" style="width: 48%">
                         <div class="number">41</div>
                         <div class="cell">
-                            <label>Data da Coleta:</label><div>xxxx</div>
+                            <label>Data da Coleta:</label><div>{{ obj.data_exame_ns1|date:"d/m/Y"|default:"-" }}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 48%">
                         <div class="number">42</div>
                         <div class="cell">
-                            <label>Resultado:</label><div>xxxx</div>
+                            <label>Resultado:</label><div>{{ obj.get_resultado_exame_ns1_display|default:"-" }}</div>
                         </div>
                     </div>
                 </div>
@@ -421,13 +428,13 @@
                     <div class="item" style="width: 48%">
                         <div class="number">43</div>
                         <div class="cell">
-                            <label>Data da Coleta:</label><div>xxxx</div>
+                            <label>Data da Coleta:</label><div>{{ obj.data_isolamento|date:"d/m/Y"|default:"-" }}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 49%">
                         <div class="number">44</div>
                         <div class="cell">
-                            <label>Resultado:</label><div>xxxx</div>
+                            <label>Resultado:</label><div>{{ obj.get_resultado_isolamento_display|default:"-" }}</div>
                         </div>
                     </div>
                 </div>
@@ -438,13 +445,13 @@
                     <div class="item" style="width: 48%">
                         <div class="number">45</div>
                         <div class="cell">
-                            <label>Data da Coleta:</label><div>xxxx</div>
+                            <label>Data da Coleta:</label><div>{{ obj.data_rt_pcr|date:"d/m/Y"|default:"-" }}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 49%">
                         <div class="number">46</div>
                         <div class="cell">
-                            <label>Resultado:</label><div>xxxx</div>
+                            <label>Resultado:</label><div>{{ obj.get_resultado_rt_pcr_display|default:"-" }}</div>
                         </div>
                     </div>
                 </div>
@@ -453,19 +460,19 @@
             <div class="item" style="width: 22%">
                 <div class="number">47</div>
                 <div class="cell">
-                    <label>Sorotipo:</label><div>xxxx</div>
+                    <label>Sorotipo:</label><div>{{ obj.get_sorotipo_display|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 37%">
                 <div class="number">48</div>
                 <div class="cell">
-                    <label>Histopatologia:</label><div>xxxx</div>
+                    <label>Histopatologia:</label><div>{{ obj.get_histopatologia_display|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 38%">
                 <div class="number">49</div>
                 <div class="cell">
-                    <label>Imunohistoquímica:</label><div>xxxx</div>
+                    <label>Imunohistoquímica:</label><div>{{ obj.get_imunohistoquimica_display|default:"-" }}</div>
                 </div>
             </div>
         </div>
@@ -475,127 +482,127 @@
             <div class="item" style="width: 28%">
                 <div class="number">50</div>
                 <div class="cell">
-                    <label>Ocorreu Hospitalização:</label><div>xxxx</div>
+                    <label>Ocorreu Hospitalização:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 15%">
                 <div class="number">51</div>
                 <div class="cell">
-                    <label>Data:</label><div>xxxx</div>
+                    <label>Data:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 10%">
                 <div class="number">52</div>
                 <div class="cell">
-                    <label>UF:</label><div>xxxx</div>
+                    <label>UF:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 43%">
                 <div class="number">53</div>
                 <div class="cell first">
-                    <label>Município:</label><div>xxxx</div>
+                    <label>Município:</label><div>{{ obj.pk }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>xxxx</div>
+                    <label>Código:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 75%">
                 <div class="number">54</div>
                 <div class="cell first">
-                    <label>Nome do Hospital:</label><div>xxxx</div>
+                    <label>Nome do Hospital:</label><div>{{ obj.pk }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>xxxx</div>
+                    <label>Código:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
                 <div class="number">55</div>
                 <div class="cell">
-                    <label>Telefone:</label><div>xxxx</div>
+                    <label>Telefone:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="subtitle center">Conclusão</div>
+        <div class="title center">Conclusão</div>
         <div class="subtitle center">Local Provável de Infecção (no período de 15 dias)</div>
         <div class="bloco bordered">
             <div class="item" style="width: 50%">
                 <div class="number">60</div>
                 <div class="cell">
-                    <label>O caso é autóctone do município de residência?:</label><div>xxxx</div>
+                    <label>O caso é autóctone do município de residência?:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 15%">
                 <div class="number">57</div>
                 <div class="cell">
-                    <label>Uf:</label><div>xxxx</div>
+                    <label>Uf:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
                 <div class="number">58</div>
                 <div class="cell">
-                    <label>País:</label><div>xxxx</div>
+                    <label>País:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 50%">
                 <div class="number">59</div>
                 <div class="cell first">
-                    <label>Município:</label><div>xxxx</div>
+                    <label>Município:</label><div>{{ obj.pk }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>xxxx</div>
+                    <label>Código:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 24%">
                 <div class="number">60</div>
                 <div class="cell">
-                    <label>Distrito:</label><div>xxxx</div>
+                    <label>Distrito:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
                 <div class="number">61</div>
                 <div class="cell">
-                    <label>Bairro:</label><div>xxxx</div>
+                    <label>Bairro:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 27%">
                 <div class="number">62</div>
                 <div class="cell">
-                    <label>Classificação:</label><div>xxxx</div>
+                    <label>Classificação:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 45%">
                 <div class="number">63</div>
                 <div class="cell">
-                    <label>Critério de Confirmação/Descarte:</label><div>xxxx</div>
+                    <label>Critério de Confirmação/Descarte:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 25%">
                 <div class="number">64</div>
                 <div class="cell">
-                    <label>Apresentação Clínica:</label><div>xxxx</div>
+                    <label>Apresentação Clínica:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 40%">
                 <div class="number">65</div>
                 <div class="cell">
-                    <label>Evolução:</label><div>xxxx</div>
+                    <label>Evolução:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
                 <div class="number">66</div>
                 <div class="cell">
-                    <label>Data do Óbito:</label><div>xxxx</div>
+                    <label>Data do Óbito:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 34%">
                 <div class="number">67</div>
                 <div class="cell">
-                    <label>Data do Encerramento:</label><div>xxxx</div>
+                    <label>Data do Encerramento:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
         </div>
@@ -606,13 +613,13 @@
             <div class="item" style="width: 70%">
                 <div class="number">68</div>
                 <div class="cell">
-                    <label>Dengue com sinais de alarme:</label><div>xxxx</div>
+                    <label>Dengue com sinais de alarme:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
             <div class="item" style="width: 28%">
                 <div class="number">69</div>
                 <div class="cell">
-                    <label>Data dos Sinais:</label><div>xxxx</div>
+                    <label>Data dos Sinais:</label><div>{{ obj.pk }}</div>
                 </div>
             </div>
         </div>
@@ -622,29 +629,29 @@
                     <div class="item" style="width: 49%">
                         <div class="number">70</div>
                         <div class="cell">
-                            <label>Dengue com sinais de alarme</label><div>xxxx</div>
+                            <label>Dengue com sinais de alarme</label><div>{{ obj.pk }}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Sangramento grave:</label><div>xxxx</div>
+                            <label>Sangramento grave:</label><div>{{ obj.pk }}</div>
                         </div>
                     </div>
 
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Extravasamento grave de plasma:</label><div>xxxx</div>
+                            <label>Extravasamento grave de plasma:</label><div>{{ obj.pk }}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Compromentimento grave de órgãos</label><div>xxxx</div>
+                            <label>Compromentimento grave de órgãos</label><div>{{ obj.pk }}</div>
                         </div>
                     </div>
 
                     <div class="item" style="width: 99%">
                         <div class="cell">
-                            <label>Data de início dos sinais de gravidade:</label><div>xxxx</div>
+                            <label>Data de início dos sinais de gravidade:</label><div>{{ obj.pk }}</div>
                         </div>
                     </div>
                 </div>

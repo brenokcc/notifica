@@ -1,5 +1,6 @@
 from slth.db import models, role, meta
 from slth.components import Image
+from slth.utils import age
 
 
 class Funcao(models.Model):
@@ -355,6 +356,7 @@ class NotificacaoIndividual(models.Model):
     cep = models.CharField(verbose_name='CEP', null=True, blank=True)
     municipio_residencia = models.ForeignKey(Municipio, verbose_name='Município da Residência', on_delete=models.CASCADE, related_name='s2', null=True, blank=True)
     distrito = models.CharField(verbose_name='Distrito', null=True, blank=True)
+    zona = models.ForeignKey(Zona, verbose_name='Zona', on_delete=models.CASCADE, null=True)
     bairro = models.CharField(verbose_name='Bairro', null=True, blank=True)
     logradouro = models.CharField(verbose_name='Logradouro', null=True, blank=True)
     codigo_logradouro = models.CharField(verbose_name='Código do Logradouro', null=True, blank=True)
@@ -363,6 +365,10 @@ class NotificacaoIndividual(models.Model):
     latitude = models.CharField(verbose_name='Latitude', null=True, blank=True)
     longitude = models.CharField(verbose_name='Longitude', null=True, blank=True)
     referencia = models.CharField(verbose_name='Ponto de Referência', null=True, blank=True)
+
+    # Dados para Contato
+    telefone = models.CharField(verbose_name='Telefone', null=True, blank=True)
+    email = models.CharField(verbose_name='E-mail', null=True, blank=True)
 
     # Investigação
     data_investigacao = models.DateField(verbose_name='Data da Investigação')
@@ -433,7 +439,7 @@ class NotificacaoIndividual(models.Model):
     sinais_sangramento_grave = models.ManyToManyField(SinalSangramentoGrave, verbose_name='Sinais de Sangramento Grave', blank=True, pick=True)
     sinais_comprometimento_orgaos = models.ManyToManyField(SinalComprometimentoOrgao, verbose_name='Sinais de Comprometimento dos Órgãos', blank=True, pick=True)
     outros_orgaos_afetados = models.CharField(verbose_name='Outros Órgãos', null=True, blank=True)
-    data_inicio_sinais_graves = models.DateField(verbose_name='Data de Início dos Sinais de Gravidade', null=True)
+    data_inicio_sinais_graves = models.DateField(verbose_name='Data de Início dos Sinais de Gravidade', null=True, blank=True)
 
     # Observação
     observacao = models.TextField(verbose_name='Observação', null=True, blank=True)
@@ -449,13 +455,17 @@ class NotificacaoIndividual(models.Model):
     @meta('Número')
     def get_numero(self):
         return self.id
+    
+    def get_idade(self):
+        return age(self.data_nascimento)
 
     def formfactory(self):
         return (
             super().formfactory()
             .fieldset('Dados Gerais', ('doenca', 'data', ('notificante', 'municipio'), ('unidade', 'data_primeiros_sintomas')))
             .fieldset('Dados do Indivíduo', (('cpf', 'cartao_sus'), 'nome', ('data_nascimento', 'idade'), 'sexo', 'periodo_gestacao', 'raca', 'escolaridade', 'nome_mae'))
-            .fieldset('Dados Residenciais', ('pais:pais.cadastrar', ('cep', 'municipio_residencia:municipio.cadastrar'), ('distrito', 'bairro'), ('logradouro', 'codigo_logradouro'), ('numero_residencia', 'complemento'), ('latitude', 'longitude'), 'referencia'))
+            .fieldset('Dados Residenciais', (('pais:pais.cadastrar', 'zona'), ('cep', 'municipio_residencia:municipio.cadastrar'), ('distrito', 'bairro'), ('logradouro', 'codigo_logradouro'), ('numero_residencia', 'complemento'), ('latitude', 'longitude'), 'referencia'))
+            .fieldset('Dados de Contato', (('telefone', 'email'),))
             .fieldset('Investigação', ('data_investigacao', 'ocupacao_investigacao'))
             .fieldset('Dados Clínicos', ('sinais_clinicos', 'doencas_pre_existentes'))
             .fieldset('Sorologia (IgM) Chikungunya', ('data_primeira_amostra_chikungunya', 'resultado_primeira_amostra_chikungunya', 'data_segunda_amostra_chikungunya', 'resultado_segunda_amostra_chikungunya'))
@@ -478,7 +488,8 @@ class NotificacaoIndividual(models.Model):
             super().serializer()
             .fieldset('Dados Gerais', ('doenca', 'data', ('notificante', 'municipio'), ('unidade', 'data_primeiros_sintomas')))
             .fieldset('Dados do Indivíduo', (('cpf', 'cartao_sus'), 'nome', ('data_nascimento', 'idade'), 'sexo', 'periodo_gestacao', 'raca', 'escolaridade', 'nome_mae'))
-            .fieldset('Dados Residenciais', ('pais', ('cep', 'municipio_residencia'), ('distrito', 'bairro'), ('logradouro', 'codigo_logradouro'), ('numero_residencia', 'complemento'), ('latitude', 'longitude'), 'referencia'))
+            .fieldset('Dados Residenciais', (('pais', 'zona'), ('cep', 'municipio_residencia'), ('distrito', 'bairro'), ('logradouro', 'codigo_logradouro'), ('numero_residencia', 'complemento'), ('latitude', 'longitude'), 'referencia'))
+            .fieldset('Dados de Contato', (('telefone', 'email'),))
             .fieldset('Investigação', ('data_investigacao', 'ocupacao_investigacao'))
             .fieldset('Dados Clínicos', ('sinais_clinicos', 'doencas_pre_existentes'))
             .fieldset('Sorologia (IgM) Chikungunya', ('data_primeira_amostra_chikungunya', 'resultado_primeira_amostra_chikungunya', 'data_segunda_amostra_chikungunya', 'resultado_segunda_amostra_chikungunya'))
