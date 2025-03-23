@@ -13,7 +13,7 @@ class ApiApplication(Application):
         self.dashboard.usermenu.add(
             "dev.icons", "user.users", "log.logs", "email.emails",
             "pushsubscription.pushsubscriptions", "job.jobs",
-            "deletion.deletions", "auth.logout"
+            "deletion.deletions", "settings.settings", "auth.logout"
         )
         self.dashboard.boxes.add(
             'notificacaoindividual.notificacoesindividuais',

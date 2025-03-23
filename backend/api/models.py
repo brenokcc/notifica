@@ -44,6 +44,10 @@ class TipoNotificacao(models.Model):
 class Doenca(models.Model):
     nome = models.CharField(verbose_name='Nome')
     cid10 = models.CharField(verbose_name='CID10')
+    modelo_ficha = models.CharField(verbose_name='Modelo da Ficha', null=True, choices=[
+        ['ficha/padrao.html', 'Padrão'],
+        ['ficha/dengue-chikungunya.html', 'Dengue/Chikungunya'],
+    ])
 
     class Meta:
         verbose_name = 'Doença'

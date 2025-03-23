@@ -1,105 +1,7 @@
-<html>
-    <head>
-        <style>
+{% extends "ficha/base.html" %}
 
-            @page {
-            size: A4;
-            margin: 0.5cm;
-            }
-            @page {
-                @bottom-right {
-                    content: "Página " counter(page);
-                }
-            }
-            body{
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 14px;
-            }
-            table{
-                width: 100%;
-                margin-bottom: 5px;
-            }
-            .bordered{
-                border: solid 1px black;
-            }
-            .cabecalho td{
-                text-align: center;
-                font-weight: bold;
-            }
-            .bloco{
-                padding: 10px;
-            }
-            .item {
-                border-left: solid 1px black;
-                border-bottom: solid 1px black;
-                border-right: solid 1px black;
-                border-radius: 5px;
-                display: inline-block;
-                height: 40px;
-                margin-top: 3px;
-            }
-            .item .cell, .group{
-                display: inline-block;
-            }
-            .item .cell.first{
-                width: 65%;
-                border-right: solid 1px #BBB;
-            }
-            .item label{
-                font-weight: bold;
-            }
-            .item .number{
-                border: solid 1px #BBB;
-                width: 20px;
-                height: 20px;
-                font-weight: bold;
-                float: left;
-                text-align: center;
-                margin-left: 3px;
-                margin-right: 3px;
-            }
-            .center{
-                text-align: center;
-            }
-            .title{
-                font-weight: bold;
-                font-size: 120%;
-                margin-top: 10px;
-            }
-            .subtitle{
-                font-weight: bold;
-                color: #033770;
-                margin-top: 5px;
-            }
-        </style>
-    </head>
-    <body>
-        <table class="cabecalho">
-            <tr><td><img style="height:50px" src="http://localhost:8000/static/images/brand.png"/></td></tr>
-            <tr><td>SISTEMA DE INFORMAÇÃO DE AGRAVOS DE NOTIFICAÇÃO</td></tr>
-            <tr><td>FICHA DE INVESTIGAÇÃO - DENGUE E FEBRE DE CHIKUNGUNYA - Nº 123</td></tr>
-        </table>
-        <table class="bordered">
-            <tr>
-                <td>
-                <b>Caso suspeito de Dengue: </b> pessoa que viva ou tenha viajado nos últimos 14 dias para área onde esteja ocorrendo
-                transmissão de dengue ou tenha presença de Ae.aegypti que apresente febre, usualmente entre 2 e 7 dias, e
-                apresente duas ou mais das seguintes manifestações: náuseas, vômitos, exantema, mialgias, cefaléia, dor
-                retroorbital, petéquias ou prova do laço positiva e leucopenia.
-                </td>
-            </tr>
-        </table>
-        <table class="bordered">
-            <tr>
-                <td>
-                    <b>Caso suspeito de Chikungunya: </b> febre de início súbito e artralgia ou artrite intensa com inicio agudo, não explicado
-                por outras condições, que resida ou tenha viajado para áreas endêmicas ou epidêmicas até 14 dias antes do
-                início dos sintomas, ou que tenha vínculo epidemiológico com um caso importado confirmado.
-                </td>
-            </tr>
-        </table>
-
-        <div class="subtitle center">Dados Gerais</div>
+{% block secoes %}
+    <div class="subtitle center">Dados Gerais</div>
         <div class="bloco bordered">
             <div class="item" style="width: 99%">
                 <div class="number">1</div>
@@ -664,13 +566,4 @@
                     </div>
                 </div>
         </div>
-    
-        <br><br>
-
-        <div class="title center">Informações Complementares e Observações</div>
-        <div class="bloco bordered" style="height: 200px;">
-            {{ obj.observacao|linebreaks }}
-        </div>
-        
-    </body>
-</html>
+{% endblock %}

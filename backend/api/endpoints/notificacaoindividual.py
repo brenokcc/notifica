@@ -37,13 +37,13 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
 
 class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     class Meta:
-        icon = 'pdf'
+        icon = 'file-pdf'
         modal = True
         verbose_name = 'Imprimir Notificação Individual'
 
     def get(self):
         if self.request.GET.get('view'):
-            return self.render(dict(obj=self.instance), "ficha.html", pdf=True)
+            return self.render(dict(obj=self.instance), self.instance.doenca.modelo_ficha, pdf=True)
         else:
             return FileViewer(self.get_api_url(self.instance.pk) + '?view=1')
     
