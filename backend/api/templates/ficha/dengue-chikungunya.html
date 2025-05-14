@@ -1,6 +1,20 @@
 {% extends "ficha/base.html" %}
 
 {% block secoes %}
+
+    <div class="info">
+        <b>Caso suspeito de dengue</b>: pessoa que viva ou tenha viajado nos últimos 14 dias para área onde esteja ocorrendo
+        transmissão de dengue ou tenha presença de Ae.aegypti que apresente febre, usualmente entre 2 e 7 dias, e
+        apresente duas ou mais das seguintes manifestações: náuseas, vômitos, exantema, mialgias, cefaléia, dor
+        retroorbital, petéquias ou prova do laço positiva e leucopenia.
+    </div>
+
+    <div class="info">
+        <b>Caso suspeito de Chikungunya</b>: febre de início súbito e artralgia ou artrite intensa com inicio agudo, não explicado
+        por outras condições, que resida ou tenha viajado para áreas endêmicas ou epidêmicas até 14 dias antes do
+        início dos sintomas, ou que tenha vínculo epidemiológico com um caso importado confirmado.
+    </div>
+
     <div class="subtitle center">Dados Gerais</div>
         <div class="bloco bordered">
             <div class="item" style="width: 99%">
@@ -13,10 +27,10 @@
             <div class="item" style="width: 65%">
                 <div class="number">2</div>
                 <div class="cell first">
-                    <label>Agravo/doença:</label><div>{{ obj.doenca.nome }}</div>
+                    <label>Agravo/doença:</label><div>{{ obj.doenca.nome|default:"-" }}</div>
                 </div>
                 <div class="cell">
-                    <label>(CID10):</label><div>{{ obj.doenca.cid10 }}</div>
+                    <label>(CID10):</label><div>{{ obj.doenca.cid10|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 33%">
@@ -29,16 +43,16 @@
             <div class="item" style="width: 33%">
                 <div class="number">4</div>
                 <div class="cell">
-                    <label>UF:</label><div>{{ obj.municipio.estado.sigla }}</div>
+                    <label>UF:</label><div>{{ obj.municipio.estado.sigla|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 65%">
                 <div class="number">5</div>
                 <div class="cell first">
-                    <label>Município de Notificação:</label><div>{{ obj.municipio.nome }}</div>
+                    <label>Município de Notificação:</label><div>{{ obj.municipio.nome|default:"-" }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código (IBGE):</label><div>{{ obj.municipio.codigo }}</div>
+                    <label>Código (IBGE):</label><div>{{ obj.municipio.codigo|default:"-" }}</div>
                 </div>
             </div>
 
@@ -46,10 +60,10 @@
             <div class="item" style="width: 65%">
                 <div class="number">6</div>
                 <div class="cell first">
-                    <label>Unidade de Saúde / Fonte Notificadora:</label><div>{{ obj.unidade.nome }}</div>
+                    <label>Unidade de Saúde / Fonte Notificadora:</label><div>{{ obj.unidade.nome|default:"-" }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>{{ obj.unidade.codigo }}</div>
+                    <label>Código:</label><div>{{ obj.unidade.codigo|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 33%">
@@ -65,7 +79,7 @@
             <div class="item" style="width: 65%">
                 <div class="number">8</div>
                 <div class="cell">
-                    <label>Nome do Paciente:</label><div>{{ obj.nome }}</div>
+                    <label>Nome do Paciente:</label><div>{{ obj.nome|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
@@ -78,13 +92,13 @@
             <div class="item" style="width: 24%">
                 <div class="number">10</div>
                 <div class="cell">
-                    <label>Idade:</label><div>{{ obj.get_idade }}</div>
+                    <label>Idade:</label><div>{{ obj.get_idade|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 24%">
                 <div class="number">11</div>
                 <div class="cell">
-                    <label>Sexo:</label><div>{{ obj.sexo }}</div>
+                    <label>Sexo:</label><div>{{ obj.sexo|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 24%">
@@ -96,27 +110,27 @@
             <div class="item" style="width: 23%">
                 <div class="number">13</div>
                 <div class="cell">
-                    <label>Raça/Cor:</label><div>{{ obj.raca }}</div>
+                    <label>Raça/Cor:</label><div>{{ obj.raca|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 98%">
                 <div class="number">14</div>
                 <div class="cell">
-                    <label>Escolaridade:</label><div>{{ obj.escolaridade }}</div>
+                    <label>Escolaridade:</label><div>{{ obj.escolaridade|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 33%">
                 <div class="number">15</div>
                 <div class="cell">
-                    <label>Número do Cartão SUS:</label><div>{{ obj.cartao_sus }}</div>
+                    <label>Número do Cartão SUS:</label><div>{{ obj.cartao_sus|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 64%">
                 <div class="number">16</div>
                 <div class="cell">
-                    <label>Nome da Mãe:</label><div>{{ obj.nome_mae }}</div>
+                    <label>Nome da Mãe:</label><div>{{ obj.nome_mae|default:"-" }}</div>
                 </div>
             </div>
         </div>
@@ -126,95 +140,95 @@
             <div class="item" style="width: 15%">
                 <div class="number">17</div>
                 <div class="cell">
-                    <label>UF:</label><div>{{ obj.municipio_residencia.estado.sigla }}</div>
+                    <label>UF:</label><div>{{ obj.municipio_residencia.estado.sigla|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 50%">
                 <div class="number">18</div>
                 <div class="cell first">
-                    <label>Município de Residência:</label><div>{{ obj.municipio_residencia.nome }}</div>
+                    <label>Município de Residência:</label><div>{{ obj.municipio_residencia.nome|default:"-" }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>{{ obj.municipio_residencia.codigo}}</div>
+                    <label>Código:</label><div>{{ obj.municipio_residencia.codigo|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 33%">
                 <div class="number">19</div>
                 <div class="cell">
-                    <label>Distrito:</label><div>{{ obj.distrito }}</div>
+                    <label>Distrito:</label><div>{{ obj.distrito|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 30%">
                 <div class="number">20</div>
                 <div class="cell">
-                    <label>Bairro:</label><div>{{ obj.bairro }}</div>
+                    <label>Bairro:</label><div>{{ obj.bairro|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 68%">
                 <div class="number">21</div>
                 <div class="cell first">
-                    <label>Logradouro (rua, avenida):</label><div>{{ obj.logradouro }}</div>
+                    <label>Logradouro (rua, avenida):</label><div>{{ obj.logradouro|default:"-" }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>{{ obj.codigo_logradouro }}</div>
+                    <label>Código:</label><div>{{ obj.codigo_logradouro|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 15%">
                 <div class="number">22</div>
                 <div class="cell">
-                    <label>Número:</label><div>{{ obj.numero_residencia }}</div>
+                    <label>Número:</label><div>{{ obj.numero_residencia|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 60%">
                 <div class="number">23</div>
                 <div class="cell">
-                    <label>Complemento:</label><div>{{ obj.complemento }}</div>
+                    <label>Complemento:</label><div>{{ obj.complemento|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 22%">
                 <div class="number">24</div>
                 <div class="cell">
-                    <label>Geo campo 1:</label><div>{{ obj.latitude }}</div>
+                    <label>Geo campo 1:</label><div>{{ obj.latitude|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 22%">
                 <div class="number">25</div>
                 <div class="cell">
-                    <label>Geo campo 2:</label><div>{{ obj.longitude }}</div>
+                    <label>Geo campo 2:</label><div>{{ obj.longitude|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 50%">
                 <div class="number">26</div>
                 <div class="cell">
-                    <label>Referência:</label><div>{{ obj.referencia }}</div>
+                    <label>Referência:</label><div>{{ obj.referencia|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 25%">
                 <div class="number">27</div>
                 <div class="cell">
-                    <label>CEP:</label><div>{{ obj.cep }}</div>
+                    <label>CEP:</label><div>{{ obj.cep|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 33%">
                 <div class="number">28</div>
                 <div class="cell">
-                    <label>Telefone:</label><div>{{ obj.telefone }}</div>
+                    <label>Telefone:</label><div>{{ obj.telefone|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
                 <div class="number">29</div>
                 <div class="cell">
-                    <label>Zona:</label><div>{{ obj.zona }}</div>
+                    <label>Zona:</label><div>{{ obj.zona|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
                 <div class="number">30</div>
                 <div class="cell">
-                    <label>País:</label><div>{{ obj.pais }}</div>
+                    <label>País:</label><div>{{ obj.pais|default:"-" }}</div>
                 </div>
             </div>
         </div>
@@ -231,7 +245,7 @@
             <div class="item" style="width: 66%">
                 <div class="number">32</div>
                 <div class="cell">
-                    <label>Ocupação:</label><div>{{ obj.ocupacao_investigacao }}</div>
+                    <label>Ocupação:</label><div>{{ obj.ocupacao_investigacao|default:"-" }}</div>
                 </div>
             </div>
         </div>
@@ -430,7 +444,7 @@
         <div class="subtitle center">Local Provável de Infecção (no período de 15 dias)</div>
         <div class="bloco bordered">
             <div class="item" style="width: 50%">
-                <div class="number">60</div>
+                <div class="number">56</div>
                 <div class="cell">
                     <label>O caso é autóctone do município de residência?:</label><div>{{ obj.autoctone|yesno:"Sim,Não" }}</div>
                 </div>
@@ -438,61 +452,61 @@
             <div class="item" style="width: 15%">
                 <div class="number">57</div>
                 <div class="cell">
-                    <label>Uf:</label><div>{{ obj.municipio_infeccao.estado.sigla }}</div>
+                    <label>Uf:</label><div>{{ obj.municipio_infeccao.estado.sigla|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 32%">
                 <div class="number">58</div>
                 <div class="cell">
-                    <label>País:</label><div>{{ obj.pais_infeccao }}</div>
+                    <label>País:</label><div>{{ obj.pais_infeccao|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 50%">
                 <div class="number">59</div>
                 <div class="cell first">
-                    <label>Município:</label><div>{{ obj.municipio_infeccao.nome }}</div>
+                    <label>Município:</label><div>{{ obj.municipio_infeccao.nome|default:"-" }}</div>
                 </div>
                 <div class="cell">
-                    <label>Código:</label><div>{{ obj.municipio_infeccao.codigo }}</div>
+                    <label>Código:</label><div>{{ obj.municipio_infeccao.codigo|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 24%">
                 <div class="number">60</div>
                 <div class="cell">
-                    <label>Distrito:</label><div>{{ obj.distrito_infeccao }}</div>
+                    <label>Distrito:</label><div>{{ obj.distrito_infeccao|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
                 <div class="number">61</div>
                 <div class="cell">
-                    <label>Bairro:</label><div>{{ obj.bairro_infeccao }}</div>
+                    <label>Bairro:</label><div>{{ obj.bairro_infeccao|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 27%">
                 <div class="number">62</div>
                 <div class="cell">
-                    <label>Classificação:</label><div>{{ obj.classificacao_infeccao }}</div>
+                    <label>Classificação:</label><div>{{ obj.classificacao_infeccao|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 45%">
                 <div class="number">63</div>
                 <div class="cell">
-                    <label>Critério de Confirmação/Descarte:</label><div>{{ obj.criterio_confirmacao }}</div>
+                    <label>Critério de Confirmação/Descarte:</label><div>{{ obj.criterio_confirmacao|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 25%">
                 <div class="number">64</div>
                 <div class="cell">
-                    <label>Apresentação Clínica:</label><div>{{ obj.apresentacao_clinica }}</div>
+                    <label>Apresentação Clínica:</label><div>{{ obj.apresentacao_clinica|default:"-" }}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 40%">
                 <div class="number">65</div>
                 <div class="cell">
-                    <label>Evolução:</label><div>{{ obj.evolucao_caso }}</div>
+                    <label>Evolução:</label><div>{{ obj.evolucao_caso|default:"-" }}</div>
                 </div>
             </div>
             <div class="item" style="width: 23%">
@@ -560,6 +574,7 @@
                     </div>
 
                     <div class="item" style="width: 99%">
+                        <div class="number">71</div>
                         <div class="cell">
                             <label>Data de início dos sinais de gravidade:</label><div>{{ obj.data_inicio_sinais_graves|date:"d/m/Y"|default:"-" }}</div>
                         </div>

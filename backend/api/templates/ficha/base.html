@@ -71,14 +71,33 @@
                 color: #033770;
                 margin-top: 5px;
             }
+            .info{
+                border: solid 1px black;
+                border-radius: 5px;
+                margin-bottom: 5px;
+                padding: 3px;
+            }
+            .numero-notificacao{
+                background-color: darkgrey;
+                width: 60px;
+                float: right;
+                padding: 5px;
+                border-radius: 5px;
+                position: absolute;
+                right: 10px;
+                top: 10px;
+                font-weight: bold;
+            }
         </style>
     </head>
     <body>
         <table class="cabecalho">
             <tr><td><img style="height:50px" src="{{ base_url }}/static/images/brand.png"/></td></tr>
             <tr><td>SISTEMA DE INFORMAÇÃO DE AGRAVOS DE NOTIFICAÇÃO</td></tr>
-            <tr><td>FICHA DE INVESTIGAÇÃO - DENGUE E FEBRE DE CHIKUNGUNYA - Nº 123</td></tr>
+            <tr><td>FICHA DE INVESTIGAÇÃO - DENGUE E FEBRE DE CHIKUNGUNYA</td></tr>
         </table>
+
+        <div class="numero-notificacao">Nº {{ obj.get_numero }}</div>
         
         {% block secoes %}
 

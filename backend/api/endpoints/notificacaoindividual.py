@@ -109,6 +109,11 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
     def get_unidade_inicial(self):
         qs = UnidadeSaude.objects.filter(notificantes__cpf=self.request.user.username)
         return qs.first()  if qs.count() == 1 else None 
+    
+    def on_dengue_grave_change(self, value):
+        print(value)
+        print(self.form.controller.values())
+        self.form.controller.set(observacao=str(value))
         
     
 

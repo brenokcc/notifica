@@ -1,5 +1,6 @@
 from slth.db import models, role, meta
 from slth.components import Image
+from django.core.exceptions import ValidationError
 from slth.utils import age
 
 
@@ -460,9 +461,20 @@ class NotificacaoIndividual(models.Model):
         verbose_name = 'Notificação Individual'
         verbose_name_plural = 'Notificações Individuais'
 
+    
+    def save(self, *args, **kwargs):
+        if self.data_primeiros_sintomas:
+            for name in ['data_investigacao', 'data_primeira_amostra_chikungunya', 'data_segunda_amostra_chikungunya', 'data_coleta_exame_prnt', 'data_amostra_dengue', 'data_exame_ns1', 'data_isolamento', 'data_rt_pcr', 'data_ultima_vacina', 'data_hospitalizacao', 'data_obito', 'data_encerramento', 'data_inicio_sinais_alarme', 'data_inicio_sinais_graves', 'data_primeiros_sintomas']:
+                data = getattr(self, name)
+                if data < self.data_primeiros_sintomas:
+                    campo = getattr(type(self), name).field.verbose_name
+                    raise ValidationError(f'A data informada no campo "{campo}" não pode anteceder a data dos primeiros sintomas.')
+        super().save(*args, **kwargs)
+    
+
     @meta('Número')
     def get_numero(self):
-        return self.id
+        return str(self.id).rjust(5, "0")
     
     def get_idade(self):
         return age(self.data_nascimento)
