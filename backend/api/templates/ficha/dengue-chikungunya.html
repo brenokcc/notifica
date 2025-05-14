@@ -255,14 +255,14 @@
             <div class="item" style="width: 100%">
                 <div class="number">33</div>
                 <div class="cell">
-                    <label>Sinais Clínicos:</label><div>{% for item in obj.sinais_clinicos.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}-{% endfor %}</div>
+                    <label>Sinais Clínicos:</label><div>{% for item in obj.sinais_clinicos.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}&nbsp;&nbsp;&nbsp;-{% endfor %}</div>
                 </div>
             </div>
 
             <div class="item" style="width: 100%">
                 <div class="number">34</div>
                 <div class="cell">
-                    <label>Doenças Pré-existentes:</label><div>{% for item in obj.doencas_pre_existentes.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}-{% endfor %}</div>
+                    <label>Doenças Pré-existentes:</label><div>{% for item in obj.doencas_pre_existentes.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}&nbsp;&nbsp;&nbsp;-{% endfor %}</div>
                 </div>
             </div>
         </div>
@@ -533,7 +533,7 @@
                     <div>
                         {{ obj.dengue_com_sinais_de_alarme|yesno:"Sim,Não" }}
                         {% if obj.dengue_com_sinais_de_alarme %}
-                            ({% for item in obj.sinais_alarme_dengue.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}-{% endfor %})
+                            ({% for item in obj.sinais_alarme_dengue.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}&nbsp;&nbsp;&nbsp;-{% endfor %})
                         {% endif %}
                     </div>
                 </div>
@@ -558,18 +558,18 @@
                     </div>
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Sangramento grave:</label><div>{% for item in obj.sinais_sangramento_grave.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}-{% endfor %}</div>
+                            <label>Sangramento grave:</label><div>{% for item in obj.sinais_sangramento_grave.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}&nbsp;&nbsp;&nbsp;-{% endfor %}</div>
                         </div>
                     </div>
 
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Extravasamento grave de plasma:</label><div>{% for item in obj.sinais_extravasamento_plasma.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}-{% endfor %}</div>
+                            <label>Extravasamento grave de plasma:</label><div>{% for item in obj.sinais_extravasamento_plasma.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}&nbsp;&nbsp;&nbsp;-{% endfor %}</div>
                         </div>
                     </div>
                     <div class="item" style="width: 49%">
                         <div class="cell">
-                            <label>Compromentimento grave de órgãos</label><div>{% for item in obj.sinais_comprometimento_orgaos.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}-{% endfor %}</div>
+                            <label>Compromentimento grave de órgãos</label><div>{% for item in obj.sinais_comprometimento_orgaos.all %}{{ item }}{% if not forloop.last %} | {% endif %}{% empty %}&nbsp;&nbsp;&nbsp;-{% endfor %}</div>
                         </div>
                     </div>
 
