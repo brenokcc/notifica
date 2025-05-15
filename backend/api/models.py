@@ -466,7 +466,7 @@ class NotificacaoIndividual(models.Model):
         if self.data_primeiros_sintomas:
             for name in ['data_investigacao', 'data_primeira_amostra_chikungunya', 'data_segunda_amostra_chikungunya', 'data_coleta_exame_prnt', 'data_amostra_dengue', 'data_exame_ns1', 'data_isolamento', 'data_rt_pcr', 'data_ultima_vacina', 'data_hospitalizacao', 'data_obito', 'data_encerramento', 'data_inicio_sinais_alarme', 'data_inicio_sinais_graves', 'data_primeiros_sintomas']:
                 data = getattr(self, name)
-                if data < self.data_primeiros_sintomas:
+                if data and data < self.data_primeiros_sintomas:
                     campo = getattr(type(self), name).field.verbose_name
                     raise ValidationError(f'A data informada no campo "{campo}" não pode anteceder a data dos primeiros sintomas.')
         super().save(*args, **kwargs)
@@ -528,7 +528,7 @@ class NotificacaoIndividual(models.Model):
         )
 
     def __str__(self):
-        return f"Notificação {self.pk}"
+        return f"Notificação {self.pk} - {self.nome} ({self.data_primeiros_sintomas.strftime("%d/%m/%Y")})"
 
 class NotificacaoSurto(models.Model):
     data_primeiros_sintomas = models.DateField(verbose_name='Data dos 1º Sintomas do 1º Caso Suspeito')

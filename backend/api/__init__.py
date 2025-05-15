@@ -17,7 +17,8 @@ class ApiApplication(Application):
         )
         self.dashboard.boxes.add(
             'notificacaoindividual.notificacoesindividuais',
-            'notificacaosurto.notificacoessurto'
+            'notificacaosurto.notificacoessurto',
+            'geo.geovisualizacao',
         )
         
         self.menu.add({
