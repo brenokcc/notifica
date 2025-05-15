@@ -528,7 +528,7 @@ class NotificacaoIndividual(models.Model):
         )
 
     def __str__(self):
-        return f"Notificação {self.pk} - {self.nome} ({self.data_primeiros_sintomas.strftime("%d/%m/%Y")})"
+        return f"Notificação {self.pk} - {self.nome} ({self.data_primeiros_sintomas.strftime('%d/%m/%Y')})"
 
 class NotificacaoSurto(models.Model):
     data_primeiros_sintomas = models.DateField(verbose_name='Data dos 1º Sintomas do 1º Caso Suspeito')
