@@ -55,7 +55,7 @@ class Geovisualizacao(endpoints.PublicEndpoint):
                 map.add_polygon_feature(feature)
             for notificacao in NotificacaoIndividual.objects.all():
                 map.add_point(-54.808435280682374, -22.252012218991808, notificacao)
-            for x, y in SAMPLE:
-                map.add_point(y, x, "Notificação 00001 - UBS Campo do Lago II (01/01/2025)")
+            for i, (x, y) in enumerate(SAMPLE):
+                map.add_point(y, x, f"Notificação {str(i).rjust(5, "0")} - UBS de Teste (01/01/2025)")
             return map
     
