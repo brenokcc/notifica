@@ -1,5 +1,8 @@
 from slth.db import models, role, meta
-from slth.components import Image
+import os
+import json
+from django.conf import settings
+from slth.components import GeoMap
 from django.core.exceptions import ValidationError
 from slth.utils import age
 
@@ -335,6 +338,39 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return self.fields('get_numero', 'notificante', 'data', 'notificante').filters('municipio', 'unidade', 'validada')
 
+    @meta('Total de Notificações')
+    def get_total(self):
+        return self.total()
+    
+    @meta('Notificantes')
+    def get_total_notificantes(self):
+        return self.total('notificante')
+    
+    @meta('Pacientes')
+    def get_total_pacientes(self):
+        return self.total('cpf')
+    
+    @meta('Total por Unidade')
+    def get_total_por_unidade(self):
+        return self.counter('unidade', chart='bar')
+    
+    @meta('Total por Sexo')
+    def get_total_por_sexo(self):
+        return self.counter('sexo', chart='donut')
+
+    @meta('Dourados/MS')
+    def get_mapa(self):
+        map = GeoMap(-54.815434332605591, -22.251316151125515, zoom=10.2, max_zoom=13, min_zoom=10, title="Geovisualização")
+        with open(os.path.join(settings.BASE_DIR, "api", "dourados.json")) as file:
+            features = json.loads(file.read()).get('features')
+            for feature in features:
+                feature["properties"]["info"] = feature["properties"]["ubsf"]
+                map.add_polygon_feature(feature)
+            for notificacao in self:
+                if notificacao.latitude and notificacao.longitude:
+                    map.add_point(notificacao.latitude, notificacao.longitude, notificacao)
+            return map
+
 
 class NotificacaoIndividual(models.Model):
     # Dados Gerais
@@ -528,7 +564,7 @@ class NotificacaoIndividual(models.Model):
         )
 
     def __str__(self):
-        return f"Notificação {self.pk} - {self.nome} ({self.data_primeiros_sintomas.strftime('%d/%m/%Y')})"
+        return f"Notificação {self.get_numero()} - {self.unidade} ({self.data_primeiros_sintomas.strftime('%d/%m/%Y')})"
 
 class NotificacaoSurto(models.Model):
     data_primeiros_sintomas = models.DateField(verbose_name='Data dos 1º Sintomas do 1º Caso Suspeito')

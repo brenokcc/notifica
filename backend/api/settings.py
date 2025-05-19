@@ -176,3 +176,4 @@ if os.environ.get('POSTGRES_HOST') and 'test' not in sys.argv:
 
 
 USERNAME_MASK = '999.999.999-99'
+CHART_COLORS = ['#2d3b59', '#f9cb44', '#717a8f', '#86670c', '#a5abb7', '#f6e4b3']
