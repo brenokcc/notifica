@@ -32,6 +32,18 @@ class Notificante(models.Model):
         return self.nome
 
 
+@role('gestor', username='cpf')
+class Gestor(models.Model):
+    cpf = models.CharField(verbose_name='CPF', blank=False)
+    nome = models.CharField(verbose_name='Nome')
+
+    class Meta:
+        verbose_name = 'Gestor'
+        verbose_name_plural = 'Gestores'
+
+    def __str__(self):
+        return self.nome
+
 
 class TipoNotificacao(models.Model):
     codigo = models.CharField(verbose_name='Código')
@@ -541,7 +553,7 @@ class NotificacaoIndividual(models.Model):
     
     def serializer(self):
         return (
-            super().serializer()
+            super().serializer().actions('notificacaoindividual.validar')
             .fieldset('Dados Gerais', ('doenca', 'data', ('notificante', 'municipio'), ('unidade', 'data_primeiros_sintomas')))
             .fieldset('Dados do Indivíduo', (('cpf', 'cartao_sus'), 'nome', ('data_nascimento', 'idade'), 'sexo', 'periodo_gestacao', 'raca', 'escolaridade', 'nome_mae'))
             .fieldset('Dados Residenciais', ('pais', ('cep', 'municipio_residencia'), ('distrito', 'bairro'), ('logradouro', 'codigo_logradouro'), ('numero_residencia', 'complemento'), 'zona', ('latitude', 'longitude'), 'referencia'))

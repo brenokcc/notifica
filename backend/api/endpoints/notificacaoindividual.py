@@ -18,7 +18,19 @@ class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
         )
     
     def check_permission(self):
-        return self.check_role('notificante')
+        return self.check_role('notificante', 'gestor')
+
+
+class AguardandoValidacao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
+    class Meta:
+        icon = 'bell'
+        verbose_name = 'Notificações Individuais - Aguardando Validação'
+
+    def get(self):
+        return super().get().all().filter(validada__isnull=True).actions('notificacaoindividual.visualizar')
+
+    def check_permission(self):
+        return self.check_role('gestor')
 
 
 class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
@@ -32,7 +44,7 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
         )
     
     def check_permission(self):
-        return self.check_role('notificante')
+        return self.check_role('notificante', 'gestor')
 
 
 class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -137,3 +149,15 @@ class Excluir(endpoints.DeleteEndpoint[NotificacaoIndividual]):
             super().get()
         )
 
+
+class Validar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        icon = "check"
+        verbose_name = "Validar"
+
+    def get(self):
+        return self.formfactory(self.instance).fields('validada')
+    
+    def check_permission(self):
+        return self.check_role('gestor')

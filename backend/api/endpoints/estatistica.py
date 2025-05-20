@@ -11,7 +11,7 @@ class Painel(endpoints.PublicEndpoint):
  
     def get(self):
         return (
-            NotificacaoIndividual.objects
+            NotificacaoIndividual.objects.filter(validada=True)
             .filters(
                 'doenca', 'unidade', 'notificante', 'sexo', 'data_primeiros_sintomas__gte', 'data_primeiros_sintomas__lte'
             )

@@ -19,6 +19,7 @@ class ApiApplication(Application):
             'notificacaoindividual.notificacoesindividuais',
             'notificacaosurto.notificacoessurto',
             'estatistica.painel',
+            'notificacaoindividual.aguardandovalidacao',
         )
         
         self.menu.add({
@@ -30,6 +31,7 @@ class ApiApplication(Application):
                 'Escolaridades': 'escolaridade.escolaridades',
                 'Ocupações': 'ocupacao.ocupacoes',
             },
+            'users:Gestores': 'gestor.gestores',
             'thermometer-quarter:Doenças': {
                 'Cadastro de Doenças': 'doenca.doencas',
                 'Doenças Pré-Existentes': 'doencapreexistente.doencaspreexistentes',

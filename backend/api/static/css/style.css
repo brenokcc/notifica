@@ -19,3 +19,6 @@ table tbody tr:nth-child(odd){
 input{
     min-height: 22.5px;
 }
+.object-title h1 {
+    line-height: 2;
+}
