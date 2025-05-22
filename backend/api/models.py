@@ -348,7 +348,7 @@ class Hospital(models.Model):
 
 class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
-        return self.fields('get_numero', 'notificante', 'data', 'notificante').filters('municipio', 'unidade', 'validada')
+        return self.search('cpf', 'nome').fields('get_numero', 'notificante', 'data', 'nome').filters('municipio', 'unidade', 'validada')
 
     @meta('Total de Notificações')
     def get_total(self):
@@ -372,7 +372,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
 
     @meta('Dourados/MS')
     def get_mapa(self):
-        map = GeoMap(-54.815434332605591, -22.251316151125515, zoom=10.2, max_zoom=13, min_zoom=10, title="Geovisualização")
+        map = GeoMap(-54.815434332605591, -22.251316151125515, zoom=10.2, max_zoom=20, min_zoom=10, title="Geovisualização")
         with open(os.path.join(settings.BASE_DIR, "api", "dourados.json")) as file:
             features = json.loads(file.read()).get('features')
             for feature in features:
