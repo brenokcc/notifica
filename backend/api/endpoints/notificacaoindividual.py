@@ -139,7 +139,7 @@ class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
         )
 
     def check_permission(self):
-        return self.instance.notificante.cpf == self.request.user.username
+        return self.request.user.is_superuser or self.instance.notificante.cpf == self.request.user.username
 
 class Excluir(endpoints.DeleteEndpoint[NotificacaoIndividual]):
     class Meta:

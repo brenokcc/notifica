@@ -380,7 +380,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
                 map.add_polygon_feature(feature)
             for notificacao in self:
                 if notificacao.latitude and notificacao.longitude:
-                    map.add_point(notificacao.latitude, notificacao.longitude, notificacao)
+                    map.add_point(notificacao.longitude, notificacao.latitude, notificacao)
             return map
 
 
