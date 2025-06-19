@@ -60,7 +60,7 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
             return FileViewer(self.get_api_url(self.instance.pk) + '?token=' + self.instance.token)
     
     def check_permission(self):
-        return self.check_role('notificante') or self.request.get("token") == self.instance.token
+        return self.check_role('notificante') or self.request.GET.get("token") == self.instance.token
 
 class Mixin:
     def on_data_nascimento_change(self, data_nascimento):
