@@ -101,7 +101,6 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
                 pais=Pais.objects.order_by('id').first(),
                 pais_infeccao=Pais.objects.order_by('id').first(),
             )
-            .values(nome='Carlos Breno')
         )
     
     def check_permission(self):
