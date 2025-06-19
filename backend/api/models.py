@@ -5,6 +5,10 @@ from django.conf import settings
 from slth.components import GeoMap
 from django.core.exceptions import ValidationError
 from slth.utils import age
+import qrcode
+import base64
+from io import BytesIO
+from uuid import uuid1
 
 
 class Funcao(models.Model):
@@ -502,6 +506,9 @@ class NotificacaoIndividual(models.Model):
     observacao = models.TextField(verbose_name='Observação', null=True, blank=True)
     validada = models.BooleanField(verbose_name='Validada', null=True, blank=True)
 
+    # Token
+    token = models.CharField(verbose_name="Token", null=True, blank=True)
+
     objects = NotificacaoIndividualQuerySet()
 
     class Meta:
@@ -511,6 +518,8 @@ class NotificacaoIndividual(models.Model):
 
     
     def save(self, *args, **kwargs):
+        if self.token is None:
+            self.token = uuid1().hex
         if self.data_primeiros_sintomas:
             for name in ['data_investigacao', 'data_primeira_amostra_chikungunya', 'data_segunda_amostra_chikungunya', 'data_coleta_exame_prnt', 'data_amostra_dengue', 'data_exame_ns1', 'data_isolamento', 'data_rt_pcr', 'data_ultima_vacina', 'data_hospitalizacao', 'data_obito', 'data_encerramento', 'data_inicio_sinais_alarme', 'data_inicio_sinais_graves', 'data_primeiros_sintomas']:
                 data = getattr(self, name)
@@ -577,6 +586,25 @@ class NotificacaoIndividual(models.Model):
 
     def __str__(self):
         return f"Notificação {self.get_numero()} - {self.unidade} ({self.data_primeiros_sintomas.strftime('%d/%m/%Y')})"
+
+    def get_url_impressao(self):
+        return f"{settings.SITE_URL}/api/notificacaoindividual/imprimir/{self.id}/?token={self.token}"
+
+    def generate_qr_code_base64(self):
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(self.get_url_impressao())
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffered = BytesIO()
+        img.save(buffered, format="PNG") # You can choose other formats like JPEG if desired
+        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        return f"data:image/png;base64,{img_str}" # Include data URI prefix
+
 
 class NotificacaoSurto(models.Model):
     data_primeiros_sintomas = models.DateField(verbose_name='Data dos 1º Sintomas do 1º Caso Suspeito')

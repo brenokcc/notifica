@@ -109,9 +109,25 @@
         <br><br>
 
         <div class="title center">Informações Complementares e Observações</div>
-        <div class="bloco bordered" style="height: 200px;">
+        <div class="bloco bordered" style="height: 50px;">
             {{ obj.observacao|linebreaks }}
         </div>
+
+        <table>
+            <tr>
+                <td>
+                    Este documento foi emitido pelo sistema <b>ArboNotifica</b>.<br>
+                    Para visualizar sua versão digital, acesse o endereço abaixo ou leia o QrCode ao lado.<br><br>
+                    <i>{{ obj.get_url_impressao }}</i><br>
+                    <div style="font-size: 1.1rem; text-align: center; margin: 20px;">
+                        <b>{{ obj.token }}</b>
+                    </div>
+                </td>
+                <td width="150px">
+                    <img style="width: 150px" src="{{ obj.generate_qr_code_base64 }}">
+                </td>
+            </tr>
+        </table>
         
     </body>
 </html>

@@ -54,13 +54,13 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         verbose_name = 'Imprimir Notificação Individual'
 
     def get(self):
-        if self.request.GET.get('view'):
+        if self.request.GET.get('token'):
             return self.render(dict(obj=self.instance), self.instance.doenca.modelo_ficha, pdf=True)
         else:
-            return FileViewer(self.get_api_url(self.instance.pk) + '?view=1')
+            return FileViewer(self.get_api_url(self.instance.pk) + '?token=' + self.instance.token)
     
     def check_permission(self):
-        return 1 or self.check_role('notificante')
+        return self.check_role('notificante') or self.request.get("token") == self.instance.token
 
 class Mixin:
     def on_data_nascimento_change(self, data_nascimento):
