@@ -4,11 +4,13 @@ import json
 from django.conf import settings
 from slth.components import GeoMap
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from slth.utils import age
 import qrcode
 import base64
 from io import BytesIO
 from uuid import uuid1
+from django.db import transaction
 
 
 class Funcao(models.Model):
@@ -25,6 +27,7 @@ class Funcao(models.Model):
 class Notificante(models.Model):
     cpf = models.CharField(verbose_name='CPF', blank=False)
     nome = models.CharField(verbose_name='Nome')
+    email = models.CharField(verbose_name='E-mail', null=True, blank=True)
     funcao = models.ForeignKey(Funcao, verbose_name='Função', on_delete=models.CASCADE)
 
 
@@ -36,14 +39,41 @@ class Notificante(models.Model):
         return self.nome
 
 
-@role('gestor', username='cpf')
-class Gestor(models.Model):
+class GestorUnidade(models.Model):
+    cpf = models.CharField(verbose_name='CPF', blank=False)
+    nome = models.CharField(verbose_name='Nome')
+
+
+    class Meta:
+        verbose_name = 'Gestor de Unidade'
+        verbose_name_plural = 'Gestores de Unidade'
+
+    def __str__(self):
+        return self.nome
+
+
+class GestorMunicipal(models.Model):
+    cpf = models.CharField(verbose_name='CPF', blank=False)
+    nome = models.CharField(verbose_name='Nome')
+
+
+    class Meta:
+        verbose_name = 'Gestor de Municipal'
+        verbose_name_plural = 'Gestores Municipais'
+
+    def __str__(self):
+        return self.nome
+
+
+
+@role('regulador', username='cpf')
+class Regulador(models.Model):
     cpf = models.CharField(verbose_name='CPF', blank=False)
     nome = models.CharField(verbose_name='Nome')
 
     class Meta:
-        verbose_name = 'Gestor'
-        verbose_name_plural = 'Gestores'
+        verbose_name = 'Regulador'
+        verbose_name_plural = 'Reguladores'
 
     def __str__(self):
         return self.nome
@@ -119,10 +149,12 @@ class Estado(models.Model):
         return "%s/%s" % (self.nome, self.sigla)
 
 
+@role('gm', username='gestores__cpf', unidade='pk')
 class Municipio(models.Model):
     estado = models.ForeignKey(Estado, verbose_name='Estado', on_delete=models.CASCADE)
     codigo = models.CharField(max_length=7, verbose_name='Código IBGE', unique=True)
     nome = models.CharField(verbose_name='Nome', max_length=60)
+    gestores = models.ManyToManyField(GestorMunicipal, blank=True)
 
     class Meta:
         verbose_name = "Município"
@@ -133,20 +165,83 @@ class Municipio(models.Model):
 
 
 @role('notificante', username='notificantes__cpf', unidade='pk')
+@role('gu', username='gestores__cpf', unidade='pk')
 class UnidadeSaude(models.Model):
     codigo = models.CharField(verbose_name='Código')
     nome = models.CharField(verbose_name='Nome')
 
     municipio = models.ForeignKey(Municipio, verbose_name='Município', on_delete=models.CASCADE)
     notificantes = models.ManyToManyField(Notificante, blank=True)
+    gestores = models.ManyToManyField(GestorUnidade, blank=True)
 
     class Meta:
+        icon = 'building'
         verbose_name = 'Unidade de Saúde'
         verbose_name_plural = 'Unidades de Saúde'
 
 
     def __str__(self):
         return self.nome
+    
+    def serializer(self):
+        return (
+            super().serializer()
+            .fieldset('Dados Gerais', (('codigo', 'nome'), 'municipio'))
+            .fieldset('Equipe', ('gestores:gestorunidade.cadastrar', 'notificante:notificante.cadastrar'))
+        )
+    
+    def formfactory(self):
+        return (
+            super().formfactory()
+            .fieldset('Dados Gerais', (('codigo', 'nome'), 'municipio'))
+            .fieldset('Equipe', ('gestores:gestorunidade.cadastrar', 'notificantes:notificante.cadastrar'))
+        )
+
+
+class SolicitacaoCadastroNotificante(models.Model):
+    cpf = models.CharField(verbose_name='CPF', blank=False)
+    nome = models.CharField(verbose_name='Nome')
+    email = models.CharField(verbose_name='E-mail')
+    funcao = models.ForeignKey(Funcao, verbose_name='Função', on_delete=models.CASCADE)
+    unidades = models.ManyToManyField(UnidadeSaude, verbose_name='Unidades', blank=True)
+    data_solicitacao = models.DateTimeField(verbose_name='Data da Solicitação', auto_now_add=True)
+    aprovada = models.BooleanField(verbose_name='Aprovada', null=True)
+    observacao = models.TextField(verbose_name='Observação')
+
+    class Meta:
+        icon = 'user-plus'
+        verbose_name = 'Solicitação de Cadastro'
+        verbose_name_plural = 'Solicitações de Cadastro'
+
+    def __str__(self):
+        return self.nome
+    
+    def formfactory(self):
+        return (
+            super().formfactory()
+            .fieldset('Dados Gerais', (('cpf', 'nome'), ('email', 'funcao'), 'unidades'))
+            .info('Você receberá um e-mail assim que sua solicitação for avaliado.')
+        )
+    
+    @transaction.atomic
+    def processar(self):
+        if self.aprovada:
+            notificante = Notificante.objects.filter(cpf=self.cpf).first() or Notificante()
+            enviar_senha = notificante.pk is None
+            notificante.cpf = self.cpf
+            notificante.nome = self.nome
+            notificante.email = self.email
+            notificante.funcao = self.funcao
+            notificante.save()
+            for unidade in self.unidades.all():
+                unidade.notificantes.add(notificante)
+                unidade.post_save()
+            if enviar_senha:
+                user = User.objects.get(username=self.cpf)
+                user.set_password('123')
+                user.save()
+        else:
+            print(99999)
 
 
 class Sexo(models.Model):

@@ -12,6 +12,9 @@ class Hospitais(endpoints.ListEndpoint[Hospital]):
             .actions('hospital.cadastrar', 'hospital.editar', 'hospital.excluir')
         )
 
+    def check_permission(self):
+        return self.check_role('regulador')
+
 
 class Cadastrar(endpoints.AddEndpoint[Hospital]):
     class Meta:
@@ -22,6 +25,9 @@ class Cadastrar(endpoints.AddEndpoint[Hospital]):
             super().get()
         )
     
+    def check_permission(self):
+        return self.check_role('regulador')
+    
 
 class Editar(endpoints.EditEndpoint[Hospital]):
     class Meta:
@@ -31,6 +37,9 @@ class Editar(endpoints.EditEndpoint[Hospital]):
         return (
             super().get()
         )
+    
+    def check_permission(self):
+        return self.check_role('regulador')
 
 
 class Excluir(endpoints.DeleteEndpoint[Hospital]):

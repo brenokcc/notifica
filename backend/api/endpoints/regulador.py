@@ -2,21 +2,21 @@ from slth import endpoints
 from ..models import *
 
 
-class Gestores(endpoints.ListEndpoint[Gestor]):
+class Reguladores(endpoints.ListEndpoint[Regulador]):
     class Meta:
-        verbose_name = 'Gestores'
+        verbose_name = 'Reguladores'
 
     def get(self):
         return (
             super().get()
-            .actions('gestor.cadastrar', 'gestor.visualizar', 'gestor.editar', 'gestor.excluir')
+            .actions('regulador.cadastrar', 'regulador.visualizar', 'regulador.editar', 'regulador.excluir')
         )
 
 
-class Cadastrar(endpoints.AddEndpoint[Gestor]):
+class Cadastrar(endpoints.AddEndpoint[Regulador]):
     class Meta:
         icon = 'plus'
-        verbose_name = 'Cadastrar Gestor'
+        verbose_name = 'Cadastrar Regulador'
 
     def get(self):
         return (
@@ -24,11 +24,11 @@ class Cadastrar(endpoints.AddEndpoint[Gestor]):
         )
 
         
-class Visualizar(endpoints.ViewEndpoint[Gestor]):
+class Visualizar(endpoints.ViewEndpoint[Regulador]):
     class Meta:
         modal = False
         icon = 'eye'
-        verbose_name = 'Visualizar Gestor'
+        verbose_name = 'Visualizar Regulador'
 
     def get(self):
         return (
@@ -36,10 +36,10 @@ class Visualizar(endpoints.ViewEndpoint[Gestor]):
         )
     
 
-class Editar(endpoints.EditEndpoint[Gestor]):
+class Editar(endpoints.EditEndpoint[Regulador]):
     class Meta:
         icon = 'pen'
-        verbose_name = 'Editar Gestor'
+        verbose_name = 'Editar Regulador'
 
     def get(self):
         return (
@@ -47,10 +47,10 @@ class Editar(endpoints.EditEndpoint[Gestor]):
         )
 
 
-class Excluir(endpoints.DeleteEndpoint[Gestor]):
+class Excluir(endpoints.DeleteEndpoint[Regulador]):
     class Meta:
         icon = 'trash'
-        verbose_name = 'Excluir Gestor'
+        verbose_name = 'Excluir Regulador'
 
     def get(self):
         return (

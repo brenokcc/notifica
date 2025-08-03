@@ -9,17 +9,23 @@ class ApiApplication(Application):
         self.icon = "/static/images/logo.png"
         self.logo = "/static/images/logo.png"
         self.brand = "/static/images/brand.png"
-        self.groups.add(administrador='Administrador', operador= "Operador", notificante="Notificante")
+        self.groups.add(
+            administrador='Administrador',
+            gu="Gestor de Unidade",
+            gm="Gestor Municipal",
+            notificante="Notificante")
         self.dashboard.usermenu.add(
             "dev.icons", "user.users", "log.logs", "email.emails",
             "pushsubscription.pushsubscriptions", "job.jobs",
             "deletion.deletions", "settings.settings", "auth.logout"
         )
         self.dashboard.boxes.add(
+            'unidadesaude.unidadessaude',
             'notificacaoindividual.notificacoesindividuais',
-            'notificacaosurto.notificacoessurto',
+            # 'notificacaosurto.notificacoessurto',
             'estatistica.painel',
             'notificacaoindividual.aguardandovalidacao',
+            "solicitacaocadastronotificante.solicitacoescadastronotificante"
         )
         
         self.menu.add({
@@ -29,9 +35,15 @@ class ApiApplication(Application):
                 'Raças': 'raca.racas',
                 'Sexos': 'sexo.sexos',
                 'Escolaridades': 'escolaridade.escolaridades',
+                'Municípios': 'municipio.municipios',
                 'Ocupações': 'ocupacao.ocupacoes',
             },
-            'users:Gestores': 'gestor.gestores',
+            'users:Usuários': {
+                'Gestores Municipais': 'gestormunicipal.gestoresmunicipais',
+                'Gestores de Unidade': 'gestorunidade.gestoresunidade',
+                'Reguladores': 'regulador.reguladores',
+                'Notificantes': 'notificante.notificantes',
+            },
             'thermometer-quarter:Doenças': {
                 'Cadastro de Doenças': 'doenca.doencas',
                 'Doenças Pré-Existentes': 'doencapreexistente.doencaspreexistentes',
@@ -56,14 +68,16 @@ class ApiApplication(Application):
                 'Critérios de Confirmação': 'criterioconfirmacao.criteriosconfirmacao',
             },
             'hospital-symbol:Hospitais': 'hospital.hospitais',
-            
+            'contact-book:Solicitações de Cadastro de Notificante': 'solicitacaocadastronotificante.solicitacoescadastronotificante',
             'person:Notificações Individuais': 'notificacaoindividual.notificacoesindividuais',
             'people-line:Notificações de Surto': 'notificacaosurto.notificacoessurto',
-            'contact-book:Notificantes': 'notificante.notificantes',
             'building:Unidades de Saúde': 'unidadesaude.unidadessaude',
             'sign-out-alt:Sair': 'auth.logout'
         })
+        self.dashboard.toolbar.add("solicitacaocadastronotificante.cadastrar")
         self.theme.light.default.update(color="#033770")
         self.theme.light.primary.update(color="#033770", background="#033770")
         self.theme.light.auxiliary.update(color="#f9c72a", background="#fceab7")
         self.theme.light.success.update(color="#033770", background="#FFCC29")
+        for imagem in ['prefeitura.png', 'secretaria.png', 'centro.png', 'coordenacao.png', 'fiocruz.png']:
+            self.sponsors.add(f'/static/images/logos/{imagem}')

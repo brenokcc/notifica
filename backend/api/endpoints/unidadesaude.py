@@ -11,6 +11,9 @@ class UnidadesSaude(endpoints.ListEndpoint[UnidadeSaude]):
             super().get()
             .actions('unidadesaude.cadastrar', 'unidadesaude.editar', 'unidadesaude.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('regulador')
 
 
 class Cadastrar(endpoints.AddEndpoint[UnidadeSaude]):
@@ -22,6 +25,8 @@ class Cadastrar(endpoints.AddEndpoint[UnidadeSaude]):
             super().get()
         )
     
+    def check_permission(self):
+        return self.check_role('regulador')
 
 class Editar(endpoints.EditEndpoint[UnidadeSaude]):
     class Meta:
@@ -32,6 +37,8 @@ class Editar(endpoints.EditEndpoint[UnidadeSaude]):
             super().get()
         )
 
+    def check_permission(self):
+        return self.check_role('regulador')
 
 class Excluir(endpoints.DeleteEndpoint[UnidadeSaude]):
     class Meta:
@@ -42,3 +49,5 @@ class Excluir(endpoints.DeleteEndpoint[UnidadeSaude]):
             super().get()
         )
 
+    def check_permission(self):
+        return self.check_role('regulador')
