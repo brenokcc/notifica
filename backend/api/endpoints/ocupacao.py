@@ -17,28 +17,20 @@ class Cadastrar(endpoints.AddEndpoint[Ocupacao]):
     class Meta:
         verbose_name = 'Cadastrar Ocupação'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[Ocupacao]):
     class Meta:
         verbose_name = 'Editar Ocupação'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[Ocupacao]):
     class Meta:
         verbose_name = 'Excluir Ocupação'
 
-    def get(self):
-        return (
-            super().get()
-        )
 

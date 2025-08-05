@@ -11,6 +11,9 @@ class Classificacoesinfeccao(endpoints.ListEndpoint[ClassificacaoInfeccao]):
             super().get()
             .actions('classificacaoinfeccao.cadastrar', 'classificacaoinfeccao.visualizar', 'classificacaoinfeccao.editar', 'classificacaoinfeccao.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[ClassificacaoInfeccao]):
@@ -18,10 +21,8 @@ class Cadastrar(endpoints.AddEndpoint[ClassificacaoInfeccao]):
         icon = 'plus'
         verbose_name = 'Cadastrar Classificação de Infecção'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
         
 class Visualizar(endpoints.ViewEndpoint[ClassificacaoInfeccao]):
@@ -30,10 +31,8 @@ class Visualizar(endpoints.ViewEndpoint[ClassificacaoInfeccao]):
         icon = 'eye'
         verbose_name = 'Visualizar Classificação de Infecção'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[ClassificacaoInfeccao]):
@@ -41,19 +40,8 @@ class Editar(endpoints.EditEndpoint[ClassificacaoInfeccao]):
         icon = 'pen'
         verbose_name = 'Editar Classificação de Infecção'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
 
 class Excluir(endpoints.DeleteEndpoint[ClassificacaoInfeccao]):
     class Meta:
         icon = 'trash'
         verbose_name = 'Excluir Classificação de Infecção'
-
-    def get(self):
-        return (
-            super().get()
-        )
-

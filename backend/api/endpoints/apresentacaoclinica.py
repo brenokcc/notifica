@@ -11,6 +11,9 @@ class Apresentacoesclinicas(endpoints.ListEndpoint[ApresentacaoClinica]):
             super().get()
             .actions('apresentacaoclinica.cadastrar', 'apresentacaoclinica.visualizar', 'apresentacaoclinica.editar', 'apresentacaoclinica.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[ApresentacaoClinica]):
@@ -18,10 +21,8 @@ class Cadastrar(endpoints.AddEndpoint[ApresentacaoClinica]):
         icon = 'plus'
         verbose_name = 'Cadastrar Apresentação Clínica'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
         
 class Visualizar(endpoints.ViewEndpoint[ApresentacaoClinica]):
@@ -30,10 +31,8 @@ class Visualizar(endpoints.ViewEndpoint[ApresentacaoClinica]):
         icon = 'eye'
         verbose_name = 'Visualizar Apresentação Clínica'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[ApresentacaoClinica]):
@@ -41,10 +40,8 @@ class Editar(endpoints.EditEndpoint[ApresentacaoClinica]):
         icon = 'pen'
         verbose_name = 'Editar Apresentação Clínica'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[ApresentacaoClinica]):
@@ -52,8 +49,5 @@ class Excluir(endpoints.DeleteEndpoint[ApresentacaoClinica]):
         icon = 'trash'
         verbose_name = 'Excluir Apresentação Clínica'
 
-    def get(self):
-        return (
-            super().get()
-        )
+
 

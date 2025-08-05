@@ -5,8 +5,7 @@ RUN pip install -U pip
 ADD requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 ADD manage.py .
-ADD project project
+ADD api api
 ADD application.yml .
 RUN pip install -U slthcore
 ADD entrypoint.sh .
-

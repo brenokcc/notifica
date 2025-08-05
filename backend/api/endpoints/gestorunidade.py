@@ -11,6 +11,9 @@ class GestoresUnidade(endpoints.ListEndpoint[GestorUnidade]):
             super().get()
             .actions('gestorunidade.cadastrar', 'gestorunidade.visualizar', 'gestorunidade.editar', 'gestorunidade.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[GestorUnidade]):
@@ -18,13 +21,8 @@ class Cadastrar(endpoints.AddEndpoint[GestorUnidade]):
         icon = 'plus'
         verbose_name = 'Cadastrar Gestor de Unidade'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
     def check_permission(self):
-        return self.check_role('regulador')
+        return self.check_role('regulador', 'administrador')
 
 
 class Visualizar(endpoints.ViewEndpoint[GestorUnidade]):
@@ -32,11 +30,9 @@ class Visualizar(endpoints.ViewEndpoint[GestorUnidade]):
         modal = False
         icon = 'eye'
         verbose_name = 'Visualizar Gestor de Unidade'
-
-    def get(self):
-        return (
-            super().get()
-        )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[GestorUnidade]):
@@ -44,10 +40,8 @@ class Editar(endpoints.EditEndpoint[GestorUnidade]):
         icon = 'pen'
         verbose_name = 'Editar Gestor de Unidade'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[GestorUnidade]):
@@ -55,8 +49,5 @@ class Excluir(endpoints.DeleteEndpoint[GestorUnidade]):
         icon = 'trash'
         verbose_name = 'Excluir Gestor de Unidade'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
+    def check_permission(self):
+        return self.check_role('administrador')

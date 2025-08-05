@@ -11,6 +11,9 @@ class GestoresMunicipais(endpoints.ListEndpoint[GestorMunicipal]):
             super().get()
             .actions('gestormunicipal.cadastrar', 'gestormunicipal.visualizar', 'gestormunicipal.editar', 'gestormunicipal.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[GestorMunicipal]):
@@ -18,22 +21,18 @@ class Cadastrar(endpoints.AddEndpoint[GestorMunicipal]):
         icon = 'plus'
         verbose_name = 'Cadastrar Gestor de Municipal'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
-        
+
 class Visualizar(endpoints.ViewEndpoint[GestorMunicipal]):
     class Meta:
         modal = False
         icon = 'eye'
         verbose_name = 'Visualizar Gestor de Municipal'
-
-    def get(self):
-        return (
-            super().get()
-        )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[GestorMunicipal]):
@@ -41,10 +40,8 @@ class Editar(endpoints.EditEndpoint[GestorMunicipal]):
         icon = 'pen'
         verbose_name = 'Editar Gestor de Municipal'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[GestorMunicipal]):
@@ -52,8 +49,5 @@ class Excluir(endpoints.DeleteEndpoint[GestorMunicipal]):
         icon = 'trash'
         verbose_name = 'Excluir Gestor de Municipal'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
+    def check_permission(self):
+        return self.check_role('administrador')

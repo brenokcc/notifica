@@ -162,7 +162,7 @@ if os.environ.get('REDIS_HOST') and 'test' not in sys.argv:
     }
 
 
-if os.environ.get('POSTGRES_HOST') and 'test' not in sys.argv:
+if os.environ.get('DATABASE_HOST') and 'test' not in sys.argv:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',

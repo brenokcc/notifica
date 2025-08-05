@@ -11,34 +11,29 @@ class Sexos(endpoints.ListEndpoint[Sexo]):
             super().get()
             .actions('sexo.cadastrar', 'sexo.editar', 'sexo.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[Sexo]):
     class Meta:
         verbose_name = 'Cadastrar Sexo'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[Sexo]):
     class Meta:
         verbose_name = 'Editar Raça'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[Sexo]):
     class Meta:
         verbose_name = 'Excluir Raça'
 
-    def get(self):
-        return (
-            super().get()
-        )
 

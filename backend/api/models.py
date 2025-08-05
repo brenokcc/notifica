@@ -13,6 +13,20 @@ from uuid import uuid1
 from django.db import transaction
 
 
+@role('administrador', username='cpf')
+class Administrador(models.Model):
+    cpf = models.CharField(verbose_name='CPF', blank=False)
+    nome = models.CharField(verbose_name='Nome')
+    email = models.CharField(verbose_name='E-mail', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Administrador'
+        verbose_name_plural = 'Administradores'
+
+    def __str__(self):
+        return self.nome
+
+
 class Funcao(models.Model):
     nome = models.CharField(verbose_name='Nome')
 
@@ -24,12 +38,17 @@ class Funcao(models.Model):
         return self.nome
 
 
+class NotificanteQuerySet(models.QuerySet):
+    def all(self):
+        return super().all().fields('cpf', 'nome', 'email', 'funcao', 'get_unidade')
+
 class Notificante(models.Model):
     cpf = models.CharField(verbose_name='CPF', blank=False)
     nome = models.CharField(verbose_name='Nome')
     email = models.CharField(verbose_name='E-mail', null=True, blank=True)
     funcao = models.ForeignKey(Funcao, verbose_name='Função', on_delete=models.CASCADE)
 
+    objects = NotificanteQuerySet()
 
     class Meta:
         verbose_name = 'Notificante'
@@ -37,12 +56,23 @@ class Notificante(models.Model):
 
     def __str__(self):
         return self.nome
+    
+    @meta('Unidade')
+    def get_unidade(self):
+        return ', '.join(self.unidadesaude_set.values_list('nome', flat=True))
+
+
+class GestorUnidadeQuerySet(models.QuerySet):
+    def all(self):
+        return super().all().fields('cpf', 'nome', 'get_unidade')
 
 
 class GestorUnidade(models.Model):
     cpf = models.CharField(verbose_name='CPF', blank=False)
     nome = models.CharField(verbose_name='Nome')
+    email = models.CharField(verbose_name='E-mail', null=True, blank=True)
 
+    objects = GestorUnidadeQuerySet()
 
     class Meta:
         verbose_name = 'Gestor de Unidade'
@@ -51,11 +81,22 @@ class GestorUnidade(models.Model):
     def __str__(self):
         return self.nome
 
+    @meta('Unidade')
+    def get_unidade(self):
+        return ', '.join(self.unidadesaude_set.values_list('nome', flat=True))
+
+
+class GestorMunicipalQuerySet(models.QuerySet):
+    def all(self):
+        return super().all().fields('cpf', 'nome', 'get_municipio')
+
 
 class GestorMunicipal(models.Model):
     cpf = models.CharField(verbose_name='CPF', blank=False)
     nome = models.CharField(verbose_name='Nome')
+    email = models.CharField(verbose_name='E-mail', null=True, blank=True)
 
+    objects = GestorMunicipalQuerySet()
 
     class Meta:
         verbose_name = 'Gestor de Municipal'
@@ -63,13 +104,23 @@ class GestorMunicipal(models.Model):
 
     def __str__(self):
         return self.nome
+    
+    @meta('Município')
+    def get_municipio(self):
+        return ', '.join(self.municipio_set.values_list('nome', flat=True))
 
 
+class ReguladorQuerySet(models.QuerySet):
+    def all(self):
+        return super().all().fields('cpf', 'nome', 'get_municipio')
 
-@role('regulador', username='cpf')
+
 class Regulador(models.Model):
     cpf = models.CharField(verbose_name='CPF', blank=False)
     nome = models.CharField(verbose_name='Nome')
+    email = models.CharField(verbose_name='E-mail', null=True, blank=True)
+
+    objects = ReguladorQuerySet()
 
     class Meta:
         verbose_name = 'Regulador'
@@ -77,6 +128,10 @@ class Regulador(models.Model):
 
     def __str__(self):
         return self.nome
+    
+    @meta('Município')
+    def get_municipio(self):
+        return ', '.join(self.municipio_set.values_list('nome', flat=True))
 
 
 class TipoNotificacao(models.Model):
@@ -149,12 +204,14 @@ class Estado(models.Model):
         return "%s/%s" % (self.nome, self.sigla)
 
 
-@role('gm', username='gestores__cpf', unidade='pk')
+@role('gm', username='gestores__cpf', municipio='pk')
+@role('regulador', username='reguladores__cpf', municipio='pk')
 class Municipio(models.Model):
     estado = models.ForeignKey(Estado, verbose_name='Estado', on_delete=models.CASCADE)
     codigo = models.CharField(max_length=7, verbose_name='Código IBGE', unique=True)
     nome = models.CharField(verbose_name='Nome', max_length=60)
     gestores = models.ManyToManyField(GestorMunicipal, blank=True)
+    reguladores = models.ManyToManyField(Regulador, blank=True)
 
     class Meta:
         verbose_name = "Município"
@@ -162,6 +219,20 @@ class Municipio(models.Model):
 
     def __str__(self):
         return "%s/%s" % (self.nome, self.estado.sigla)
+    
+    def serializer(self):
+        return (
+            super().serializer()
+            .fieldset('Dados Gerais', (('codigo', 'nome'), 'estado'))
+            .fieldset('Equipe', ('gestores', 'reguladores'))
+        )
+    
+    def formfactory(self):
+        return (
+            super().formfactory()
+            .fieldset('Dados Gerais', (('codigo', 'nome'), 'estado'))
+            .fieldset('Equipe', ('gestores:gestormunicipal.cadastrar', 'reguladores:regulador.cadastrar'))
+        )
 
 
 @role('notificante', username='notificantes__cpf', unidade='pk')
@@ -171,8 +242,8 @@ class UnidadeSaude(models.Model):
     nome = models.CharField(verbose_name='Nome')
 
     municipio = models.ForeignKey(Municipio, verbose_name='Município', on_delete=models.CASCADE)
-    notificantes = models.ManyToManyField(Notificante, blank=True)
     gestores = models.ManyToManyField(GestorUnidade, blank=True)
+    notificantes = models.ManyToManyField(Notificante, blank=True)
 
     class Meta:
         icon = 'building'
@@ -187,7 +258,7 @@ class UnidadeSaude(models.Model):
         return (
             super().serializer()
             .fieldset('Dados Gerais', (('codigo', 'nome'), 'municipio'))
-            .fieldset('Equipe', ('gestores:gestorunidade.cadastrar', 'notificante:notificante.cadastrar'))
+            .fieldset('Equipe', ('gestores', 'notificante'))
         )
     
     def formfactory(self):

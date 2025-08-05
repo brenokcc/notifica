@@ -39,9 +39,10 @@ class ApiApplication(Application):
                 'Ocupações': 'ocupacao.ocupacoes',
             },
             'users:Usuários': {
+                'Administrador': 'administrador.administradores',
                 'Gestores Municipais': 'gestormunicipal.gestoresmunicipais',
-                'Gestores de Unidade': 'gestorunidade.gestoresunidade',
                 'Reguladores': 'regulador.reguladores',
+                'Gestores de Unidade': 'gestorunidade.gestoresunidade',
                 'Notificantes': 'notificante.notificantes',
             },
             'thermometer-quarter:Doenças': {
@@ -69,10 +70,9 @@ class ApiApplication(Application):
             },
             'hospital-symbol:Hospitais': 'hospital.hospitais',
             'contact-book:Solicitações de Cadastro de Notificante': 'solicitacaocadastronotificante.solicitacoescadastronotificante',
-            'person:Notificações Individuais': 'notificacaoindividual.notificacoesindividuais',
-            'people-line:Notificações de Surto': 'notificacaosurto.notificacoessurto',
+            #'person:Notificações Individuais': 'notificacaoindividual.notificacoesindividuais',
+            #'people-line:Notificações de Surto': 'notificacaosurto.notificacoessurto',
             'building:Unidades de Saúde': 'unidadesaude.unidadessaude',
-            'sign-out-alt:Sair': 'auth.logout'
         })
         self.dashboard.toolbar.add("solicitacaocadastronotificante.cadastrar")
         self.theme.light.default.update(color="#033770")

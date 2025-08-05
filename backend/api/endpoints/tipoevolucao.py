@@ -11,6 +11,9 @@ class TiposEvolucao(endpoints.ListEndpoint[TipoEvolucao]):
             super().get()
             .actions('tipoevolucao.cadastrar', 'tipoevolucao.visualizar', 'tipoevolucao.editar', 'tipoevolucao.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[TipoEvolucao]):
@@ -18,11 +21,8 @@ class Cadastrar(endpoints.AddEndpoint[TipoEvolucao]):
         icon = 'plus'
         verbose_name = 'Cadastrar Tipo de Evolução'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
+    def check_permission(self):
+        return self.check_role('administrador')
         
 class Visualizar(endpoints.ViewEndpoint[TipoEvolucao]):
     class Meta:
@@ -30,10 +30,8 @@ class Visualizar(endpoints.ViewEndpoint[TipoEvolucao]):
         icon = 'eye'
         verbose_name = 'Visualizar Tipo de Evolução'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[TipoEvolucao]):
@@ -41,19 +39,11 @@ class Editar(endpoints.EditEndpoint[TipoEvolucao]):
         icon = 'pen'
         verbose_name = 'Editar Tipo de Evolução'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[TipoEvolucao]):
     class Meta:
         icon = 'trash'
         verbose_name = 'Excluir Tipo de Evolução'
-
-    def get(self):
-        return (
-            super().get()
-        )
-

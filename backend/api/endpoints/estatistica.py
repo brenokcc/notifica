@@ -21,3 +21,6 @@ class Painel(endpoints.PublicEndpoint):
                 'get_mapa'
             )
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador', 'gu', 'gm')

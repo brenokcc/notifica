@@ -18,7 +18,7 @@ class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
         )
     
     def check_permission(self):
-        return self.check_role('notificante', 'regulador')
+        return self.check_role('notificante', 'regulador', 'administrador')
 
 
 class AguardandoValidacao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
@@ -27,24 +27,19 @@ class AguardandoValidacao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         verbose_name = 'Notificações Individuais - Aguardando Validação'
 
     def get(self):
-        return super().get().all().filter(validada__isnull=True).actions('notificacaoindividual.visualizar')
+        return super().get().all().filter(validada__isnull=True).actions('notificacaoindividual.visualizar', 'notificacaoindividual.imprimir')
 
     def check_permission(self):
-        return self.check_role('regulador')
+        return self.check_role('regulador', 'administrador')
 
 
 class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
     class Meta:
         modal = False
         verbose_name = 'Visualizar Notificação Individual'
-
-    def get(self):
-        return (
-            super().get()
-        )
     
     def check_permission(self):
-        return self.check_role('notificante', 'regulador')
+        return self.check_role('notificante', 'regulador', 'administrador')
 
 
 class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -60,7 +55,7 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
             return FileViewer(self.get_api_url(self.instance.pk) + '?token=' + self.instance.token)
     
     def check_permission(self):
-        return self.check_role('notificante') or self.request.GET.get("token") == self.instance.token
+        return self.check_role('notificante', 'regulador', 'administrador') or self.request.GET.get("token") == self.instance.token
 
 class Mixin:
     def on_data_nascimento_change(self, data_nascimento):
@@ -104,7 +99,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         )
     
     def check_permission(self):
-        return self.check_role('notificante')
+        return self.check_role('notificante', 'regulador', 'administrador')
     
     def on_cep_change(self, cep):
         self.form.controller.set(**buscar_endereco(cep, municipio='municipio_residencia'))
@@ -115,7 +110,6 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             geolocation = places.geolocation('{}, {}, {}'.format(logradouro, numero, municipio))
             if geolocation:
                 self.form.controller.set(latitude=geolocation[0], longitude=geolocation[1])
-        print(self.form.controller.values())
     
     def get_unidade_inicial(self):
         qs = UnidadeSaude.objects.filter(notificantes__cpf=self.request.user.username)
@@ -127,19 +121,14 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         self.form.controller.set(observacao=str(value))
         
     
-
 class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
     class Meta:
         modal = False
         verbose_name = 'Editar Notificação Individual'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
     def check_permission(self):
-        return self.request.user.is_superuser or self.instance.notificante.cpf == self.request.user.username
+        return self.request.user.is_superuser or self.instance.notificante.cpf == self.request.user.username or self.check_role('regulador', 'administrador')
+
 
 class Excluir(endpoints.DeleteEndpoint[NotificacaoIndividual]):
     class Meta:
@@ -161,4 +150,4 @@ class Validar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory(self.instance).fields('validada')
     
     def check_permission(self):
-        return self.check_role('regulador')
+        return self.check_role('regulador', 'administrador')

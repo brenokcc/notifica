@@ -11,6 +11,9 @@ class Criteriosconfirmacao(endpoints.ListEndpoint[CriterioConfirmacao]):
             super().get()
             .actions('criterioconfirmacao.cadastrar', 'criterioconfirmacao.visualizar', 'criterioconfirmacao.editar', 'criterioconfirmacao.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[CriterioConfirmacao]):
@@ -18,33 +21,26 @@ class Cadastrar(endpoints.AddEndpoint[CriterioConfirmacao]):
         icon = 'plus'
         verbose_name = 'Cadastrar Critério de Confirmação'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
+    def check_permission(self):
+        return self.check_role('administrador')
+    
         
 class Visualizar(endpoints.ViewEndpoint[CriterioConfirmacao]):
     class Meta:
         modal = False
         icon = 'eye'
         verbose_name = 'Visualizar Critério de Confirmação'
-
-    def get(self):
-        return (
-            super().get()
-        )
     
+    def check_permission(self):
+        return self.check_role('administrador')
 
 class Editar(endpoints.EditEndpoint[CriterioConfirmacao]):
     class Meta:
         icon = 'pen'
         verbose_name = 'Editar Critério de Confirmação'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[CriterioConfirmacao]):
@@ -52,8 +48,4 @@ class Excluir(endpoints.DeleteEndpoint[CriterioConfirmacao]):
         icon = 'trash'
         verbose_name = 'Excluir Critério de Confirmação'
 
-    def get(self):
-        return (
-            super().get()
-        )
 

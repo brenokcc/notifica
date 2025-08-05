@@ -11,6 +11,9 @@ class Sinaisalarme(endpoints.ListEndpoint[SinalAlarme]):
             super().get()
             .actions('sinalalarme.cadastrar', 'sinalalarme.visualizar', 'sinalalarme.editar', 'sinalalarme.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[SinalAlarme]):
@@ -18,10 +21,8 @@ class Cadastrar(endpoints.AddEndpoint[SinalAlarme]):
         icon = 'plus'
         verbose_name = 'Cadastrar Sinal de Alarme'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
         
 class Visualizar(endpoints.ViewEndpoint[SinalAlarme]):
@@ -30,10 +31,8 @@ class Visualizar(endpoints.ViewEndpoint[SinalAlarme]):
         icon = 'eye'
         verbose_name = 'Visualizar Sinal de Alarme'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[SinalAlarme]):
@@ -41,19 +40,12 @@ class Editar(endpoints.EditEndpoint[SinalAlarme]):
         icon = 'pen'
         verbose_name = 'Editar Sinal de Alarme'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[SinalAlarme]):
     class Meta:
         icon = 'trash'
         verbose_name = 'Excluir Sinal de Alarme'
-
-    def get(self):
-        return (
-            super().get()
-        )
 

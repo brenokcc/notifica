@@ -12,33 +12,27 @@ class Escolaridades(endpoints.ListEndpoint[Escolaridade]):
             .actions('escolaridade.cadastrar', 'escolaridade.editar', 'escolaridade.excluir')
         )
 
+    def check_permission(self):
+        return self.check_role('administrador')
+
 
 class Cadastrar(endpoints.AddEndpoint[Escolaridade]):
     class Meta:
         verbose_name = 'Cadastrar Escolaridade'
-
-    def get(self):
-        return (
-            super().get()
-        )
     
+    def check_permission(self):
+        return self.check_role('administrador')
+
 
 class Editar(endpoints.EditEndpoint[Escolaridade]):
     class Meta:
         verbose_name = 'Editar Escolaridade'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[Escolaridade]):
     class Meta:
         verbose_name = 'Excluir Escolaridade'
-
-    def get(self):
-        return (
-            super().get()
-        )
 

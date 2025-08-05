@@ -17,11 +17,6 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoSurto]):
     class Meta:
         modal = False
         verbose_name = 'Cadastrar Notificação'
-
-    def get(self):
-        return (
-            super().get()
-        )
     
 
 class Editar(endpoints.EditEndpoint[NotificacaoSurto]):
@@ -29,18 +24,9 @@ class Editar(endpoints.EditEndpoint[NotificacaoSurto]):
         modal = False
         verbose_name = 'Editar Notificação'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
 
 class Excluir(endpoints.DeleteEndpoint[NotificacaoSurto]):
     class Meta:
         verbose_name = 'Excluir Notificação'
 
-    def get(self):
-        return (
-            super().get()
-        )
 

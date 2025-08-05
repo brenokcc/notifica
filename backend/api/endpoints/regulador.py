@@ -11,6 +11,9 @@ class Reguladores(endpoints.ListEndpoint[Regulador]):
             super().get()
             .actions('regulador.cadastrar', 'regulador.visualizar', 'regulador.editar', 'regulador.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[Regulador]):
@@ -18,10 +21,8 @@ class Cadastrar(endpoints.AddEndpoint[Regulador]):
         icon = 'plus'
         verbose_name = 'Cadastrar Regulador'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
         
 class Visualizar(endpoints.ViewEndpoint[Regulador]):
@@ -30,10 +31,8 @@ class Visualizar(endpoints.ViewEndpoint[Regulador]):
         icon = 'eye'
         verbose_name = 'Visualizar Regulador'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
     
 
 class Editar(endpoints.EditEndpoint[Regulador]):
@@ -41,19 +40,10 @@ class Editar(endpoints.EditEndpoint[Regulador]):
         icon = 'pen'
         verbose_name = 'Editar Regulador'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
 
 class Excluir(endpoints.DeleteEndpoint[Regulador]):
     class Meta:
         icon = 'trash'
         verbose_name = 'Excluir Regulador'
 
-    def get(self):
-        return (
-            super().get()
-        )
 

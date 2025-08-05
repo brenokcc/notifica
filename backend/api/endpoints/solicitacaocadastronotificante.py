@@ -36,11 +36,6 @@ class Visualizar(endpoints.ViewEndpoint[SolicitacaoCadastroNotificante]):
         icon = 'eye'
         verbose_name = 'Visualizar Solicitação de Cadastro'
 
-    def get(self):
-        return (
-            super().get()
-        )
-    
 
 class Avaliar(endpoints.InstanceEndpoint[SolicitacaoCadastroNotificante]):
     class Meta:
@@ -66,8 +61,4 @@ class Excluir(endpoints.DeleteEndpoint[SolicitacaoCadastroNotificante]):
         icon = 'trash'
         verbose_name = 'Excluir Solicitação de Cadastro'
 
-    def get(self):
-        return (
-            super().get()
-        )
 
