@@ -6,14 +6,16 @@ services:
     ports:
       - "8000:8000"
     build:
-      context: backend
+      context: src
       dockerfile: Dockerfile
     restart: always
     volumes:
-      - .deploy/media:/opt/deploy/media
-      - .deploy/static:/opt/deploy/static
+      - .docker/media:/opt/arbonotifica/media
+      - .docker/static:/opt/arbonotifica/static
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: curl http://127.0.0.1:8000/api/about/
-    working_dir: /opt/deploy
+    working_dir: /opt/arbonotifica
     entrypoint: ./entrypoint.sh
 

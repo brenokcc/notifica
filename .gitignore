@@ -2,11 +2,10 @@ media
 .DS_Store
 db.sqlite3
 .vscode
-local.env
-.deploy
-src/frontend/dist
-src/frontend/node_modules
+.docker
 *.pyc
 docs
-backend/static
-
+src/static
+src/media
+dados.json
+.env
