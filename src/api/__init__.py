@@ -31,10 +31,14 @@ class ApiApplication(Application):
             "notificacaoindividual.notificacoesindividuais",
             # 'notificacaosurto.notificacoessurto',
             "estatistica.painel",
-            "notificacaoindividual.aguardandovalidacao",
-            "solicitacaocadastronotificante.solicitacoescadastronotificante",
+            "solicitacaocadastro.solicitacoescadastro",
         )
-
+        self.dashboard.todo.add(
+            "notificacaoindividual.aguardandoenvio",
+            "notificacaoindividual.aguardandocorrecao",
+            "notificacaoindividual.aguardandovalidacao",
+            "solicitacaocadastro.solicitacoescadastropendentes",
+        )
         self.menu.add(
             {
                 "list-ul:Cadastros Gerais": {
@@ -77,13 +81,13 @@ class ApiApplication(Application):
                     "Critérios de Confirmação": "criterioconfirmacao.criteriosconfirmacao",
                 },
                 "hospital-symbol:Hospitais": "hospital.hospitais",
-                "contact-book:Solicitações de Cadastro de Notificante": "solicitacaocadastronotificante.solicitacoescadastronotificante",
+                # "contact-book:Solicitações de Cadastro": "solicitacaocadastro.solicitacoescadastro",
                 #'person:Notificações Individuais': 'notificacaoindividual.notificacoesindividuais',
                 #'people-line:Notificações de Surto': 'notificacaosurto.notificacoessurto',
-                "building:Unidades de Saúde": "unidadesaude.unidadessaude",
+                #"building:Unidades de Saúde": "unidadesaude.unidadessaude",
             }
         )
-        self.dashboard.toolbar.add("solicitacaocadastronotificante.cadastrar")
+        self.dashboard.top.add("solicitacaocadastro.cadastrar")
         self.theme.light.default.update(color="#033770")
         self.theme.light.primary.update(color="#033770", background="#033770")
         self.theme.light.auxiliary.update(color="#f9c72a", background="#fceab7")

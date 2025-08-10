@@ -12,6 +12,7 @@ services:
     volumes:
       - .docker/media:/opt/arbonotifica/media
       - .docker/static:/opt/arbonotifica/static
+      - ./src/api:/opt/arbonotifica/api
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:

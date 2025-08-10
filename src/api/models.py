@@ -10,6 +10,7 @@ import qrcode
 import base64
 from io import BytesIO
 from uuid import uuid1
+from datetime import datetime
 from django.db import transaction
 
 
@@ -17,7 +18,7 @@ from django.db import transaction
 class Administrador(models.Model):
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
-    email = models.CharField(verbose_name="E-mail", null=True, blank=True)
+    email = models.CharField(verbose_name="E-mail", null=True)
 
     class Meta:
         verbose_name = "Administrador"
@@ -40,13 +41,13 @@ class Funcao(models.Model):
 
 class NotificanteQuerySet(models.QuerySet):
     def all(self):
-        return super().all().fields("cpf", "nome", "email", "funcao", "get_unidade")
+        return super().all().fields("cpf", "nome", "email", "funcao", "get_equipes")
 
 
 class Notificante(models.Model):
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
-    email = models.CharField(verbose_name="E-mail", null=True, blank=True)
+    email = models.CharField(verbose_name="E-mail", null=True)
     funcao = models.ForeignKey(Funcao, verbose_name="Função", on_delete=models.CASCADE)
 
     objects = NotificanteQuerySet()
@@ -56,11 +57,17 @@ class Notificante(models.Model):
         verbose_name_plural = "Notificantes"
 
     def __str__(self):
-        return self.nome
+        return f'{self.nome} ({self.cpf})'
 
-    @meta("Unidade")
-    def get_unidade(self):
-        return ", ".join(self.unidadesaude_set.values_list("nome", flat=True))
+    @meta("Equipe")
+    def get_equipes(self):
+        return ", ".join(self.equipe_set.values_list("nome", flat=True))
+    
+    def serializer(self):
+        return super().serializer().fieldset("", (("cpf",  "nome"), "email",  "funcao"))
+    
+    def formfactory(self):
+        return super().formfactory().fieldset("", (("cpf",  "nome"), "email",  "funcao"))
 
 
 class GestorUnidadeQuerySet(models.QuerySet):
@@ -71,7 +78,7 @@ class GestorUnidadeQuerySet(models.QuerySet):
 class GestorUnidade(models.Model):
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
-    email = models.CharField(verbose_name="E-mail", null=True, blank=True)
+    email = models.CharField(verbose_name="E-mail", null=True)
 
     objects = GestorUnidadeQuerySet()
 
@@ -80,7 +87,7 @@ class GestorUnidade(models.Model):
         verbose_name_plural = "Gestores de Unidade"
 
     def __str__(self):
-        return self.nome
+        return f'{self.nome} ({self.cpf})'
 
     @meta("Unidade")
     def get_unidade(self):
@@ -95,7 +102,7 @@ class GestorMunicipalQuerySet(models.QuerySet):
 class GestorMunicipal(models.Model):
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
-    email = models.CharField(verbose_name="E-mail", null=True, blank=True)
+    email = models.CharField(verbose_name="E-mail", null=True)
 
     objects = GestorMunicipalQuerySet()
 
@@ -104,7 +111,7 @@ class GestorMunicipal(models.Model):
         verbose_name_plural = "Gestores Municipais"
 
     def __str__(self):
-        return self.nome
+        return f'{self.nome} ({self.cpf})'
 
     @meta("Município")
     def get_municipio(self):
@@ -119,7 +126,7 @@ class ReguladorQuerySet(models.QuerySet):
 class Regulador(models.Model):
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
-    email = models.CharField(verbose_name="E-mail", null=True, blank=True)
+    email = models.CharField(verbose_name="E-mail", null=True)
 
     objects = ReguladorQuerySet()
 
@@ -128,7 +135,7 @@ class Regulador(models.Model):
         verbose_name_plural = "Reguladores"
 
     def __str__(self):
-        return self.nome
+        return f'{self.nome} ({self.cpf})'
 
     @meta("Município")
     def get_municipio(self):
@@ -207,6 +214,13 @@ class Estado(models.Model):
     def __str__(self):
         return "%s/%s" % (self.nome, self.sigla)
 
+class MunicipioQuerySet(models.QuerySet):
+    def all(self):
+        return (
+            self.lookup("administrador")
+            .lookup("notificante", unidadesaude__equipe__notificantes__cpf="username")
+        )
+
 
 @role("gm", username="gestores__cpf", municipio="pk")
 @role("regulador", username="reguladores__cpf", municipio="pk")
@@ -216,6 +230,8 @@ class Municipio(models.Model):
     nome = models.CharField(verbose_name="Nome", max_length=60)
     gestores = models.ManyToManyField(GestorMunicipal, blank=True)
     reguladores = models.ManyToManyField(Regulador, blank=True)
+
+    objects = MunicipioQuerySet()
 
     class Meta:
         verbose_name = "Município"
@@ -247,17 +263,28 @@ class Municipio(models.Model):
         )
 
 
-@role("notificante", username="notificantes__cpf", unidade="pk")
+class UnidadeSaudeQuerySet(models.QuerySet):
+    def all(self):
+        return (
+            self
+            .lookup("gm", municipio__gestores__cpf="username")
+            .lookup("regulador", municipio__reguladores__cpf="username")
+            .lookup("gu", gestores__cpf="username")
+            .lookup("notificante", equipe__notificantes__cpf="username")
+        )
+
+
 @role("gu", username="gestores__cpf", unidade="pk")
 class UnidadeSaude(models.Model):
-    codigo = models.CharField(verbose_name="Código")
+    codigo = models.CharField(verbose_name="CNES")
     nome = models.CharField(verbose_name="Nome")
 
     municipio = models.ForeignKey(
         Municipio, verbose_name="Município", on_delete=models.CASCADE
     )
     gestores = models.ManyToManyField(GestorUnidade, blank=True)
-    notificantes = models.ManyToManyField(Notificante, blank=True)
+
+    objects = UnidadeSaudeQuerySet()
 
     class Meta:
         icon = "building"
@@ -270,37 +297,87 @@ class UnidadeSaude(models.Model):
     def serializer(self):
         return (
             super()
-            .serializer()
-            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio"))
-            .fieldset("Equipe", ("gestores", "notificante"))
+            .serializer().actions('unidadesaude.editar', 'unidadesaude.addequipe')
+            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores"))
+            .queryset("get_equipes")
         )
 
     def formfactory(self):
         return (
             super()
             .formfactory()
-            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio"))
-            .fieldset(
-                "Equipe",
-                (
-                    "gestores:gestorunidade.cadastrar",
-                    "notificantes:notificante.cadastrar",
-                ),
-            )
+            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores:gestorunidade.cadastrar"))
+        )
+
+    def get_equipes(self):
+        return self.equipe_set.all().ignore('unidade').actions('equipe.editar', 'equipe.excluir')
+
+
+@role("notificante", username="notificantes__cpf", unidade="pk")
+class Equipe(models.Model):
+    unidade = models.ForeignKey(UnidadeSaude, verbose_name='Unidade de Saúde', on_delete=models.CASCADE)
+    codigo = models.CharField(verbose_name='INE')
+    nome = models.CharField(verbose_name='Nome')
+    notificantes = models.ManyToManyField(Notificante, blank=True)
+
+    class Meta:
+        verbose_name = 'Equipe'
+        verbose_name_plural = 'Equipes'
+
+    def __str__(self):
+        return f'{self.nome} / {self.unidade}'
+    
+    def serializer(self):
+        return (
+            super()
+            .serializer()
+            .fieldset("Dados Gerais", (("codigo", "nome"),))
+            .queryset("notificantes")
+        )
+    
+    def formfactory(self):
+        return (
+            super()
+            .formfactory()
+            .fieldset("Dados Gerais", (("codigo", "nome"), "notificantes:notificante.cadastrar"))
         )
 
 
-class SolicitacaoCadastroNotificante(models.Model):
+class SolicitacaoCadastroQuerySet(models.QuerySet):
+    def all(self):
+        return (
+            self.search('cpf', 'nome').filters('papel', 'aprovada').fields('data', 'cpf', 'nome', 'papel', 'municipio', 'unidade')
+            .lookup("gm", municipio__gestores__cpf="username")
+            .lookup("gu", unidade__gestores__cpf="username")
+        )
+
+class SolicitacaoCadastro(models.Model):
+    PAPEIS = [
+        ['gm', 'Gestor Municipal'],
+        ['gu', 'Gestor de Unidade'],
+        ['notificante', 'Notificante'],
+    ]
+
+    objects = SolicitacaoCadastroQuerySet()
+
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail")
-    funcao = models.ForeignKey(Funcao, verbose_name="Função", on_delete=models.CASCADE)
-    unidades = models.ManyToManyField(UnidadeSaude, verbose_name="Unidades", blank=True)
-    data_solicitacao = models.DateTimeField(
-        verbose_name="Data da Solicitação", auto_now_add=True
-    )
+    funcao = models.ForeignKey(Funcao, verbose_name="Profissão/Função", on_delete=models.CASCADE)
+    papel = models.CharField(verbose_name="Papel", null=True, choices=PAPEIS, pick=True)
+    municipio = models.ForeignKey(Municipio, verbose_name="Município", null=True)
+    unidade = models.ForeignKey(UnidadeSaude, verbose_name="Unidade", null=True, blank=True)
+    equipe = models.ForeignKey(Equipe, verbose_name="Equipe", null=True, blank=True)
+
     aprovada = models.BooleanField(verbose_name="Aprovada", null=True)
-    observacao = models.TextField(verbose_name="Observação")
+    data = models.DateTimeField(
+        verbose_name="Data da Solicitação", auto_created=True, null=True
+    )
+    avaliador = models.ForeignKey(User, verbose_name='Avaliador', on_delete=models.CASCADE, null=True, blank=True)
+    data_avaliacao = models.DateTimeField(
+        verbose_name="Data da Avaliação", null=True
+    )
+    observacao = models.TextField(verbose_name="Observação", null=True, blank=True)
 
     class Meta:
         icon = "user-plus"
@@ -309,38 +386,74 @@ class SolicitacaoCadastroNotificante(models.Model):
 
     def __str__(self):
         return self.nome
+    
+    def save(self, *args, **kwargs):
+        if self.papel == 'notificante' and not self.unidade:
+            raise ValidationError('Informe a unidade')
+        if not self.data:
+            self.data = datetime.now()
+        super().save(*args, **kwargs)
 
     def formfactory(self):
         return (
             super()
             .formfactory()
             .fieldset(
-                "Dados Gerais", (("cpf", "nome"), ("email", "funcao"), "unidades")
+                "Dados Gerais", (("cpf", "nome"), ("email", "funcao")),
+            ).fieldset(
+                "Atuação", ("papel", "municipio", "unidade"),
             )
             .info("Você receberá um e-mail assim que sua solicitação for avaliada.")
+        )
+    
+    def serializer(self):
+        return (
+            super()
+            .serializer()
+            .actions("solicitacaocadastro.avaliar")
+            .fieldset(
+                "Dados Gerais", (("cpf", "nome"), ("email", "funcao")),
+            ).fieldset(
+                "Atuação", ("papel", "municipio", "unidade"),
+            ).fieldset(
+                "Avaliação", (("aprovada", "avaliador", "data_avaliacao"), "observacao"),
+            )
         )
 
     @transaction.atomic
     def processar(self):
         if self.aprovada:
-            notificante = (
-                Notificante.objects.filter(cpf=self.cpf).first() or Notificante()
+            model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante}[self.papel]
+            obj = (
+                model.objects.filter(cpf=self.cpf).first() or model()
             )
-            enviar_senha = notificante.pk is None
-            notificante.cpf = self.cpf
-            notificante.nome = self.nome
-            notificante.email = self.email
-            notificante.funcao = self.funcao
-            notificante.save()
-            for unidade in self.unidades.all():
-                unidade.notificantes.add(notificante)
-                unidade.post_save()
-            if enviar_senha:
-                user = User.objects.get(username=self.cpf)
+            obj.cpf = self.cpf
+            obj.nome = self.nome
+            obj.email = self.email
+            obj.funcao = self.funcao
+            obj.save()
+            if self.papel == 'notificante':
+                if self.equipe is None:
+                    raise ValidationError('Informe a equipe do notificante.')
+                self.equipe.notificantes.add(obj)
+                self.equipe.post_save()
+            elif self.papel == 'gu':
+                if self.unidade is None:
+                    raise ValidationError('Informe a unidade do gestor.')
+                self.unidade.gestores.add(obj)
+                self.unidade.post_save()
+            elif self.papel == 'gm':
+                if self.municipio is None:
+                    raise ValidationError('Informe o município do gestor.')
+                self.municipio.gestores.add(obj)
+                self.municipio.post_save()
+            user = User.objects.filter(username=self.cpf).first()
+            if not user.last_login:
                 user.set_password("123")
                 user.save()
+                print(9999999)
         else:
-            print(99999)
+            pass
 
 
 class Sexo(models.Model):
@@ -557,8 +670,8 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search("cpf", "nome")
-            .fields("get_numero", "notificante", "data", "nome")
-            .filters("municipio", "unidade", "validada")
+            .fields("get_numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada")
+            .filters("municipio", "unidade", "notificante", "validada")
         )
 
     @meta("Total de Notificações")
@@ -609,7 +722,7 @@ class NotificacaoIndividual(models.Model):
     doenca = models.ForeignKey(
         Doenca, verbose_name="Doença", on_delete=models.CASCADE, pick=True
     )
-    data = models.DateField(verbose_name="Data")
+    data = models.DateField(verbose_name="Data do Cadastro")
     notificante = models.ForeignKey(
         Notificante, verbose_name="Notificante", on_delete=models.CASCADE
     )
@@ -686,7 +799,7 @@ class NotificacaoIndividual(models.Model):
 
     # Dados para Contato
     telefone = models.CharField(verbose_name="Telefone", null=True, blank=True)
-    email = models.CharField(verbose_name="E-mail", null=True, blank=True)
+    email = models.CharField(verbose_name="E-mail", null=True)
 
     # Investigação
     data_investigacao = models.DateField(verbose_name="Data da Investigação")
@@ -979,6 +1092,7 @@ class NotificacaoIndividual(models.Model):
     validada = models.BooleanField(verbose_name="Validada", null=True, blank=True)
 
     # Token
+    data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
     token = models.CharField(verbose_name="Token", null=True, blank=True)
 
     objects = NotificacaoIndividualQuerySet()
@@ -987,6 +1101,10 @@ class NotificacaoIndividual(models.Model):
         icon = "person"
         verbose_name = "Notificação Individual"
         verbose_name_plural = "Notificações Individuais"
+
+    @meta('Histórico de Devolução')
+    def get_historico_devolucao(self):
+        return self.devolucao_set.ignore('notificacao')
 
     def save(self, *args, **kwargs):
         if self.token is None:
@@ -1130,7 +1248,7 @@ class NotificacaoIndividual(models.Model):
         return (
             super()
             .serializer()
-            .actions("notificacaoindividual.validar")
+            .actions("notificacaoindividual.editar", "notificacaoindividual.imprimir", "notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.corrigir", "notificacaoindividual.finalizar")
             .fieldset(
                 "Dados Gerais",
                 (
@@ -1224,6 +1342,7 @@ class NotificacaoIndividual(models.Model):
                 ),
             )
             .fieldset("Outras Informações", ("observacao", "validada"))
+            .queryset("get_historico_devolucao")
         )
 
     def __str__(self):
@@ -1248,6 +1367,30 @@ class NotificacaoIndividual(models.Model):
         )  # You can choose other formats like JPEG if desired
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return f"data:image/png;base64,{img_str}"  # Include data URI prefix
+
+
+class DevolucaoQuerySet(models.QuerySet):
+    def all(self):
+        return self
+
+
+class Devolucao(models.Model):
+    notificacao = models.ForeignKey(NotificacaoIndividual, verbose_name='Notificação', on_delete=models.CASCADE)
+    avaliador = models.ForeignKey(User, verbose_name='Avaliador', on_delete=models.CASCADE)
+    data = models.DateTimeField(verbose_name='Data')
+    motivo = models.TextField(verbose_name='Motivo')
+    data_correcao = models.DateTimeField(verbose_name='Data da Correção', null=True)
+    observacao_correcao = models.TextField(verbose_name='Observação da Correção', null=True)
+
+    class Meta:
+        verbose_name = 'Devolução'
+        verbose_name_plural = 'Devoluções'
+
+    objects = DevolucaoQuerySet()
+
+    def __str__(self):
+        return f'Devolução {self.id}'
+
 
 
 class NotificacaoSurto(models.Model):

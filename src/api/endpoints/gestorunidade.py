@@ -28,7 +28,7 @@ class Cadastrar(endpoints.AddEndpoint[GestorUnidade]):
         verbose_name = "Cadastrar Gestor de Unidade"
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador")
+        return self.check_role("regulador", "administrador", "gm")
 
 
 class Visualizar(endpoints.ViewEndpoint[GestorUnidade]):

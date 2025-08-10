@@ -24,7 +24,7 @@ class Cadastrar(endpoints.AddEndpoint[Notificante]):
         verbose_name = "Cadastrar Notificante"
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador")
+        return self.check_role("regulador", "administrador", "gm", "gu")
 
 
 class Editar(endpoints.EditEndpoint[Notificante]):

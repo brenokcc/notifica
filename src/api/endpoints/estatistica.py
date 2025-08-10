@@ -17,6 +17,8 @@ class Painel(endpoints.PublicEndpoint):
             "data_primeiros_sintomas__gte",
             "data_primeiros_sintomas__lte",
             "validada",
+        ).lookup(
+            "gm", unidade__municipio__gestores__cpf="username",
         ).bi(
             ("get_total", "get_total_notificantes", "get_total_pacientes"),
             ("get_total_por_unidade", "get_total_por_sexo"),

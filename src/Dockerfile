@@ -5,6 +5,5 @@ WORKDIR /opt/arbonotifica
 ADD requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 ADD manage.py .
-ADD api api
-RUN pip install -U slthcore
 ADD entrypoint.sh .
+RUN pip install -U slthcore
