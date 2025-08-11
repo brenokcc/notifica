@@ -25,7 +25,7 @@ class Visualizar(endpoints.ViewEndpoint[UnidadeSaude]):
         verbose_name = "Visualizar Unidade de Saúde"
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador", "gm", "gu")
+        return self.check_role("regulador", "administrador", "gm", "gu") and self.check_instance()
 
 
 class Cadastrar(endpoints.AddEndpoint[UnidadeSaude]):
@@ -33,7 +33,7 @@ class Cadastrar(endpoints.AddEndpoint[UnidadeSaude]):
         verbose_name = "Cadastrar Unidade de Saúde"
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador", "gm")
+        return self.check_role("administrador", "gm")
     
     def get_municipio_queryset(self, queryset):
         return queryset.lookup("gm", gestores__cpf="username")
@@ -45,7 +45,7 @@ class Editar(endpoints.EditEndpoint[UnidadeSaude]):
         verbose_name = "Editar Unidade de Saúde"
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador", "gm")
+        return self.check_role("administrador", "gm") and self.check_instance()
 
 
 class Excluir(endpoints.DeleteEndpoint[UnidadeSaude]):
@@ -64,3 +64,6 @@ class AddEquipe(endpoints.RelationEndpoint[Equipe]):
             .formfactory().fields(unidade=self.source)
             .fieldset("Dados Gerais", ("unidade", ("codigo", "nome"), "notificantes:notificante.cadastrar"))
         )
+
+    def check_permission(self):
+        return self.check_role("administrador", "gm")

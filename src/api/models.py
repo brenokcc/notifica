@@ -268,6 +268,7 @@ class UnidadeSaudeQuerySet(models.QuerySet):
         return (
             self
             .lookup("gm", municipio__gestores__cpf="username")
+            .lookup("administrador")
             .lookup("regulador", municipio__reguladores__cpf="username")
             .lookup("gu", gestores__cpf="username")
             .lookup("notificante", equipe__notificantes__cpf="username")
@@ -313,12 +314,23 @@ class UnidadeSaude(models.Model):
         return self.equipe_set.all().ignore('unidade').actions('equipe.editar', 'equipe.excluir')
 
 
+class EquipeQuerySet(models.QuerySet):
+    def all(self):
+        return (
+            self.lookup("administrador")
+            .lookup("gm", unidade__municipio__gestores__cpf="username")
+            .lookup("gu", unidade__gestores__cpf="username")
+        )
+
+
 @role("notificante", username="notificantes__cpf", unidade="pk")
 class Equipe(models.Model):
     unidade = models.ForeignKey(UnidadeSaude, verbose_name='Unidade de Saúde', on_delete=models.CASCADE)
     codigo = models.CharField(verbose_name='INE')
     nome = models.CharField(verbose_name='Nome')
     notificantes = models.ManyToManyField(Notificante, blank=True)
+
+    objects = EquipeQuerySet()
 
     class Meta:
         verbose_name = 'Equipe'
@@ -346,7 +358,9 @@ class Equipe(models.Model):
 class SolicitacaoCadastroQuerySet(models.QuerySet):
     def all(self):
         return (
-            self.search('cpf', 'nome').filters('papel', 'aprovada').fields('data', 'cpf', 'nome', 'papel', 'municipio', 'unidade')
+            self.search('cpf', 'nome').filters('papel', 'aprovada')
+            .fields('data', 'cpf', 'nome', 'papel', 'municipio', 'unidade')
+            .lookup("administrador")
             .lookup("gm", municipio__gestores__cpf="username")
             .lookup("gu", unidade__gestores__cpf="username")
         )
@@ -659,6 +673,7 @@ class Hospital(models.Model):
     telefone = models.CharField(verbose_name="Telefone", null=True, blank=True)
 
     class Meta:
+        icon = "hospital-symbol"
         verbose_name = "Hospital"
         verbose_name_plural = "Hospitais"
 
@@ -672,6 +687,35 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             self.search("cpf", "nome")
             .fields("get_numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada")
             .filters("municipio", "unidade", "notificante", "validada")
+            .lookup("administrador")
+            .lookup("gm", unidade__municipio__gestores__cpf='username')
+            .lookup("regulador", unidade__municipio__reguladores__cpf='username')
+            .lookup("gu", unidade__gestores__cpf='username')
+            .lookup("notificante", unidade__equipe__notificantes__cpf='username')
+        )
+    
+    def aguardando_envio(self):
+        return (
+            self.all()
+            .filter(data_envio__isnull=True).exclude(devolvida=True)
+            .filter(notificante__cpf=self.request.user.username)
+            .actions(
+                "notificacaoindividual.visualizar", "notificacaoindividual.imprimir"
+            )
+        )
+
+    def aguardando_validacao(self):
+        return (
+            self.all()
+            .filter(validada__isnull=True, data_envio__isnull=False).exclude(devolucao__isnull=False, devolucao__observacao_correcao__isnull=True)
+            .actions("notificacaoindividual.visualizar", "notificacaoindividual.imprimir")
+        )
+    
+    def aguardando_correcao(self):
+        return (
+            self.all()
+            .filter(devolucao__isnull=False, devolucao__observacao_correcao__isnull=True)
+            .actions("notificacaoindividual.visualizar", "notificacaoindividual.imprimir")
         )
 
     @meta("Total de Notificações")
@@ -799,7 +843,7 @@ class NotificacaoIndividual(models.Model):
 
     # Dados para Contato
     telefone = models.CharField(verbose_name="Telefone", null=True, blank=True)
-    email = models.CharField(verbose_name="E-mail", null=True)
+    email = models.CharField(verbose_name="E-mail", null=True, blank=True)
 
     # Investigação
     data_investigacao = models.DateField(verbose_name="Data da Investigação")
@@ -1093,6 +1137,7 @@ class NotificacaoIndividual(models.Model):
 
     # Token
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
+    devolvida = models.BooleanField(verbose_name='Devolvida', null=True)
     token = models.CharField(verbose_name="Token", null=True, blank=True)
 
     objects = NotificacaoIndividualQuerySet()
@@ -1141,6 +1186,32 @@ class NotificacaoIndividual(models.Model):
 
     def get_idade(self):
         return age(self.data_nascimento)
+    
+    def pode_ser_enviada(self):
+        return self.data_envio is None
+
+    def enviar(self):
+        self.data_envio = datetime.now()
+        self.save()
+
+    def pode_ser_devolvida(self):
+        return self.validada is None and not self.devolvida
+    
+    def devolver(self, avaliador, motivo):
+        self.devolvida = True
+        self.save()
+        self.devolucao_set.create(avaliador=avaliador, data=datetime.now(), motivo=motivo)
+        
+    def pode_ser_reenviada(self):
+        return self.devolvida and self.devolucao_set.filter(observacao_correcao__isnull=True).exists()
+
+    def reenviar(self, observacao):
+        self.devolvida = False
+        self.save()
+        self.devolucao_set.filter(observacao_correcao__isnull=True).update(data_correcao=datetime.now(), observacao_correcao=observacao)
+
+    def pode_ser_finalizada(self):
+        return self.validada is None and not self.devolvida
 
     def formfactory(self):
         return (
@@ -1248,7 +1319,7 @@ class NotificacaoIndividual(models.Model):
         return (
             super()
             .serializer()
-            .actions("notificacaoindividual.editar", "notificacaoindividual.imprimir", "notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.corrigir", "notificacaoindividual.finalizar")
+            .actions("notificacaoindividual.editar", "notificacaoindividual.imprimir", "notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar")
             .fieldset(
                 "Dados Gerais",
                 (
@@ -1341,7 +1412,7 @@ class NotificacaoIndividual(models.Model):
                     "data_inicio_sinais_graves",
                 ),
             )
-            .fieldset("Outras Informações", ("observacao", "validada"))
+            .fieldset("Outras Informações", ("observacao", ("data_envio", "validada")))
             .queryset("get_historico_devolucao")
         )
 
@@ -1368,6 +1439,8 @@ class NotificacaoIndividual(models.Model):
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return f"data:image/png;base64,{img_str}"  # Include data URI prefix
 
+    def is_pendente_correcao(self):
+        return self.devolucao_set.filter(observacao_correcao__isnull=True)
 
 class DevolucaoQuerySet(models.QuerySet):
     def all(self):

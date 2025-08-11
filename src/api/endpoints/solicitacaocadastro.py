@@ -27,7 +27,7 @@ class SolicitacoesCadastroPendentes(endpoints.ListEndpoint[SolicitacaoCadastro])
 
     class Meta:
         modal = False
-        verbose_name = "Solicitações de Cadastro Pendentes"
+        verbose_name = "Solicitações de cadastro pendentes"
 
     def get_queryset(self):
         return super().get_queryset().filter(aprovada__isnull=True).actions("solicitacaocadastro.visualizar")
@@ -47,6 +47,9 @@ class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
     def check_permission(self):
         return not self.request.user.is_authenticated
     
+    def get_municipio_queryset(self, queryset):
+        return queryset.nolookup()
+
     def get_unidade_queryset(self, queryset):
         return queryset.nolookup().filter(municipio=self.form.controller.get('municipio'))
 

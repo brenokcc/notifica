@@ -32,6 +32,7 @@ class ApiApplication(Application):
             # 'notificacaosurto.notificacoessurto',
             "estatistica.painel",
             "solicitacaocadastro.solicitacoescadastro",
+            "hospital.hospitais",
         )
         self.dashboard.todo.add(
             "notificacaoindividual.aguardandoenvio",
@@ -51,7 +52,7 @@ class ApiApplication(Application):
                     "Ocupações": "ocupacao.ocupacoes",
                 },
                 "users:Usuários": {
-                    "Administrador": "administrador.administradores",
+                    "Administradores": "administrador.administradores",
                     "Gestores Municipais": "gestormunicipal.gestoresmunicipais",
                     "Reguladores": "regulador.reguladores",
                     "Gestores de Unidade": "gestorunidade.gestoresunidade",
@@ -80,7 +81,7 @@ class ApiApplication(Application):
                     "Classificações": "classificacaoinfeccao.classificacoesinfeccao",
                     "Critérios de Confirmação": "criterioconfirmacao.criteriosconfirmacao",
                 },
-                "hospital-symbol:Hospitais": "hospital.hospitais",
+                #"hospital-symbol:Hospitais": "hospital.hospitais",
                 # "contact-book:Solicitações de Cadastro": "solicitacaocadastro.solicitacoescadastro",
                 #'person:Notificações Individuais': 'notificacaoindividual.notificacoesindividuais',
                 #'people-line:Notificações de Surto': 'notificacaosurto.notificacoessurto',

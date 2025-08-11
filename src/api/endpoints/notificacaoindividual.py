@@ -25,24 +25,17 @@ class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
         )
 
     def check_permission(self):
-        return self.check_role("notificante", "regulador", "administrador")
+        return self.check_role("notificante", "regulador", "administrador", "gu", "gm")
 
 
 class AguardandoEnvio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
     class Meta:
         modal = False
         icon = "bell"
-        verbose_name = "Notificações Individuais Aguardando Envio"
+        verbose_name = "Notificações individuais aguardando envio"
 
     def get_queryset(self):
-        return (
-            super().get_queryset().all()
-            .filter(data_envio__isnull=True)
-            .filter(notificante__cpf=self.request.user.username)
-            .actions(
-                "notificacaoindividual.visualizar", "notificacaoindividual.imprimir"
-            )
-        )
+        return super().get_queryset().aguardando_envio()
 
     def check_permission(self):
         return self.check_role("notificante", "administrador") and self.get_queryset().exists()
@@ -51,52 +44,25 @@ class AguardandoCorrecao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
     class Meta:
         modal = False
         icon = "bell"
-        verbose_name = "Notificações Individuais Aguardando Correção"
+        verbose_name = "Notificações individuais aguardando correção"
 
     def get_queryset(self):
-        return (
-            super().get_queryset().all()
-            .filter(data_envio__isnull=False).filter(devolucao__isnull=False, devolucao__observacao_correcao__isnull=True)
-            .filter(notificante__cpf=self.request.user.username)
-            .actions(
-                "notificacaoindividual.visualizar", "notificacaoindividual.imprimir"
-            )
-        )
+        queryset = super().get_queryset().aguardando_correcao()
+        if self.check_role("regulador"):
+            return queryset
+        return queryset.filter(notificante__cpf=self.request.user.username)
 
     def check_permission(self):
-        return self.check_role("notificante", "administrador") and self.get_queryset().exists()
-
-class Enviar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
-    class Meta:
-        icon = 'right-long'
-        verbose_name = 'Enviar'
-
-    def get(self):
-        return self.formfactory(self.instance).fields().info('Após o envio não será mais possível editar os dados da ficha.')
-    
-    def post(self):
-        self.instance.data_envio = datetime.now()
-        self.instance.save()
-        return super().post()
-
-    def check_permission(self):
-        return self.instance.data_envio is None and (self.check_role('administrador') or self.instance.notificante.cpf == self.request.user.username)
-
+        return self.check_role("notificante", "administrador", "regulador") and self.get_queryset().exists()
 
 class AguardandoValidacao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
     class Meta:
         modal = False
         icon = "bell"
-        verbose_name = "Notificações Individuais Aguardando Validação"
+        verbose_name = "Notificações individuais aguardando validação"
 
     def get_queryset(self):
-        return (
-            super().get_queryset().all()
-            .filter(validada__isnull=True, data_envio__isnull=False).exclude(devolucao__isnull=False, devolucao__observacao_correcao__isnull=True)
-            .actions(
-                "notificacaoindividual.visualizar", "notificacaoindividual.imprimir"
-            )
-        )
+        return super().get_queryset().aguardando_validacao()
 
     def check_permission(self):
         return self.check_role("regulador", "administrador") and self.get_queryset().exists()
@@ -115,7 +81,7 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
         return serializer
 
     def check_permission(self):
-        return self.check_role("notificante", "regulador", "administrador")
+        return self.check_role("notificante", "regulador", "administrador", "gu", "gm") and self.check_instance()
 
 
 class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -136,7 +102,7 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def check_permission(self):
         return (
-            self.check_role("notificante", "regulador", "administrador")
+            (self.check_role("notificante", "regulador", "administrador", "gu", "gm") and self.check_instance())
             or self.request.GET.get("token") == self.instance.token
         )
 
@@ -202,7 +168,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         )
 
     def check_permission(self):
-        return self.check_role("notificante", "regulador", "administrador")
+        return self.check_role("notificante", "administrador")
 
     def on_cep_change(self, cep):
         self.form.controller.set(
@@ -239,10 +205,7 @@ class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
         verbose_name = "Editar Notificação Individual"
 
     def check_permission(self):
-        return (
-            self.request.user.is_superuser
-            or self.instance.notificante.cpf == self.request.user.username
-        ) and self.instance.validada is None
+        return (self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username
 
 
 class Excluir(endpoints.DeleteEndpoint[NotificacaoIndividual]):
@@ -251,6 +214,22 @@ class Excluir(endpoints.DeleteEndpoint[NotificacaoIndividual]):
 
     def get(self):
         return super().get()
+
+
+class Enviar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    class Meta:
+        icon = 'right-long'
+        verbose_name = 'Enviar'
+
+    def get(self):
+        return self.formfactory(self.instance).fields().info('Após o envio não será mais possível editar os dados da notificação a não ser que ela seja devolvida.')
+    
+    def post(self):
+        self.instance.enviar()
+        return super().post()
+
+    def check_permission(self):
+        return (self.check_role('administrador') or self.instance.notificante.cpf == self.request.user.username) and self.instance.pode_ser_enviada()
 
 
 class Devolver(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -264,14 +243,14 @@ class Devolver(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory(self.instance).fields("motivo")
     
     def post(self):
-        self.instance.devolucao_set.create(avaliador=self.request.user, data=datetime.now(), motivo=self.cleaned_data['motivo'])
+        self.instance.devolver(self.request.user, self.cleaned_data['motivo'])
         return super().post()
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador") and self.instance.validada is None
+        return self.check_role("regulador", "administrador") and self.instance.pode_ser_devolvida()
 
 
-class Corrigir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+class Reenviar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     observacao_correcao = endpoints.forms.CharField(label="Observação da Correção", widget=endpoints.forms.Textarea())
 
     class Meta:
@@ -282,11 +261,11 @@ class Corrigir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory(self.instance).fields("observacao_correcao")
     
     def post(self):
-        self.instance.devolucao_set.filter(observacao_correcao__isnull=True).update(data_correcao=datetime.now(), observacao_correcao=self.cleaned_data['observacao_correcao'])
+        self.instance.reenviar(self.cleaned_data['observacao_correcao'])
         return super().post()
 
     def check_permission(self):
-        return self.check_role("notificante") and self.instance.notificante.cpf == self.request.user.username and self.instance.devolucao_set.filter(observacao_correcao__isnull=True).exists()
+        return self.instance.notificante.cpf == self.request.user.username and self.instance.pode_ser_reenviada()
 
 
 class Finalizar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -299,4 +278,4 @@ class Finalizar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory(self.instance).fields("validada")
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador") and self.instance.validada is None
+        return self.check_role("regulador", "administrador") and self.instance.pode_ser_finalizada()
