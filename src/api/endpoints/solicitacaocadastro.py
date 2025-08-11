@@ -33,7 +33,7 @@ class SolicitacoesCadastroPendentes(endpoints.ListEndpoint[SolicitacaoCadastro])
         return super().get_queryset().filter(aprovada__isnull=True).actions("solicitacaocadastro.visualizar")
     
     def check_permission(self):
-        return self.check_role("gm", "gu", "administrador")
+        return self.check_role("gm", "gu", "administrador") and self.get_queryset().exists()
 
 
 class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
