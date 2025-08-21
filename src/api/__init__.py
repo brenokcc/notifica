@@ -32,7 +32,6 @@ class ApiApplication(Application):
             # 'notificacaosurto.notificacoessurto',
             "estatistica.painel",
             "solicitacaocadastro.solicitacoescadastro",
-            "hospital.hospitais",
         )
         self.dashboard.todo.add(
             "notificacaoindividual.aguardandoenvio",

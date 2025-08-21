@@ -102,7 +102,7 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def check_permission(self):
         return (
-            (self.check_role("notificante", "regulador", "administrador", "gu", "gm") and self.check_instance())
+            (self.check_role("notificante", "regulador", "administrador", "gu", "gm") and self.check_instance() and self.instance.data_envio)
             or self.request.GET.get("token") == self.instance.token
         )
 
@@ -143,6 +143,10 @@ class Mixin:
                 )
             else:
                 self.form.controller.set(periodo_gestacao=None)
+
+    
+    def get_municipio_residencia_queryset(self, queryset):
+        return queryset.nolookup()
 
 
 class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
@@ -193,8 +197,6 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         return qs.first() if qs.count() == 1 else None
 
     def on_dengue_grave_change(self, value):
-        print(value)
-        print(self.form.controller.values())
         self.form.controller.set(observacao=str(value))
 
 
@@ -205,7 +207,7 @@ class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
         verbose_name = "Editar Notificação Individual"
 
     def check_permission(self):
-        return (self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username
+        return (self.check_role("regulador") and self.instance.data_envio) or ((self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username)
 
 
 class Excluir(endpoints.DeleteEndpoint[NotificacaoIndividual]):
@@ -279,3 +281,15 @@ class Finalizar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def check_permission(self):
         return self.check_role("regulador", "administrador") and self.instance.pode_ser_finalizada()
+
+
+class CadastrarMunicipio(endpoints.AddEndpoint[Municipio]):
+    class Meta:
+        verbose_name = "Cadastrar Município"
+
+    
+    def get(self):
+        return self.formfactory(self.instance).fieldset('Dados Gerais', (('codigo', 'nome'), 'estado'))
+
+    def check_permission(self):
+        return self.check_role("notificante", "administrador")

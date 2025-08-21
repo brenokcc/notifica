@@ -1,3 +1,5 @@
+import csv
+from io import StringIO
 from slth import endpoints
 from ..models import *
 
@@ -11,7 +13,7 @@ class UnidadesSaude(endpoints.ListEndpoint[UnidadeSaude]):
             super()
             .get()
             .actions(
-                "unidadesaude.visualizar", "unidadesaude.cadastrar", "unidadesaude.editar", "unidadesaude.excluir"
+                "unidadesaude.visualizar", "unidadesaude.cadastrar", "unidadesaude.editar", "unidadesaude.excluir", "unidadesaude.importar"
             )
         )
 
@@ -62,8 +64,35 @@ class AddEquipe(endpoints.RelationEndpoint[Equipe]):
         return (
             super()
             .formfactory().fields(unidade=self.source)
-            .fieldset("Dados Gerais", ("unidade", ("codigo", "nome"), "notificantes:notificante.cadastrar"))
+            .fieldset("Dados Gerais", ("unidade", ("nome", "codigo"), "notificantes:notificante.cadastrar"))
         )
 
     def check_permission(self):
         return self.check_role("administrador", "gm")
+    
+
+class Importar(endpoints.Endpoint):
+    arquivo = endpoints.forms.FileField(label="Arquivo CSV", extensions=["csv"])
+
+    class Meta:
+        icon = "upload"
+        verbose_name = "Importar"
+
+    def get(self):
+        return self.formfactory().fields('arquivo')
+    
+    def post(self):
+        content = StringIO(self.request.FILES['arquivo'].read().decode())
+        for i, row in enumerate(csv.DictReader(content, delimiter=";")):
+            municipio = Municipio.objects.filter(codigo=row["IBGE"]).first()
+            cnes = row["CNES"]
+            nome = row["NOME FANTASIA"]
+            unidade = UnidadeSaude.objects.filter(codigo=cnes).first()
+            if unidade is None:
+                unidade = UnidadeSaude()
+            unidade.codigo = cnes
+            unidade.municipio = municipio
+            unidade.nome = nome
+            unidade.save()
+            if i > 2: break
+        return super().post()

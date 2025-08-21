@@ -9,7 +9,7 @@ class Painel(endpoints.PublicEndpoint):
         verbose_name = "Painel de Monitoramento"
 
     def get(self):
-        return NotificacaoIndividual.objects.all().filters(
+        return NotificacaoIndividual.objects.all().filter(data_envio__isnull=False).filters(
             "doenca",
             "unidade",
             "notificante",

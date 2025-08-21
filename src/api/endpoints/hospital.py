@@ -22,7 +22,10 @@ class Cadastrar(endpoints.AddEndpoint[Hospital]):
         verbose_name = "Cadastrar Hospital"
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador")
+        return self.check_role("regulador", "administrador", "notificante")
+    
+    def get_municipio_queryset(self, queryset):
+        return queryset.nolookup()
 
 
 class Editar(endpoints.EditEndpoint[Hospital]):

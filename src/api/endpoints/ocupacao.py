@@ -19,7 +19,7 @@ class Cadastrar(endpoints.AddEndpoint[Ocupacao]):
         verbose_name = "Cadastrar Ocupação"
 
     def check_permission(self):
-        return self.check_role("administrador")
+        return self.check_role("administrador", "notificante")
 
 
 class Editar(endpoints.EditEndpoint[Ocupacao]):

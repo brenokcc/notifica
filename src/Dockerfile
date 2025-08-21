@@ -6,4 +6,5 @@ ADD requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 ADD manage.py .
 ADD entrypoint.sh .
+RUN apk add glib pango font-dejavu
 RUN pip install -U slthcore

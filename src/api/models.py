@@ -217,7 +217,7 @@ class Estado(models.Model):
 class MunicipioQuerySet(models.QuerySet):
     def all(self):
         return (
-            self.lookup("administrador")
+            self.search("nome").filters("estado").lookup("administrador")
             .lookup("notificante", unidadesaude__equipe__notificantes__cpf="username")
         )
 
@@ -326,7 +326,7 @@ class EquipeQuerySet(models.QuerySet):
 @role("notificante", username="notificantes__cpf", unidade="pk")
 class Equipe(models.Model):
     unidade = models.ForeignKey(UnidadeSaude, verbose_name='Unidade de Saúde', on_delete=models.CASCADE)
-    codigo = models.CharField(verbose_name='INE')
+    codigo = models.CharField(verbose_name='INE', null=True, blank=True)
     nome = models.CharField(verbose_name='Nome')
     notificantes = models.ManyToManyField(Notificante, blank=True)
 
@@ -343,7 +343,7 @@ class Equipe(models.Model):
         return (
             super()
             .serializer()
-            .fieldset("Dados Gerais", (("codigo", "nome"),))
+            .fieldset("Dados Gerais", (("nome", "codigo"),))
             .queryset("notificantes")
         )
     
@@ -351,7 +351,7 @@ class Equipe(models.Model):
         return (
             super()
             .formfactory()
-            .fieldset("Dados Gerais", (("codigo", "nome"), "notificantes:notificante.cadastrar"))
+            .fieldset("Dados Gerais", (("nome", "codigo"), "notificantes:notificante.cadastrar"))
         )
 
 
@@ -1243,8 +1243,8 @@ class NotificacaoIndividual(models.Model):
                 "Dados Residenciais",
                 (
                     "pais:pais.cadastrar",
-                    ("cep", "municipio_residencia:municipio.cadastrar"),
-                    ("distrito", "bairro"),
+                    ("cep", "bairro"),
+                    ("municipio_residencia:notificacaoindividual.cadastrarmunicipio", "distrito"),
                     ("logradouro", "codigo_logradouro"),
                     ("numero_residencia", "complemento"),
                     "zona",
@@ -1253,7 +1253,7 @@ class NotificacaoIndividual(models.Model):
                 ),
             )
             .fieldset("Dados de Contato", (("telefone", "email"),))
-            .fieldset("Investigação", ("data_investigacao", "ocupacao_investigacao"))
+            .fieldset("Investigação", ("data_investigacao", "ocupacao_investigacao:ocupacao.cadastrar"))
             .fieldset("Dados Clínicos", ("sinais_clinicos", "doencas_pre_existentes"))
             .fieldset(
                 "Sorologia (IgM) Chikungunya",
@@ -1278,7 +1278,7 @@ class NotificacaoIndividual(models.Model):
             .fieldset("Isolamento", ("data_isolamento", "resultado_isolamento"))
             .fieldset("Vacinação", ("vacinado", "vacinado2", "data_ultima_vacina"))
             .fieldset(
-                "Hospitalização", ("hospitalizacao", "data_hospitalizacao", "hospital")
+                "Hospitalização", ("hospitalizacao", "data_hospitalizacao", "hospital:hospital.cadastrar")
             )
             .fieldset(
                 "Conclusão",
