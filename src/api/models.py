@@ -12,9 +12,10 @@ from io import BytesIO
 from uuid import uuid1
 from datetime import datetime
 from django.db import transaction
+from slth.models import Email
 
 
-@role("administrador", username="cpf")
+@role("administrador", username="cpf", email="email")
 class Administrador(models.Model):
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
@@ -222,8 +223,8 @@ class MunicipioQuerySet(models.QuerySet):
         )
 
 
-@role("gm", username="gestores__cpf", municipio="pk")
-@role("regulador", username="reguladores__cpf", municipio="pk")
+@role("gm", username="gestores__cpf", email="gestores__email", municipio="pk")
+@role("regulador", username="reguladores__cpf", email="reguladores__email", municipio="pk")
 class Municipio(models.Model):
     estado = models.ForeignKey(Estado, verbose_name="Estado", on_delete=models.CASCADE)
     codigo = models.CharField(max_length=7, verbose_name="Código IBGE", unique=True)
@@ -266,7 +267,7 @@ class Municipio(models.Model):
 class UnidadeSaudeQuerySet(models.QuerySet):
     def all(self):
         return (
-            self
+            self.search("nome").filters("municipio")
             .lookup("gm", municipio__gestores__cpf="username")
             .lookup("administrador")
             .lookup("regulador", municipio__reguladores__cpf="username")
@@ -275,7 +276,7 @@ class UnidadeSaudeQuerySet(models.QuerySet):
         )
 
 
-@role("gu", username="gestores__cpf", unidade="pk")
+@role("gu", username="gestores__cpf", email="gestores__email", unidade="pk")
 class UnidadeSaude(models.Model):
     codigo = models.CharField(verbose_name="CNES")
     nome = models.CharField(verbose_name="Nome")
@@ -323,7 +324,7 @@ class EquipeQuerySet(models.QuerySet):
         )
 
 
-@role("notificante", username="notificantes__cpf", unidade="pk")
+@role("notificante", username="notificantes__cpf", email="notificantes__email", unidade="pk")
 class Equipe(models.Model):
     unidade = models.ForeignKey(UnidadeSaude, verbose_name='Unidade de Saúde', on_delete=models.CASCADE)
     codigo = models.CharField(verbose_name='INE', null=True, blank=True)
@@ -461,13 +462,24 @@ class SolicitacaoCadastro(models.Model):
                     raise ValidationError('Informe o município do gestor.')
                 self.municipio.gestores.add(obj)
                 self.municipio.post_save()
+            password = None
             user = User.objects.filter(username=self.cpf).first()
             if not user.last_login:
-                user.set_password("123")
+                password = uuid1().hex[0:6]
+                user.set_password(password)
                 user.save()
-                print(9999999)
+            content = 'A sua solicitação de acesso ao Arbonotifica foi aprovada.'
+            if password:
+                content = f'{content}\nA sua senha é "{password}" e você poderá alterá-la após acessar o sistema.'
+            email = Email(to=obj.email, subject="Arbonotifica - Autorização de Acesso", content=content, action="Acessar", url=settings.SITE_URL)
+            email.send()
         else:
-            pass
+            if self.observacao:
+                content = f'Sua solicitação de acesso ao Arbonotifica foi negada com a seguinte obervação: {self.observacao}'
+            else:
+                content = f'Sua solicitação de acesso ao Arbonotifica foi negada'
+            email = Email(to=obj.email, subject="Arbonotifica - Autorização de Acesso", content=content)
+            email.send()
 
 
 class Sexo(models.Model):

@@ -1,5 +1,10 @@
 from slth import endpoints
 from ..models import *
+from slth.models import Email
+from django.core import signing
+from django.conf import settings
+from django.contrib.auth.models import User
+from slth.endpoints.auth import login_response
 
 
 class SolicitacoesCadastro(
@@ -36,6 +41,41 @@ class SolicitacoesCadastroPendentes(endpoints.ListEndpoint[SolicitacaoCadastro])
         return self.check_role("gm", "gu", "administrador") and self.get_queryset().exists()
 
 
+class RedefinirSenha(endpoints.AddEndpoint[SolicitacaoCadastro]):
+    email = endpoints.forms.CharField(label="E-mail")
+    senha = endpoints.forms.CharField(label="Senha")
+
+    class Meta:
+        icon = "user-lock"
+        verbose_name = "Redefinir Senha"
+
+    def get(self):
+        token = self.request.GET.get('token')
+        if token:
+            dados = signing.loads(token)
+            user = User.objects.filter(email=dados['email']).first()
+            user.set_password(dados['password'])
+            user.save()
+            return login_response(user)
+        return self.formfactory().fields('email', 'senha').info("Você receberá um e-mail contendo o link para confirmar a alteração da senha.")
+
+    def check_permission(self):
+        return not self.request.user.is_authenticated
+    
+    def post(self):
+        to = self.cleaned_data['email']
+        password = self.cleaned_data['senha']
+        if User.objects.filter(email=to).exists():
+            token = signing.dumps(dict(email=to, password=password))
+            url = f'{settings.SITE_URL}/app/solicitacaocadastro/redefinirsenha/?token={token}'
+            content = "Acesse o link abaixo para confirmar a alteração de sua senha."
+            email = Email(to=to, subject="Arbonotifica - Redefinição de senha.", content=content, action="Confirmar", url=url)
+            email.send()
+            return super().post()
+        else:
+            raise ValidationError("Usuário não localizado")
+
+
 class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
     class Meta:
         icon = "user-plus"
@@ -52,6 +92,12 @@ class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
 
     def get_unidade_queryset(self, queryset):
         return queryset.nolookup().filter(municipio=self.form.controller.get('municipio'))
+
+    def post(self):
+        content = 'Sua solicitação de acesso foi registrada e será avaliada em breve.'
+        email = Email(to=self.instance.email, subject="Arbonotifica - Solicitação de Acesso", content=content)
+        email.send()
+        return super().post()
 
 
 class Visualizar(endpoints.ViewEndpoint[SolicitacaoCadastro]):

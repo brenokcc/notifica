@@ -94,5 +94,4 @@ class Importar(endpoints.Endpoint):
             unidade.municipio = municipio
             unidade.nome = nome
             unidade.save()
-            if i > 2: break
         return super().post()

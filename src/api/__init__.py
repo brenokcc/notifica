@@ -87,7 +87,7 @@ class ApiApplication(Application):
                 #"building:Unidades de Saúde": "unidadesaude.unidadessaude",
             }
         )
-        self.dashboard.top.add("solicitacaocadastro.cadastrar")
+        self.dashboard.top.add("solicitacaocadastro.cadastrar", "solicitacaocadastro.redefinirsenha",)
         self.theme.light.default.update(color="#033770")
         self.theme.light.primary.update(color="#033770", background="#033770")
         self.theme.light.auxiliary.update(color="#f9c72a", background="#fceab7")
