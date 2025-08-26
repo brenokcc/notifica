@@ -174,6 +174,11 @@ if os.environ.get("DATABASE_HOST") and "test" not in sys.argv:
         }
     }
 
-
 USERNAME_MASK = "999.999.999-99"
 CHART_COLORS = ["#2d3b59", "#f9cb44", "#717a8f", "#86670c", "#a5abb7", "#f6e4b3"]
+
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 0))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = bool(os.environ.get('EMAIL_USE_TLS'))
