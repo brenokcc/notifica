@@ -13,6 +13,7 @@ from uuid import uuid1
 from datetime import datetime
 from django.db import transaction
 from slth.models import Email
+from slth.components import Badge
 
 
 @role("administrador", username="cpf", email="email")
@@ -697,7 +698,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search("cpf", "nome")
-            .fields("get_numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada")
+            .fields("get_numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status")
             .filters("municipio", "unidade", "notificante", "validada")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
@@ -1076,6 +1077,7 @@ class NotificacaoIndividual(models.Model):
         on_delete=models.CASCADE,
         null=True,
         pick=True,
+        blank=True,
     )
     criterio_confirmacao = models.ForeignKey(
         CriterioConfirmacao,
@@ -1090,6 +1092,7 @@ class NotificacaoIndividual(models.Model):
         on_delete=models.CASCADE,
         null=True,
         pick=True,
+        blank=True,
     )
     evolucao_caso = models.ForeignKey(
         TipoEvolucao,
@@ -1145,7 +1148,7 @@ class NotificacaoIndividual(models.Model):
 
     # Observação
     observacao = models.TextField(verbose_name="Observação", null=True, blank=True)
-    validada = models.BooleanField(verbose_name="Validada", null=True, blank=True)
+    validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['false', 'Não'], ['true', 'Sim'], ['null', 'Pendente']])
 
     # Token
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
@@ -1158,6 +1161,12 @@ class NotificacaoIndividual(models.Model):
         icon = "person"
         verbose_name = "Notificação Individual"
         verbose_name_plural = "Notificações Individuais"
+
+    @meta("Status")
+    def get_status(self):
+        if self.data_encerramento:
+            return Badge('#4caf50', 'Encerrada', 'check')
+        return Badge('#2196f3', 'Em Análise', 'eyedropper')
 
     @meta('Histórico de Devolução')
     def get_historico_devolucao(self):

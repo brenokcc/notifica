@@ -898,7 +898,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "validada",
-                    models.BooleanField(blank=True, null=True, verbose_name="Validada"),
+                    models.BooleanField(blank=True, null=True, verbose_name="Validada", choices=[("false", "Não"), ("true", "Sim"), ("null", "Pendente")],),
                 ),
                 (
                     "observacao",

@@ -250,6 +250,7 @@ class Migration(migrations.Migration):
             name="apresentacao_clinica",
             field=slth.db.models.ForeignKey(
                 null=True,
+                blank=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 to="api.apresentacaoclinica",
                 verbose_name="Apresentação Clínica",
@@ -260,6 +261,7 @@ class Migration(migrations.Migration):
             name="classificacao_infeccao",
             field=slth.db.models.ForeignKey(
                 null=True,
+                blank=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 to="api.classificacaoinfeccao",
                 verbose_name="Classificação da Infecção",
