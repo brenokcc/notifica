@@ -221,7 +221,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
                 raca=raca,
                 escolaridade=escolaridade,
                 nome_mae=dados['mae'],
-                cartao_sus=dados['cns'].strip(),
+                cartao_sus=dados['cns'].strip() if dados['cns'] else '',
                 telefone=dados['celular'],
                 email=dados['email'],
                 logradouro=dados['logradouro'],
