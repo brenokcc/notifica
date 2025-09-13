@@ -213,7 +213,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             raca = Raca.objects.filter(nome__iexact=dados['raca_cor']).first() if dados['raca_cor'] else None
             escolaridade = Escolaridade.objects.filter(nome__iexact=dados['escolaridade']).first() if dados['escolaridade'] else None
             municipio = Municipio.objects.filter(nome__iexact=dados['municipio']).first() if dados['municipio'] else None
-            data_atualizado_cadsus = datetime.strptime(dados['dt_atualizado_cadsus'], "%Y-%m-%d").date()
+            data_atualizado_cadsus = datetime.strptime(dados['dt_atualizado_cadsus'], "%Y-%m-%d").date() if dados['dt_atualizado_cadsus'] else None
             initial.update(
                 nome=dados['cidadao'],
                 sexo=sexo,
