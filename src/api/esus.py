@@ -384,7 +384,7 @@ def consulta_cpf(cpf):
     row = cursor.fetchone()
     cursor.close()
     conn.close()
-    return row
+    return row or {}
 
 
 MOCKED_DATA = {
