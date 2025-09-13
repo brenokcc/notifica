@@ -384,6 +384,7 @@ def consulta_cpf(cpf):
     row = cursor.fetchone()
     cursor.close()
     conn.close()
+    print('ESUS', cpf, row)
     return row or {}
 
 
@@ -391,7 +392,7 @@ MOCKED_DATA = {
     "cpf": "81545711100",
     "cns": "0              ",
     "cidadao": "FABRICIO DA SILVA",
-    "dt_nascimento": datetime.date(1977, 5, 26).strftime("%d/%m/%Y"),
+    "dt_nascimento": datetime.date(1977, 5, 26),
     "sexo": "Masculino",
     "raca_cor": "Branca",
     "escolaridade": "Superior, aperfeiçoamento, especialização, mestrado, doutorado",
@@ -410,11 +411,11 @@ MOCKED_DATA = {
     "registro_fci": True,
     "fci_atualizada": True,
     "registro_cadsus": 1,
-    "dt_atualizado_cadsus": datetime.date(2020, 7, 13).strftime("%d/%m/%Y"),
+    "dt_atualizado_cadsus": datetime.date(2020, 7, 13),
     "id_cidadao": 295168,
     "id_cidadao_pec": 1753595,
     "id_fci_ultima_ficha": "2710870-8b414969-6961-4ce7-888b-38c9ed50801f",
-    "dt_ultima_ficha": datetime.date(2025, 1, 24).strftime("%d/%m/%Y"),
+    "dt_ultima_ficha": datetime.date(2025, 1, 24),
     "id_fci": 4208805,
     "id_fcd_cds": 877040,
 }

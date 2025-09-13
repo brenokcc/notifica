@@ -176,7 +176,7 @@ class Checar(endpoints.Endpoint):
         if qs.exists() and not cadastrar_nova:
             raise ValidationError(f'Já existe uma ficha cadastrada para o CPF {cpf} nos últimos 30 dias. É necessário forçar o cadastro de uma nova ficha para prosseguir.')
         else:
-            return self.redirect('/app/notificacaoindividual/cadastrar/?cpf={cpf}')
+            return self.redirect(f'/app/notificacaoindividual/cadastrar/?cpf={cpf}')
 
     def check_permission(self):
         return self.check_role("notificante", "administrador")
@@ -209,11 +209,11 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         dados = response.status_code == 200 and response.json() or {}
         if dados:
             sexo = Sexo.objects.filter(codigo=(dados['sexo'].upper()[0])).first() if dados['sexo'] else None
-            data_nascimento = datetime.strptime(dados['dt_nascimento'], "%d/%m/%Y").date() if dados['dt_nascimento'] else None
+            data_nascimento = datetime.strptime(dados['dt_nascimento'], "%Y-%m-%d").date() if dados['dt_nascimento'] else None
             raca = Raca.objects.filter(nome__iexact=dados['raca_cor']).first() if dados['raca_cor'] else None
             escolaridade = Escolaridade.objects.filter(nome__iexact=dados['escolaridade']).first() if dados['escolaridade'] else None
             municipio = Municipio.objects.filter(nome__iexact=dados['municipio']).first() if dados['municipio'] else None
-            data_atualizado_cadsus = datetime.strptime(dados['dt_atualizado_cadsus'], "%d/%m/%Y").date()
+            data_atualizado_cadsus = datetime.strptime(dados['dt_atualizado_cadsus'], "%Y-%m-%d").date()
             initial.update(
                 nome=dados['cidadao'],
                 sexo=sexo,
