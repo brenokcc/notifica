@@ -376,7 +376,7 @@ def consulta_cpf(cpf):
     )
     
     select * from tb_dados_cidadao
-    """.format(cpf=cpf)
+    """.format(cpf=cpf.replace('.', '').replace('-', ''))
 
 
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
