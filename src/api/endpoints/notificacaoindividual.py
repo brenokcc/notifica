@@ -1,3 +1,4 @@
+import requests
 from slth import endpoints
 from datetime import date, timedelta
 from ..models import *
@@ -188,21 +189,54 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         verbose_name = "Cadastrar Notificação Individual"
 
     def get(self):
-        return (
-            super()
-            .get()
-            .initial(
-                cpf=self.request.GET.get('cpf'),
-                data=date.today(),
-                municipio=Municipio.objects.first(),
-                notificante=Notificante.objects.filter(
-                    cpf=self.request.user.username
-                ).first(),
-                unidade=self.get_unidade_inicial(),
-                pais=Pais.objects.order_by("id").first(),
-                pais_infeccao=Pais.objects.order_by("id").first(),
-            )
+        cpf = self.request.GET.get('cpf')
+        initial = dict(
+            cpf=cpf,
+            data=date.today(),
+            municipio=Municipio.objects.first(),
+            notificante=Notificante.objects.filter(
+                cpf=self.request.user.username
+            ).first(),
+            unidade=self.get_unidade_inicial(),
+            pais=Pais.objects.order_by("id").first(),
+            pais_infeccao=Pais.objects.order_by("id").first(),
         )
+        data_atualizado_cadsus = None
+        esus_api_url = os.environ.get('ESUS_API_URL', 'http://localhost:8000')
+        esus_api_token = os.environ.get('ESUS_API_TOKEN', '')
+        headers = {'Authorization': f'Token {esus_api_token}'}
+        response = requests.get('{}/consultar_cpf/{}/'.format(esus_api_url, cpf), headers=headers)
+        dados = response.status_code == 200 and response.json() or {}
+        if dados:
+            sexo = Sexo.objects.filter(codigo=(dados['sexo'].upper()[0])).first() if dados['sexo'] else None
+            data_nascimento = datetime.strptime(dados['dt_nascimento'], "%d/%m/%Y").date() if dados['dt_nascimento'] else None
+            raca = Raca.objects.filter(nome__iexact=dados['raca_cor']).first() if dados['raca_cor'] else None
+            escolaridade = Escolaridade.objects.filter(nome__iexact=dados['escolaridade']).first() if dados['escolaridade'] else None
+            municipio = Municipio.objects.filter(nome__iexact=dados['municipio']).first() if dados['municipio'] else None
+            data_atualizado_cadsus = datetime.strptime(dados['dt_atualizado_cadsus'], "%d/%m/%Y").date()
+            initial.update(
+                nome=dados['cidadao'],
+                sexo=sexo,
+                data_nascimento=data_nascimento,
+                raca=raca,
+                escolaridade=escolaridade,
+                nome_mae=dados['mae'],
+                cartao_sus=dados['cns'].strip(),
+                telefone=dados['celular'],
+                email=dados['email'],
+                logradouro=dados['logradouro'],
+                numero_residencia=dados['numero'],
+                complemento=dados['complemento'],
+                bairro=dados['bairro'],
+                cep=dados['cep'],
+                municipio_residencia=municipio,
+                latitude=dados['latitude'],
+                longitude=dados['longitude'],
+            )
+        info = None
+        if data_atualizado_cadsus:
+            info = "A data de atualização no CadSUS é {}.".format(data_atualizado_cadsus.strftime("%d/%m/%Y"))
+        return super().get().initial(**initial).info(info)
 
     def check_permission(self):
         return self.check_role("notificante", "administrador")
@@ -210,20 +244,21 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
     def on_cep_change(self, cep):
         self.form.controller.set(
             **buscar_endereco(cep, municipio="municipio_residencia")
-        )
+        ) if not self.form.controller.get('bairro') else None
 
     def on_numero_residencia_change(self, numero):
-        logradouro, numero, municipio = self.form.controller.get(
-            "logradouro", "numero_residencia", "municipio_residencia"
+        logradouro, numero, municipio, latitude, lontigude = self.form.controller.get(
+            "logradouro", "numero_residencia", "municipio_residencia", "latitude", "lontigude"
         )
-        if logradouro and numero and municipio:
-            geolocation = places.geolocation(
-                "{}, {}, {}".format(logradouro, numero, municipio)
-            )
-            if geolocation:
-                self.form.controller.set(
-                    latitude=geolocation[0], longitude=geolocation[1]
+        if not latitude or not lontigude:
+            if logradouro and numero and municipio:
+                geolocation = places.geolocation(
+                    "{}, {}, {}".format(logradouro, numero, municipio)
                 )
+                if geolocation:
+                    self.form.controller.set(
+                        latitude=geolocation[0], longitude=geolocation[1]
+                    )
 
     def get_unidade_inicial(self):
         qs = UnidadeSaude.objects.filter(equipe__notificantes__cpf=self.request.user.username)
