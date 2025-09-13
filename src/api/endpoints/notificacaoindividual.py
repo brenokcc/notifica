@@ -176,7 +176,7 @@ class Checar(endpoints.Endpoint):
         if qs.exists() and not cadastrar_nova:
             raise ValidationError(f'Já existe uma ficha cadastrada para o CPF {cpf} nos últimos 30 dias. É necessário forçar o cadastro de uma nova ficha para prosseguir.')
         else:
-            return self.redirect('/app/notificacaoindividual/cadastrar/?cpf=047.704.024-14')
+            return self.redirect('/app/notificacaoindividual/cadastrar/?cpf={cpf}')
 
     def check_permission(self):
         return self.check_role("notificante", "administrador")
