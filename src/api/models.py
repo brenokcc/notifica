@@ -385,7 +385,7 @@ class SolicitacaoCadastro(models.Model):
     unidade = models.ForeignKey(UnidadeSaude, verbose_name="Unidade", null=True, blank=True)
     equipe = models.ForeignKey(Equipe, verbose_name="Equipe", null=True, blank=True)
 
-    aprovada = models.BooleanField(verbose_name="Aprovada", null=True)
+    aprovada = models.BooleanField(verbose_name="Aprovada", null=True, choices=[['', 'Selecione uma opção...'], [False, 'Não'], [True, 'Sim']])
     data = models.DateTimeField(
         verbose_name="Data da Solicitação", auto_created=True, null=True
     )
@@ -1148,7 +1148,7 @@ class NotificacaoIndividual(models.Model):
 
     # Observação
     observacao = models.TextField(verbose_name="Observação", null=True, blank=True)
-    validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['false', 'Não'], ['true', 'Sim'], ['null', 'Pendente']])
+    validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['', 'Selecione uma opção...'], [False, 'Não'], [True, 'Sim']])
 
     # Token
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
