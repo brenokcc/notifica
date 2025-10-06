@@ -705,7 +705,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
             .lookup("gu", unidade__gestores__cpf='username')
             .lookup("notificante", unidade__equipe__notificantes__cpf='username')
-        )
+        ).distinct()
     
     def aguardando_envio(self):
         return (
