@@ -193,7 +193,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         initial = dict(
             cpf=cpf,
             data=date.today(),
-            municipio=Municipio.objects.first(),
+            municipio=self.get_municicio_inicial()
             notificante=Notificante.objects.filter(
                 cpf=self.request.user.username
             ).first(),
@@ -259,6 +259,9 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
                     self.form.controller.set(
                         latitude=geolocation[0], longitude=geolocation[1]
                     )
+
+    def get_municicio_inicial(self):
+        return UnidadeSaude.objects.filter(equipe__notificantes__cpf=self.request.user.username).values_list('municicio', flat=True).first()
 
     def get_unidade_inicial(self):
         qs = UnidadeSaude.objects.filter(equipe__notificantes__cpf=self.request.user.username)
