@@ -193,7 +193,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         initial = dict(
             cpf=cpf,
             data=date.today(),
-            municipio=self.get_municicio_inicial()
+            municipio=self.get_municicio_inicial(),
             notificante=Notificante.objects.filter(
                 cpf=self.request.user.username
             ).first(),
