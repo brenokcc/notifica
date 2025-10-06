@@ -385,7 +385,7 @@ class SolicitacaoCadastro(models.Model):
     unidade = models.ForeignKey(UnidadeSaude, verbose_name="Unidade", null=True, blank=True)
     equipe = models.ForeignKey(Equipe, verbose_name="Equipe", null=True, blank=True)
 
-    aprovada = models.BooleanField(verbose_name="Aprovada", null=True, choices=[['', 'Selecione uma opção...'], [False, 'Não'], [True, 'Sim']])
+    aprovada = models.BooleanField(verbose_name="Aprovada", null=True, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
     data = models.DateTimeField(
         verbose_name="Data da Solicitação", auto_created=True, null=True
     )
@@ -699,7 +699,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return (
             self.search("cpf", "nome")
             .fields("get_numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status")
-            .filters("municipio", "unidade", "notificante", "validada")
+            .filters("municipio", "unidade", "notificante", "status", "validada",)
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
@@ -1148,12 +1148,13 @@ class NotificacaoIndividual(models.Model):
 
     # Observação
     observacao = models.TextField(verbose_name="Observação", null=True, blank=True)
-    validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['', 'Selecione uma opção...'], [False, 'Não'], [True, 'Sim']])
+    validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
 
     # Token
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
     devolvida = models.BooleanField(verbose_name='Devolvida', null=True)
     token = models.CharField(verbose_name="Token", null=True, blank=True)
+    status = models.CharField(verbose_name="Status", default='Em Análise', choices=[['Em Análise', 'Em Análise'], ['Encerrada', 'Encerrada']])
 
     objects = NotificacaoIndividualQuerySet()
 
@@ -1164,7 +1165,7 @@ class NotificacaoIndividual(models.Model):
 
     @meta("Status")
     def get_status(self):
-        if self.data_encerramento:
+        if self.status == 'Encerrada':
             return Badge('#4caf50', 'Encerrada', 'check')
         return Badge('#2196f3', 'Em Análise', 'eyedropper')
 
@@ -1173,6 +1174,10 @@ class NotificacaoIndividual(models.Model):
         return self.devolucao_set.ignore('notificacao')
 
     def save(self, *args, **kwargs):
+        if self.data_encerramento:
+            self.status = 'Encerrada'
+        else:
+            self.status = 'Em Análise'
         if self.token is None:
             self.token = uuid1().hex
         if self.data_primeiros_sintomas:

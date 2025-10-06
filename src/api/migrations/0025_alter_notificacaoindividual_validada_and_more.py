@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='notificacaoindividual',
             name='validada',
-            field=models.BooleanField(blank=True, choices=[('', 'Selecione uma opção...'), (False, 'Não'), (True, 'Sim')], null=True, verbose_name='Validada'),
+            field=models.BooleanField(blank=True, choices=[('', ''), (False, 'Não'), (True, 'Sim')], null=True, verbose_name='Validada'),
         ),
         migrations.AlterField(
             model_name='solicitacaocadastro',
             name='aprovada',
-            field=models.BooleanField(choices=[('', 'Selecione uma opção...'), (False, 'Não'), (True, 'Sim')], null=True, verbose_name='Aprovada'),
+            field=models.BooleanField(choices=[('', ''), (False, 'Não'), (True, 'Sim')], null=True, verbose_name='Aprovada'),
         ),
     ]
