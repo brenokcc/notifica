@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
             model_name="notificacaoindividual",
             name="cpf",
             field=slth.db.models.CharField(
-                max_length=255, null=True, verbose_name="CPF"
+                max_length=255, null=True, verbose_name="CPF", blank=True,
             ),
         ),
     ]

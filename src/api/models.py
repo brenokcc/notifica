@@ -794,7 +794,7 @@ class NotificacaoIndividual(models.Model):
     )
 
     # Dados do Indivíduo
-    cpf = models.CharField(verbose_name="CPF", null=True, blank=False)
+    cpf = models.CharField(verbose_name="CPF", null=True, blank=True)
     cartao_sus = models.CharField(verbose_name="Cartão SUS", null=True, blank=True)
     nome = models.CharField(verbose_name="Nome")
     data_nascimento = models.DateField(

@@ -152,8 +152,16 @@ class Mixin:
 
 
 class Checar(endpoints.Endpoint):
-    cpf = endpoints.forms.CharField(label="CPF")
-    cadastrar_nova = endpoints.forms.BooleanField(label="Forçar cadastro de nova ficha", help_text="Marqe \"Sim\" caso deseje cadastrar uma nova ficha ainda que exista outra cadastrada para esse CPF nos últimos 30 dias.", required=False)
+
+    ACAO_CHOICES = [
+        ['alertar', 'Alertar sobre existência da ficha'],
+        ['visualizar', 'Visualizar ficha existente'],
+        ['cadastrar', 'Cadastrar nova ficha'],
+    ]
+
+    cpf = endpoints.forms.CharField(label="CPF", required=False)
+    cns = endpoints.forms.CharField(label="CNS", required=False)
+    acao = endpoints.forms.ChoiceField(label="Ação no caso de ficha já cadastrada", help_text="Indique o que deseja fazer caso exista outra ficha cadastrada para esse CPF/CNS nos últimos 30 dias.", choices=ACAO_CHOICES)
 
     class Meta:
         modal = False
@@ -163,20 +171,27 @@ class Checar(endpoints.Endpoint):
     def get(self):
         return (
             self.formfactory()
-            .info("Informe o CPF para verificarmos se já existe alguma ficha cadastrada para o cidadão nos últimos 30 dias.")
-            .fields('cpf', 'cadastrar_nova')
-            .initial(cadastrar_nova=False)
+            .info("Informe o CPF ou CNS para verificarmos se já existe alguma ficha cadastrada para o cidadão nos últimos 30 dias.")
+            .fieldset(None, fields=(('cpf', 'cns'), 'acao'))
+            .initial(acao='alertar')
         )
     
     def post(self):
         cpf = self.cleaned_data['cpf']
-        cadastrar_nova = self.cleaned_data['cadastrar_nova']
+        cns = self.cleaned_data['cns']
+        if not cpf and not cns:
+            raise ValidationError(f'Informe o CPF ou CNS do paciente.')
+        acao = self.cleaned_data['acao']
         data_limite = datetime.today() - timedelta(days=30)
-        qs = NotificacaoIndividual.objects.filter(cpf=cpf, data__gte=data_limite)
-        if qs.exists() and not cadastrar_nova:
-            raise ValidationError(f'Já existe uma ficha cadastrada para o CPF {cpf} nos últimos 30 dias. É necessário forçar o cadastro de uma nova ficha para prosseguir.')
-        else:
-            return self.redirect(f'/app/notificacaoindividual/cadastrar/?cpf={cpf}')
+        qs1 = NotificacaoIndividual.objects.filter(cpf=cpf, data__gte=data_limite)
+        qs2 = NotificacaoIndividual.objects.filter(cartao_sus=cns, data__gte=data_limite)
+        if (qs1.exists() or qs2.exists()):
+            if acao == 'alertar':
+                raise ValidationError(f'Já existe uma ficha cadastrada para o CPF {cpf} nos últimos 30 dias. É necessário forçar o cadastro de uma nova ficha para prosseguir.')
+            if acao == 'visualizar':
+                obj = qs1.first() or qs2.first()
+                return self.redirect(f'/app/notificacaoindividual/visualizar/{obj.pk}/')
+        return self.redirect(f'/app/notificacaoindividual/cadastrar/?cpf={cpf}')
 
     def check_permission(self):
         return self.check_role("notificante", "administrador")
@@ -214,6 +229,16 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             escolaridade = Escolaridade.objects.filter(nome__iexact=dados['escolaridade']).first() if dados['escolaridade'] else None
             municipio = Municipio.objects.filter(nome__iexact=dados['municipio']).first() if dados['municipio'] else None
             data_atualizado_cadsus = datetime.strptime(dados['dt_atualizado_cadsus'], "%Y-%m-%d").date() if dados['dt_atualizado_cadsus'] else None
+            latitude=dados['latitude']
+            longitude=dados['longitude']
+            logradouro=dados['logradouro']
+            numero_residencia=dados['numero']
+            if not latitude or not longitude:
+                if logradouro and numero_residencia and municipio:
+                    geolocation = places.geolocation("{}, {}, {}".format(logradouro, numero_residencia, municipio))
+                    if geolocation:
+                        latitude=geolocation[0]
+                        longitude=geolocation[1]
             initial.update(
                 nome=dados['cidadao'],
                 sexo=sexo,
@@ -224,14 +249,14 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
                 cartao_sus=dados['cns'].strip() if dados['cns'] else '',
                 telefone=dados['celular'],
                 email=dados['email'],
-                logradouro=dados['logradouro'],
-                numero_residencia=dados['numero'],
+                logradouro=logradouro,
+                numero_residencia=numero_residencia,
                 complemento=dados['complemento'],
                 bairro=dados['bairro'],
                 cep=dados['cep'],
                 municipio_residencia=municipio,
-                latitude=dados['latitude'],
-                longitude=dados['longitude'],
+                latitude=latitude,
+                longitude=longitude,
             )
         info = None
         if data_atualizado_cadsus:
@@ -247,10 +272,10 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         ) if not self.form.controller.get('bairro') else None
 
     def on_numero_residencia_change(self, numero):
-        logradouro, numero, municipio, latitude, lontigude = self.form.controller.get(
-            "logradouro", "numero_residencia", "municipio_residencia", "latitude", "lontigude"
+        logradouro, numero, municipio, latitude, longitude = self.form.controller.get(
+            "logradouro", "numero_residencia", "municipio_residencia", "latitude", "longitude"
         )
-        if not latitude or not lontigude:
+        if not latitude or not longitude:
             if logradouro and numero and municipio:
                 geolocation = places.geolocation(
                     "{}, {}, {}".format(logradouro, numero, municipio)
@@ -270,6 +295,12 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
     def on_dengue_grave_change(self, value):
         self.form.controller.set(observacao=str(value))
 
+    def post(self):
+        cpf = self.cleaned_data['cpf']
+        cartao_sus = self.cleaned_data['cartao_sus']
+        if not cpf and not cartao_sus:
+            raise ValidationError('Informe o CPF ou Cartão SUS.')
+        return super().post()
 
 class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
     class Meta:
