@@ -395,3 +395,20 @@ class CadastrarMunicipio(endpoints.AddEndpoint[Municipio]):
 
     def check_permission(self):
         return self.check_role("notificante", "administrador")
+
+
+class EvoluirCaso(endpoints.RelationEndpoint[Evolucao]):
+    class Meta:
+        icon = 'plus'
+        verbose_name = 'Evoluir Caso'
+    
+    def formfactory(self):
+        return (
+            super()
+            .formfactory().fields(notificacao=self.source, notificante=self.request.user)
+            .fieldset("Dados Gerais", ("notificacao", "notificante", "data", "observacao"))
+            .initial(data=date.today())
+        )
+
+    def check_permission(self):
+        return self.check_role("notificante") and not self.source.data_encerramento

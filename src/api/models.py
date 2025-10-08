@@ -2,7 +2,7 @@ from slth.db import models, role, meta
 import os
 import json
 from django.conf import settings
-from slth.components import GeoMap
+from slth.components import GeoMap, FileLink
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from slth.utils import age
@@ -697,8 +697,8 @@ class Hospital(models.Model):
 class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
-            self.search("cpf", "nome")
-            .fields("get_numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status")
+            self.search("cpf", "nome", "cartao_sus")
+            .fields("get_numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame")
             .filters("municipio", "unidade", "notificante", "status", "validada",)
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
@@ -1105,6 +1105,7 @@ class NotificacaoIndividual(models.Model):
     data_encerramento = models.DateField(
         verbose_name="Data do Encerramento", null=True, blank=True
     )
+    resultado_exame = models.FileField(verbose_name='Resultado do Exame', upload_to='resultados_exames', null=True, blank=True)
 
     # Dados Clínicos - Sinais de Alarme
     dengue_com_sinais_de_alarme = models.BooleanField(
@@ -1169,6 +1170,10 @@ class NotificacaoIndividual(models.Model):
             return Badge('#4caf50', 'Encerrada', 'check')
         return Badge('#2196f3', 'Em Análise', 'eyedropper')
 
+    @meta('Histórico de Evolução')
+    def get_historico_evolucao(self):
+        return self.evolucao_set.ignore('notificacao')
+    
     @meta('Histórico de Devolução')
     def get_historico_devolucao(self):
         return self.devolucao_set.ignore('notificacao')
@@ -1317,6 +1322,7 @@ class NotificacaoIndividual(models.Model):
                     ("classificacao_infeccao", "criterio_confirmacao"),
                     ("apresentacao_clinica", "evolucao_caso"),
                     ("data_obito", "data_encerramento"),
+                    ('resultado_exame',)
                 ),
             )
             .fieldset(
@@ -1345,7 +1351,7 @@ class NotificacaoIndividual(models.Model):
         return (
             super()
             .serializer()
-            .actions("notificacaoindividual.editar", "notificacaoindividual.imprimir", "notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar")
+            .actions("notificacaoindividual.editar", "notificacaoindividual.imprimir", "notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.evoluircaso")
             .fieldset(
                 "Dados Gerais",
                 (
@@ -1417,6 +1423,7 @@ class NotificacaoIndividual(models.Model):
                     ("classificacao_infeccao", "criterio_confirmacao"),
                     ("apresentacao_clinica", "evolucao_caso"),
                     ("data_obito", "data_encerramento"),
+                    ("get_resultado_exame",)
                 ),
             )
             .fieldset(
@@ -1438,15 +1445,20 @@ class NotificacaoIndividual(models.Model):
                     "data_inicio_sinais_graves",
                 ),
             )
+            .queryset("get_historico_evolucao")
             .fieldset("Outras Informações", ("observacao", ("data_envio", "validada")))
             .queryset("get_historico_devolucao")
         )
 
     def __str__(self):
-        return f"Notificação {self.get_numero()} - {self.unidade} ({self.data_primeiros_sintomas.strftime('%d/%m/%Y')})"
+        return f"Notificação {self.get_numero()} - {self.nome} ({self.cpf or self.cartao_sus}) - {self.data_primeiros_sintomas.strftime('%d/%m/%Y')}"
 
     def get_url_impressao(self):
         return f"{settings.SITE_URL}/api/notificacaoindividual/imprimir/{self.id}/?token={self.token}"
+
+    @meta("Resultado do Exame")
+    def get_resultado_exame(self):
+        return FileLink(self.resultado_exame.url, modal=True, icon='file') if self.resultado_exame else None
 
     def generate_qr_code_base64(self):
         qr = qrcode.QRCode(
@@ -1490,6 +1502,26 @@ class Devolucao(models.Model):
     def __str__(self):
         return f'Devolução {self.id}'
 
+
+class EvolucaoQuerySet(models.QuerySet):
+    def all(self):
+        return self
+
+
+class Evolucao(models.Model):
+    notificacao = models.ForeignKey(NotificacaoIndividual, verbose_name='Notificação', on_delete=models.CASCADE)
+    notificante = models.ForeignKey(User, verbose_name='Notificante', on_delete=models.CASCADE)
+    data = models.DateField(verbose_name='Data', auto_created=True)
+    observacao = models.TextField(verbose_name='Motivo')
+
+    class Meta:
+        verbose_name = 'Evolução'
+        verbose_name_plural = 'Evoluções'
+
+    objects = EvolucaoQuerySet()
+
+    def __str__(self):
+        return f'Evolução {self.id}'
 
 
 class NotificacaoSurto(models.Model):
