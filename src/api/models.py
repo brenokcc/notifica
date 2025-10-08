@@ -28,6 +28,10 @@ class Administrador(models.Model):
 
     def __str__(self):
         return self.nome
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
 
 class Funcao(models.Model):
@@ -71,6 +75,11 @@ class Notificante(models.Model):
     def formfactory(self):
         return super().formfactory().fieldset("", (("cpf",  "nome"), "email",  "funcao"))
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
+    
+
 
 class GestorUnidadeQuerySet(models.QuerySet):
     def all(self):
@@ -95,6 +104,10 @@ class GestorUnidade(models.Model):
     def get_unidade(self):
         return ", ".join(self.unidadesaude_set.values_list("nome", flat=True))
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
+    
 
 class GestorMunicipalQuerySet(models.QuerySet):
     def all(self):
@@ -118,6 +131,10 @@ class GestorMunicipal(models.Model):
     @meta("Município")
     def get_municipio(self):
         return ", ".join(self.municipio_set.values_list("nome", flat=True))
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
 
 class ReguladorQuerySet(models.QuerySet):
@@ -143,6 +160,9 @@ class Regulador(models.Model):
     def get_municipio(self):
         return ", ".join(self.municipio_set.values_list("nome", flat=True))
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
 class TipoNotificacao(models.Model):
     codigo = models.CharField(verbose_name="Código")
