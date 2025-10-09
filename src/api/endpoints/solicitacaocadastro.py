@@ -42,6 +42,7 @@ class SolicitacoesCadastroPendentes(endpoints.ListEndpoint[SolicitacaoCadastro])
 
 
 class RedefinirSenha(endpoints.AddEndpoint[SolicitacaoCadastro]):
+    cpf = endpoints.forms.CharField(label="CPF")
     email = endpoints.forms.CharField(label="E-mail")
     senha = endpoints.forms.CharField(label="Senha")
 
@@ -53,20 +54,21 @@ class RedefinirSenha(endpoints.AddEndpoint[SolicitacaoCadastro]):
         token = self.request.GET.get('token')
         if token:
             dados = signing.loads(token)
-            user = User.objects.filter(email=dados['email']).first()
+            user = User.objects.filter(email=dados['email'], username=dados['cpf']).first()
             user.set_password(dados['password'])
             user.save()
             return login_response(user)
-        return self.formfactory().fields('email', 'senha').info("Você receberá um e-mail contendo o link para confirmar a alteração da senha.")
+        return self.formfactory().fields('cpf', 'email', 'senha').info("Você receberá um e-mail contendo o link para confirmar a alteração da senha.")
 
     def check_permission(self):
         return not self.request.user.is_authenticated
     
     def post(self):
         to = self.cleaned_data['email']
+        cpf = self.cleaned_data['cpf']
         password = self.cleaned_data['senha']
-        if User.objects.filter(email=to).exists():
-            token = signing.dumps(dict(email=to, password=password))
+        if User.objects.filter(email=to, username=cpf).exists():
+            token = signing.dumps(dict(email=to, password=password, cpf=cpf))
             url = f'{settings.SITE_URL}/app/solicitacaocadastro/redefinirsenha/?token={token}'
             content = "Acesse o link abaixo para confirmar a alteração de sua senha."
             email = Email(to=to, subject="Arbonotifica - Redefinição de senha.", content=content, action="Confirmar", url=url)
