@@ -718,7 +718,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search("cpf", "nome", "cartao_sus")
-            .fields("get_numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame")
+            .fields("numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame")
             .filters("municipio", "unidade", "notificante", "status", "validada",)
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
@@ -796,6 +796,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
 
 class NotificacaoIndividual(models.Model):
     # Dados Gerais
+    numero = models.CharField(verbose_name='Número', max_length=10, null=True, db_index=True)
     doenca = models.ForeignKey(
         Doenca, verbose_name="Doença", on_delete=models.CASCADE, pick=True
     )
@@ -1198,6 +1199,24 @@ class NotificacaoIndividual(models.Model):
     def get_historico_devolucao(self):
         return self.devolucao_set.ignore('notificacao')
 
+    @transaction.atomic
+    def clonar(self, doenca):
+        m2m = [field for field in type(self)._meta.get_fields()  if isinstance(field, models.ManyToManyField)]
+        objects = {}
+        for field in m2m:
+            objects[field.name] = list(getattr(self, field.name).values_list('pk', flat=True))
+        self.pk = None
+        sequence = int(NotificacaoIndividual.objects.filter(
+            numero__startswith=self.numero.split('-')[0]
+        ).order_by('numero').values_list('numero', flat=True).first().split('-')[-1]) + 1
+        self.numero = '{}-{}'.format(self.numero.split('-')[0], sequence)
+        self.doenca = doenca
+        self.resultado_exame = None
+        self.save()
+        for name, pks in objects.items():
+            getattr(self, name).set(pks)
+        return self
+    
     def save(self, *args, **kwargs):
         if self.data_encerramento:
             self.status = 'Encerrada'
@@ -1230,10 +1249,9 @@ class NotificacaoIndividual(models.Model):
                         f'A data informada no campo "{campo}" não pode anteceder a data dos primeiros sintomas.'
                     )
         super().save(*args, **kwargs)
-
-    @meta("Número")
-    def get_numero(self):
-        return str(self.id).rjust(5, "0")
+        if self.numero is None:
+            self.numero = '{}-1'.format(str(self.id).rjust(5, "0"))
+            super().save(*args, **kwargs)
 
     def get_idade(self):
         return age(self.data_nascimento)
@@ -1375,8 +1393,8 @@ class NotificacaoIndividual(models.Model):
             .fieldset(
                 "Dados Gerais",
                 (
-                    "doenca",
-                    "data",
+                    "numero",
+                    ("doenca", "data"),
                     ("notificante", "municipio"),
                     ("unidade", "data_primeiros_sintomas"),
                 ),
@@ -1471,7 +1489,7 @@ class NotificacaoIndividual(models.Model):
         )
 
     def __str__(self):
-        return f"Notificação {self.get_numero()} - {self.nome} ({self.cpf or self.cartao_sus}) - {self.data_primeiros_sintomas.strftime('%d/%m/%Y')}"
+        return f"Notificação {self.numero} - {self.nome} ({self.cpf or self.cartao_sus}) - {self.data_primeiros_sintomas.strftime('%d/%m/%Y')}"
 
     def get_url_impressao(self):
         return f"{settings.SITE_URL}/api/notificacaoindividual/imprimir/{self.id}/?token={self.token}"

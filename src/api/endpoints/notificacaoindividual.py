@@ -22,7 +22,9 @@ class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
                 "notificacaoindividual.editar",
                 "notificacaoindividual.excluir",
                 "notificacaoindividual.imprimir",
+                "notificacaoindividual.clonar",
             )
+            .order_by("numero")
         )
 
     def check_permission(self):
@@ -83,7 +85,7 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
         return serializer
 
     def check_permission(self):
-        return self.check_role("notificante", "regulador", "administrador", "gu", "gm") and self.check_instance()
+        return self.check_role("notificante", "regulador", "administrador", "gu", "gm")# and self.check_instance()
 
 
 class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -109,6 +111,25 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         )
 
 
+class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    doenca = endpoints.forms.ModelChoiceField(Doenca.objects, label="Doença")
+    
+    class Meta:
+        icon = "copy"
+        modal = True
+        verbose_name = "Clonar"
+
+    def get(self):
+        return self.formfactory().fields('doenca')
+
+    def post(self):
+        clone = self.instance.clonar(self.cleaned_data['doenca'])
+        return self.redirect(f'/app/notificacaoindividual/visualizar/{clone.pk}/')
+    
+    def check_permission(self):
+        return self.check_role("regulador", "administrador")
+
+
 class Mixin:
 
     def clean_cpf(self, data):
@@ -118,11 +139,11 @@ class Mixin:
         limite_superior= data_primeiros_sintomas + timedelta(days=30)
         anterior = NotificacaoIndividual.objects.filter(cpf=cpf, data_primeiros_sintomas__gte=limite_inferior, data_primeiros_sintomas__lte=data_primeiros_sintomas).exclude(pk=self.instance.pk).first()
         if anterior:
-            raise ValidationError(f'Existe uma notificação anterior ({anterior.get_numero()}) realizada a menos de um mês para esse CPF.')
+            raise ValidationError(f'Existe uma notificação anterior ({anterior.numero}) realizada a menos de um mês para esse CPF.')
         posterior = NotificacaoIndividual.objects.filter(cpf=cpf, data_primeiros_sintomas__lte=limite_superior, data_primeiros_sintomas__gte=data_primeiros_sintomas).exclude(pk=self.instance.pk).first()
         if posterior:
             print(data_primeiros_sintomas, limite_superior, posterior.data_primeiros_sintomas)
-            raise ValidationError(f'Existe uma notificação posterior ({posterior.get_numero()}) realizada a menos de um mês para esse CPF.')
+            raise ValidationError(f'Existe uma notificação posterior ({posterior.numero}) realizada a menos de um mês para esse CPF.')
         return cpf
 
     def on_data_nascimento_change(self, data_nascimento):

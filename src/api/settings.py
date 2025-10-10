@@ -100,6 +100,7 @@ TIME_ZONE = "America/Recife"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = False
+USE_S3 = False
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "media/"
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
