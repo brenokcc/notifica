@@ -719,7 +719,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return (
             self.search("cpf", "nome", "cartao_sus")
             .fields("numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame")
-            .filters("municipio", "unidade", "notificante", "status", "validada",)
+            .filters("doenca", "municipio", "unidade", "notificante", "status", "validada",)
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
@@ -838,6 +838,26 @@ class NotificacaoIndividual(models.Model):
         Escolaridade, verbose_name="Escolaridade", on_delete=models.CASCADE, pick=True
     )
     nome_mae = models.CharField(verbose_name="Nome da Mãe")
+
+    # Surto
+    data_primeiros_sintomas_surto = models.DateField(
+        verbose_name="Data dos 1º Sintomas do 1º Caso Suspeito",
+        null=True,
+        blank=True,
+    )
+    numero_casos_suspeitos_surto = models.CharField(
+        verbose_name="Número de Casos Suspeitos/Expostos",
+        null=True,
+        blank=True,
+    )
+    tipo_local_surto = models.ForeignKey(
+        TipoLocal,
+        verbose_name="Local Inicial da Ocorrência",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        pick=True,
+    )
 
     # Dados Residenciais
     pais = models.ForeignKey(
@@ -1322,7 +1342,14 @@ class NotificacaoIndividual(models.Model):
                 ),
             )
             .fieldset("Dados de Contato", (("telefone", "email"),))
-            .fieldset("Investigação", ("data_investigacao", "ocupacao_investigacao:ocupacao.cadastrar"))
+            .fieldset("Investigação", (("data_investigacao", "ocupacao_investigacao:ocupacao.cadastrar"),))
+            .fieldset(
+                "Notificação de Surto",
+                (
+                    ("data_primeiros_sintomas_surto", "numero_casos_suspeitos_surto"),
+                    "tipo_local_surto",
+                ),
+            )
             .fieldset("Dados Clínicos", ("sinais_clinicos", "doencas_pre_existentes"))
             .fieldset(
                 "Sorologia (IgM) Chikungunya",
@@ -1426,7 +1453,14 @@ class NotificacaoIndividual(models.Model):
                 ),
             )
             .fieldset("Dados de Contato", (("telefone", "email"),))
-            .fieldset("Investigação", ("data_investigacao", "ocupacao_investigacao"))
+            .fieldset("Investigação", (("data_investigacao", "ocupacao_investigacao"),))
+            .fieldset(
+                "Notificação de Surto",
+                (
+                    ("data_primeiros_sintomas_surto", "numero_casos_suspeitos_surto"),
+                    "tipo_local_surto",
+                ),
+            )
             .fieldset("Dados Clínicos", ("sinais_clinicos", "doencas_pre_existentes"))
             .fieldset(
                 "Sorologia (IgM) Chikungunya",
@@ -1560,42 +1594,3 @@ class Evolucao(models.Model):
 
     def __str__(self):
         return f'Evolução {self.id}'
-
-
-class NotificacaoSurto(models.Model):
-    data_primeiros_sintomas = models.DateField(
-        verbose_name="Data dos 1º Sintomas do 1º Caso Suspeito"
-    )
-    numero_casos_suspeitos = models.CharField(
-        verbose_name="Número de Casos Suspeitos/Expostos"
-    )
-    tipo_local = models.ForeignKey(
-        TipoLocal,
-        verbose_name="Local Inicial da Ocorrência",
-        on_delete=models.CASCADE,
-        pick=True,
-    )
-    hipotese_diagnostica_1 = models.ForeignKey(
-        Doenca,
-        verbose_name="1ª Hipótese Diagnóstica",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="s1",
-    )
-    hipotese_diagnostica_2 = models.ForeignKey(
-        Doenca,
-        verbose_name="1ª Hipótese Diagnóstica",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="s2",
-    )
-
-    class Meta:
-        icon = "people-line"
-        verbose_name = "Notificação de Surto"
-        verbose_name_plural = "Notificações de Surto"
-
-    def __str__(self):
-        return f"Notificação {self.id}"

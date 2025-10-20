@@ -138,11 +138,10 @@ class Mixin:
         limite_inferior = data_primeiros_sintomas - timedelta(days=30)
         limite_superior= data_primeiros_sintomas + timedelta(days=30)
         anterior = NotificacaoIndividual.objects.filter(cpf=cpf, data_primeiros_sintomas__gte=limite_inferior, data_primeiros_sintomas__lte=data_primeiros_sintomas).exclude(pk=self.instance.pk).first()
-        if anterior:
+        if anterior and not self.instance.pk:
             raise ValidationError(f'Existe uma notificação anterior ({anterior.numero}) realizada a menos de um mês para esse CPF.')
         posterior = NotificacaoIndividual.objects.filter(cpf=cpf, data_primeiros_sintomas__lte=limite_superior, data_primeiros_sintomas__gte=data_primeiros_sintomas).exclude(pk=self.instance.pk).first()
-        if posterior:
-            print(data_primeiros_sintomas, limite_superior, posterior.data_primeiros_sintomas)
+        if posterior and not self.instance.pk:
             raise ValidationError(f'Existe uma notificação posterior ({posterior.numero}) realizada a menos de um mês para esse CPF.')
         return cpf
 

@@ -48,6 +48,10 @@
             .item label{
                 font-weight: bold;
             }
+            .item .number.noborder{
+                border: solid 0px #BBB;
+                width: 0px;
+            }
             .item .number{
                 border: solid 1px #BBB;
                 width: 15px;
@@ -106,7 +110,7 @@
 
         {% endblock %}
     
-        <br><br>
+        <br>
 
         <div class="title center">Informações Complementares e Observações</div>
         <div class="bloco bordered" style="height: 50px;">
@@ -123,8 +127,8 @@
                         <b>{{ obj.token }}</b>
                     </div>
                 </td>
-                <td width="150px">
-                    <img style="width: 150px" src="{{ obj.generate_qr_code_base64 }}">
+                <td width="130px">
+                    <img style="width: 130px" src="{{ obj.generate_qr_code_base64 }}">
                 </td>
             </tr>
         </table>
