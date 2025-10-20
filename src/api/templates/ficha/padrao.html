@@ -123,19 +123,19 @@
         </div>
 
         <div class="subtitle center">Notificação de Surto</div>
-        <div class="item" style="width: 30%">
+        <div class="item" style="width: 35%">
             <div class="number">17</div>
             <div class="cell">
                 <label>Data dos 1º Sintomas do 1º Caso Suspeito:</label><div>{{ obj.data_primeiros_sintomas_surto|date:"d/m/Y"|default:"-" }}</div>
             </div>
         </div>
-        <div class="item" style="width: 30%">
+        <div class="item" style="width: 32%">
             <div class="number">18</div>
             <div class="cell">
                 <label>Número de Casos Suspeitos/Expostos:</label><div>{{ obj.numero_casos_suspeitos_surto|default:"-" }}</div>
             </div>
         </div>
-        <div class="item" style="width: 37%">
+        <div class="item" style="width: 30%">
             <div class="number">19</div>
             <div class="cell">
                 <label>Local Inicial da Ocorrência do Surto:</label><div>{{ obj.tipo_local_surto|default:"-" }}</div>
