@@ -1,0 +1,270 @@
+{% extends "ficha/base.html" %}
+
+{% block secoes %}
+    <style>.cell >div{color: inherit;}</style>
+    <div class="subtitle center">Dados Gerais</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 99%">
+                <div class="number">1</div>
+                <div class="cell">
+                    <label>Tipo de Notificação:</label><div>Individual</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 65%">
+                <div class="number">2</div>
+                <div class="cell first">
+                    <label>Agravo/doença:</label><div>{{ obj.doenca.nome|default:"-" }}</div>
+                </div>
+                <div class="cell">
+                    <label>(CID10):</label><div>{{ obj.doenca.cid10|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 33%">
+                <div class="number">3</div>
+                <div class="cell">
+                    <label>Data da Notificação:</label><div>{{ obj.data|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 33%">
+                <div class="number">4</div>
+                <div class="cell">
+                    <label>UF:</label><div>{{ obj.municipio.estado.sigla|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 65%">
+                <div class="number">5</div>
+                <div class="cell first">
+                    <label>Município de Notificação:</label><div>{{ obj.municipio.nome|default:"-" }}</div>
+                </div>
+                <div class="cell">
+                    <label>Código (IBGE):</label><div>{{ obj.municipio.codigo|default:"-" }}</div>
+                </div>
+            </div>
+
+            
+            <div class="item" style="width: 65%">
+                <div class="number">6</div>
+                <div class="cell first">
+                    <label>Unidade de Saúde / Fonte Notificadora:</label><div>{{ obj.unidade.nome|default:"-" }}</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>{{ obj.unidade.codigo|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 33%">
+                <div class="number">7</div>
+                <div class="cell">
+                    <label>Data dos Primeiros Sintomas:</label><div>{{ obj.data_primeiros_sintomas|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+
+        </div>
+        <div class="subtitle center">Notificação Individual</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 65%">
+                <div class="number">8</div>
+                <div class="cell">
+                    <label>Nome do Paciente:</label><div>{{ obj.nome|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 32%">
+                <div class="number">9</div>
+                <div class="cell">
+                    <label>Data de Nascimento:</label><div>{{ obj.data_nascimento|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 24%">
+                <div class="number">10</div>
+                <div class="cell">
+                    <label>Idade:</label><div>{{ obj.get_idade|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 24%">
+                <div class="number">11</div>
+                <div class="cell">
+                    <label>Sexo:</label><div>{{ obj.sexo|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 24%">
+                <div class="number">12</div>
+                <div class="cell">
+                    <label>Gestante:</label><div>{{ obj.periodo_gestacao|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 23%">
+                <div class="number">13</div>
+                <div class="cell">
+                    <label>Raça/Cor:</label><div>{{ obj.raca|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 98%">
+                <div class="number">14</div>
+                <div class="cell">
+                    <label>Escolaridade:</label><div>{{ obj.escolaridade|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 33%">
+                <div class="number">15</div>
+                <div class="cell">
+                    <label>Número do Cartão SUS:</label><div>{{ obj.cartao_sus|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 64%">
+                <div class="number">16</div>
+                <div class="cell">
+                    <label>Nome da Mãe:</label><div>{{ obj.nome_mae|default:"-" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="subtitle center">Notificação de Surto</div>
+        <div class="item" style="width: 30%">
+            <div class="number">17</div>
+            <div class="cell">
+                <label>Data dos 1º Sintomas do 1º Caso Suspeito:</label><div>{{ obj.data_primeiros_sintomas_surto|date:"d/m/Y"|default:"-" }}</div>
+            </div>
+        </div>
+        <div class="item" style="width: 30%">
+            <div class="number">18</div>
+            <div class="cell">
+                <label>Número de Casos Suspeitos/Expostos:</label><div>{{ obj.numero_casos_suspeitos_surto|default:"-" }}</div>
+            </div>
+        </div>
+        <div class="item" style="width: 37%">
+            <div class="number">19</div>
+            <div class="cell">
+                <label>Local Inicial da Ocorrência do Surto:</label><div>{{ obj.tipo_local_surto|default:"-" }}</div>
+            </div>
+        </div>
+        
+
+        <div class="subtitle center">Dados Residenciais</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 15%">
+                <div class="number">20</div>
+                <div class="cell">
+                    <label>UF:</label><div>{{ obj.municipio_residencia.estado.sigla|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 50%">
+                <div class="number">21</div>
+                <div class="cell first">
+                    <label>Município de Residência:</label><div>{{ obj.municipio_residencia.nome|default:"-" }}</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>{{ obj.municipio_residencia.codigo|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 33%">
+                <div class="number">22</div>
+                <div class="cell">
+                    <label>Distrito:</label><div>{{ obj.distrito|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 30%">
+                <div class="number">23</div>
+                <div class="cell">
+                    <label>Bairro:</label><div>{{ obj.bairro|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 68%">
+                <div class="number">24</div>
+                <div class="cell first">
+                    <label>Logradouro (rua, avenida):</label><div>{{ obj.logradouro|default:"-" }}</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>{{ obj.codigo_logradouro|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 15%">
+                <div class="number">25</div>
+                <div class="cell">
+                    <label>Número:</label><div>{{ obj.numero_residencia|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 60%">
+                <div class="number">26</div>
+                <div class="cell">
+                    <label>Complemento:</label><div>{{ obj.complemento|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 22%">
+                <div class="number">27</div>
+                <div class="cell">
+                    <label>Geo campo 1:</label><div>{{ obj.latitude|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 22%">
+                <div class="number">28</div>
+                <div class="cell">
+                    <label>Geo campo 2:</label><div>{{ obj.longitude|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 50%">
+                <div class="number">29</div>
+                <div class="cell">
+                    <label>Referência:</label><div>{{ obj.referencia|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 25%">
+                <div class="number">30</div>
+                <div class="cell">
+                    <label>CEP:</label><div>{{ obj.cep|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 33%">
+                <div class="number">31</div>
+                <div class="cell">
+                    <label>Telefone:</label><div>{{ obj.telefone|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 32%">
+                <div class="number">32</div>
+                <div class="cell">
+                    <label>Zona:</label><div>{{ obj.zona|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 32%">
+                <div class="number">33</div>
+                <div class="cell">
+                    <label>País:</label><div>{{ obj.pais|default:"-" }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="subtitle center">Notificante</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 99%">
+                <div class="number noborder">&nbsp;</div>
+                <div class="cell">
+                    <label>Município/Unidade de Saúde:</label><div>&nbsp;</div>
+                </div>
+            </div>
+            <div class="item" style="width: 33%">
+                <div class="number noborder">&nbsp;</div>
+                <div class="cell">
+                    <label>Nome:</label><div>{{ obj.notificante.nome }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 42%">
+                <div class="number noborder">&nbsp;</div>
+                <div class="cell">
+                    <label>Função:</label><div>{{ obj.notificante.funcao }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 22%">
+                <div class="number noborder">&nbsp;</div>
+                <div class="cell">
+                    <label>Assinatura:</label><div>&nbsp;</div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
