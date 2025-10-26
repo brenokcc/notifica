@@ -14,6 +14,7 @@ class ApiApplication(Application):
             gu="Gestor de Unidade",
             gm="Gestor Municipal",
             notificante="Notificante",
+            agente="Agente",
         )
         self.dashboard.usermenu.add(
             "dev.icons",
@@ -32,6 +33,7 @@ class ApiApplication(Application):
             # 'notificacaosurto.notificacoessurto',
             "estatistica.painel",
             "solicitacaocadastro.solicitacoescadastro",
+            "notificacaoindividual.bloqueios",
         )
         self.dashboard.todo.add(
             "notificacaoindividual.aguardandoenvio",
@@ -52,6 +54,7 @@ class ApiApplication(Application):
                 },
                 "users:Usuários": {
                     "Administradores": "administrador.administradores",
+                    "Agentes": "agente.agentes",
                     "Gestores Municipais": "gestormunicipal.gestoresmunicipais",
                     "Reguladores": "regulador.reguladores",
                     "Gestores de Unidade": "gestorunidade.gestoresunidade",

@@ -101,7 +101,7 @@
         <table class="cabecalho">
             <tr><td><img style="height:50px" src="{{ base_url }}/static/images/brand.png"/></td></tr>
             <tr><td>SISTEMA DE INFORMAÇÃO DE AGRAVOS DE NOTIFICAÇÃO</td></tr>
-            <tr><td>FICHA DE INVESTIGAÇÃO - DENGUE E FEBRE DE CHIKUNGUNYA</td></tr>
+            <tr><td>{% block title %}{% endblock %}</td></tr>
         </table>
 
         <div class="numero-notificacao">Nº {{ obj.numero }}</div>

@@ -169,6 +169,9 @@ class Mixin:
     
     def get_municipio_residencia_queryset(self, queryset):
         return queryset.nolookup()
+    
+    def get_municipio_infeccao_queryset(self, queryset):
+        return queryset.nolookup()
 
 
 class Checar(endpoints.Endpoint):
@@ -320,7 +323,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         cartao_sus = self.cleaned_data['cartao_sus']
         if not cpf and not cartao_sus:
             raise ValidationError('Informe o CPF ou Cartão SUS.')
-        return super().post()
+        self.redirect('/app/notificacaoindividual/notificacoesindividuais/')
 
 class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
     class Meta:
@@ -431,4 +434,41 @@ class EvoluirCaso(endpoints.RelationEndpoint[Evolucao]):
         )
 
     def check_permission(self):
-        return self.check_role("notificante") and not self.source.data_encerramento
+        return self.check_role("notificante") and self.source.validada and not self.source.data_encerramento
+
+
+class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        modal = False
+        icon = "store-slash"
+        verbose_name = "Bloqueios"
+
+    def get(self):
+        return super().get().all().fields(
+            'id', 'numero', 'data', 'data_primeiros_sintomas',
+            'get_qtd_dias_infectado', 'nome', 'get_endereco',
+            'unidade', 'get_status', 'get_bloqueio', 'data_bloqueio', 'responsavel_bloqueio'
+        ).actions('notificacaoindividual.registrarbloqueio')
+    
+    def check_permission(self):
+        return self.check_role("agente")
+
+
+class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        icon = "store-slash"
+        verbose_name = "Bloqueio"
+
+    def get(self):
+        return self.formfactory().fields('bloqueio', 'tipo_bloqueio')
+    
+    def post(self):
+        self.instance.data_bloqueio = datetime.now()
+        self.instance.responsavel_bloqueio = Agente.objects.filter(cpf=self.request.user.username).first()
+        self.instance.save()
+        return super().post()
+    
+    def check_permission(self):
+        return self.check_role("agente") and self.instance.bloqueio is None

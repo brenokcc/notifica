@@ -46,3 +46,18 @@ docker compose down
 git pull origin main
 docker compose exec app python manage.py sync
 ```
+
+## Fluxo
+
+1 A pessoa adoece
+2 O notificante cadastra a ficha
+3 O notificante imprime a ficha
+4 O notificante envia a ficha para validação
+5 O regulador avalia a ficha
+5.1 O regulador imprime a ficha ou utiliza a que veio e encaminha para o laboratório.
+5.2 o laboratório faz o exame.
+5.3 o laboratório envia o resultado e o regulador encerra o caso e anexa o exame. - aqui no item 5 o prazo é de 10 dias -
+Ainda no mesmo dia
+6 O agente registra o bloqueio
+
+7) pode acontecer do paciente procurar outro atendimento e o notificante registrar a evolução do caso. Nesse caso, a notificação é a mesma e se for antes de 10 dias, provavelmente o caso ainda não estará encerrado pelo regulador

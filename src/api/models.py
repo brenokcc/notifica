@@ -34,6 +34,24 @@ class Administrador(models.Model):
         User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
 
+@role("agente", username="cpf", email="email")
+class Agente(models.Model):
+    cpf = models.CharField(verbose_name="CPF", blank=False)
+    nome = models.CharField(verbose_name="Nome")
+    email = models.CharField(verbose_name="E-mail", null=True)
+
+    class Meta:
+        verbose_name = "Agente"
+        verbose_name_plural = "Agentes"
+
+    def __str__(self):
+        return self.nome
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
+
+
 class Funcao(models.Model):
     nome = models.CharField(verbose_name="Nome")
 
@@ -298,6 +316,7 @@ class UnidadeSaudeQuerySet(models.QuerySet):
 
 
 @role("gu", username="gestores__cpf", email="gestores__email", unidade="pk")
+@role("agente", username="agentes__cpf", email="agentes__email", unidade="pk")
 class UnidadeSaude(models.Model):
     codigo = models.CharField(verbose_name="CNES")
     nome = models.CharField(verbose_name="Nome")
@@ -306,6 +325,7 @@ class UnidadeSaude(models.Model):
         Municipio, verbose_name="Município", on_delete=models.CASCADE
     )
     gestores = models.ManyToManyField(GestorUnidade, blank=True)
+    agentes = models.ManyToManyField(Agente, blank=True)
 
     objects = UnidadeSaudeQuerySet()
 
@@ -315,7 +335,7 @@ class UnidadeSaude(models.Model):
         verbose_name_plural = "Unidades de Saúde"
 
     def __str__(self):
-        return self.nome
+        return f'{self.codigo} - {self.nome}'
 
     def serializer(self):
         return (
@@ -329,7 +349,7 @@ class UnidadeSaude(models.Model):
         return (
             super()
             .formfactory()
-            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores:gestorunidade.cadastrar"))
+            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores:gestorunidade.cadastrar", "agentes:agente.cadastrar"))
         )
 
     def get_equipes(self):
@@ -381,7 +401,7 @@ class SolicitacaoCadastroQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search('cpf', 'nome').filters('papel', 'aprovada')
-            .fields('data', 'cpf', 'nome', 'papel', 'municipio', 'unidade')
+            .fields('data', 'cpf', 'nome', 'papel', 'municipio', 'unidade', 'aprovada', 'avaliador', 'data_avaliacao')
             .lookup("administrador")
             .lookup("gm", municipio__gestores__cpf="username")
             .lookup("gu", unidade__gestores__cpf="username")
@@ -391,6 +411,8 @@ class SolicitacaoCadastro(models.Model):
     PAPEIS = [
         ['gm', 'Gestor Municipal'],
         ['gu', 'Gestor de Unidade'],
+        ['regulador', 'Regulador'],
+        ['agente', 'Agente'],
         ['notificante', 'Notificante'],
     ]
 
@@ -459,7 +481,7 @@ class SolicitacaoCadastro(models.Model):
     @transaction.atomic
     def processar(self):
         if self.aprovada:
-            model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante}[self.papel]
+            model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante, 'agente': Agente, 'regulador': Regulador}[self.papel]
             obj = (
                 model.objects.filter(cpf=self.cpf).first() or model()
             )
@@ -478,15 +500,25 @@ class SolicitacaoCadastro(models.Model):
                     raise ValidationError('Informe a unidade do gestor.')
                 self.unidade.gestores.add(obj)
                 self.unidade.post_save()
+            elif self.papel == 'agente':
+                if self.unidade is None:
+                    raise ValidationError('Informe a unidade do agente.')
+                self.unidade.agentes.add(obj)
+                self.unidade.post_save()
             elif self.papel == 'gm':
                 if self.municipio is None:
                     raise ValidationError('Informe o município do gestor.')
                 self.municipio.gestores.add(obj)
                 self.municipio.post_save()
+            elif self.papel == 'regulador':
+                if self.municipio is None:
+                    raise ValidationError('Informe o município do regulador.')
+                self.municipio.reguladores.add(obj)
+                self.municipio.post_save()
             password = None
             user = User.objects.filter(username=self.cpf).first()
             if not user.last_login:
-                password = uuid1().hex[0:6]
+                password = '123' if settings.DEBUG else uuid1().hex[0:6]
                 user.set_password(password)
                 user.save()
             content = 'A sua solicitação de acesso ao Arbonotifica foi aprovada.'
@@ -724,6 +756,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
             .lookup("gu", unidade__gestores__cpf='username')
+            .lookup("agente", unidade__agentes__cpf='username')
             .lookup("notificante", unidade__equipe__notificantes__cpf='username')
         ).distinct()
     
@@ -1192,6 +1225,12 @@ class NotificacaoIndividual(models.Model):
     observacao = models.TextField(verbose_name="Observação", null=True, blank=True)
     validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
 
+    # Bloqueio
+    bloqueio = models.BooleanField(verbose_name='Bloqueio', null=True, blank=False, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
+    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Físico', 'Físico'], ['Químico', 'Químico']], null=True, pick=True)
+    responsavel_bloqueio = models.ForeignKey(Agente, verbose_name='Responsável pelo Bloqueio', on_delete=models.CASCADE, null=True)
+    data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
+
     # Token
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
     devolvida = models.BooleanField(verbose_name='Devolvida', null=True)
@@ -1210,6 +1249,20 @@ class NotificacaoIndividual(models.Model):
         if self.status == 'Encerrada':
             return Badge('#4caf50', 'Encerrada', 'check')
         return Badge('#2196f3', 'Em Análise', 'eyedropper')
+    
+    @meta('Endereço')
+    def get_endereco(self):
+        endereco = [
+            self.logradouro,
+            self.numero_residencia,
+            self.complemento,
+            self.bairro,
+            self.cep,
+            self.distrito,
+            self.municipio_residencia,
+            f'Zona {self.zona}' if self.zona else None,
+            ]
+        return ', '.join(str(info) for info in endereco if info)
 
     @meta('Histórico de Evolução')
     def get_historico_evolucao(self):
@@ -1218,6 +1271,19 @@ class NotificacaoIndividual(models.Model):
     @meta('Histórico de Devolução')
     def get_historico_devolucao(self):
         return self.devolucao_set.ignore('notificacao')
+    
+    @meta('Qtd. de Dias Infectado')
+    def get_qtd_dias_infectado(self):
+        total = (datetime.today().date() - self.data_primeiros_sintomas).days
+        return Badge('gray' if total > 7 else 'green', f'{total} dia' if total == 1 else f'{total} dias')
+    
+    def get_bloqueio(self):
+        if self.bloqueio is None:
+            return Badge('gray', 'Pendente')
+        elif self.tipo_bloqueio == 'Físico':
+            return Badge('#2196f3', 'Físico', 'house-circle-xmark')
+        elif self.tipo_bloqueio == 'Químico':
+            return Badge('#2196f3', 'Químico', 'skull-crossbones')
 
     @transaction.atomic
     def clonar(self, doenca):

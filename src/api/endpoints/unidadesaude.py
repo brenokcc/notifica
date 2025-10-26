@@ -68,7 +68,7 @@ class AddEquipe(endpoints.RelationEndpoint[Equipe]):
         )
 
     def check_permission(self):
-        return self.check_role("administrador", "gm")
+        return self.check_role("administrador", "gm", "gu")
     
 
 class Importar(endpoints.Endpoint):

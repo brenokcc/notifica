@@ -1,5 +1,7 @@
 {% extends "ficha/base.html" %}
 
+{% block title %}FICHA DE NOTIFICAÇÃO / CONCLUSÃO{% endblock %}<
+
 {% block secoes %}
     <style>.cell >div{color: inherit;}</style>
     <div class="subtitle center">Dados Gerais</div>
@@ -121,28 +123,7 @@
                 </div>
             </div>
         </div>
-
-        <div class="subtitle center">Notificação de Surto</div>
-        <div class="item" style="width: 35%">
-            <div class="number">17</div>
-            <div class="cell">
-                <label>Data dos 1º Sintomas do 1º Caso Suspeito:</label><div>{{ obj.data_primeiros_sintomas_surto|date:"d/m/Y"|default:"-" }}</div>
-            </div>
-        </div>
-        <div class="item" style="width: 32%">
-            <div class="number">18</div>
-            <div class="cell">
-                <label>Número de Casos Suspeitos/Expostos:</label><div>{{ obj.numero_casos_suspeitos_surto|default:"-" }}</div>
-            </div>
-        </div>
-        <div class="item" style="width: 30%">
-            <div class="number">19</div>
-            <div class="cell">
-                <label>Local Inicial da Ocorrência do Surto:</label><div>{{ obj.tipo_local_surto|default:"-" }}</div>
-            </div>
-        </div>
         
-
         <div class="subtitle center">Dados Residenciais</div>
         <div class="bloco bordered">
             <div class="item" style="width: 15%">
@@ -240,6 +221,95 @@
                 </div>
             </div>
         </div>
+        <div class="title center">Conclusão</div>
+        <div class="bloco bordered">
+            <div class="item" style="width: 29%">
+                <div class="number">34</div>
+                <div class="cell">
+                    <label>Data da Investigação:</label><div>{{ obj.data_investigacao|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 29%">
+                <div class="number">35</div>
+                <div class="cell">
+                    <label>Ocupação:</label><div>{{ obj.ocupacao_investigacao|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 40%">
+                <div class="number">36</div>
+                <div class="cell">
+                    <label>Critério de Confirmação/Descarte:</label><div>{{ obj.criterio_confirmacao|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 50%">
+                <div class="number">37</div>
+                <div class="cell">
+                    <label>O caso é autóctone do município de residência?:</label><div>{{ obj.autoctone|yesno:"Sim,Não" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 15%">
+                <div class="number">38</div>
+                <div class="cell">
+                    <label>Uf:</label><div>{{ obj.municipio_infeccao.estado.sigla|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 32%">
+                <div class="number">39</div>
+                <div class="cell">
+                    <label>País:</label><div>{{ obj.pais_infeccao|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 50%">
+                <div class="number">40</div>
+                <div class="cell first">
+                    <label>Município:</label><div>{{ obj.municipio_infeccao.nome|default:"-" }}</div>
+                </div>
+                <div class="cell">
+                    <label>Código:</label><div>{{ obj.municipio_infeccao.codigo|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 24%">
+                <div class="number">41</div>
+                <div class="cell">
+                    <label>Distrito:</label><div>{{ obj.distrito_infeccao|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 23%">
+                <div class="number">42</div>
+                <div class="cell">
+                    <label>Bairro:</label><div>{{ obj.bairro_infeccao|default:"-" }}</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 27%">
+                <div class="number">43</div>
+                <div class="cell">
+                    <label>Doença Relacionada ao Trabalho:</label><div>-</div>
+                </div>
+            </div>
+
+            <div class="item" style="width: 71%">
+                <div class="number">44</div>
+                <div class="cell">
+                    <label>Evolução:</label><div>{{ obj.evolucao_caso|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 23%">
+                <div class="number">45</div>
+                <div class="cell">
+                    <label>Data do Óbito:</label><div>{{ obj.data_obito|date:"d/m/Y"|default:"-" }}</div>
+                </div>
+            </div>
+            <div class="item" style="width: 34%">
+                <div class="number">46</div>
+                <div class="cell">
+                    <label>Data do Encerramento:</label><div>{{ obj.data_encerramento|date:"d/m/Y"|default:"-" }}</div>
+                </div>
+            </div>
+        </div>
+
         <div class="subtitle center">Notificante</div>
         <div class="bloco bordered">
             <div class="item" style="width: 99%">

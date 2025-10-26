@@ -35,7 +35,7 @@ class SolicitacoesCadastroPendentes(endpoints.ListEndpoint[SolicitacaoCadastro])
         verbose_name = "Solicitações de cadastro pendentes"
 
     def get_queryset(self):
-        return super().get_queryset().filter(aprovada__isnull=True).actions("solicitacaocadastro.visualizar")
+        return super().get_queryset().filter(aprovada__isnull=True).actions("solicitacaocadastro.visualizar", "solicitacaocadastro.avaliar")
     
     def check_permission(self):
         return self.check_role("gm", "gu", "administrador") and self.get_queryset().exists()
@@ -96,6 +96,8 @@ class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
         return queryset.nolookup().filter(municipio=self.form.controller.get('municipio'))
 
     def post(self):
+        if self.instance.papel in ('agente', 'notificante') and not self.instance.unidade:
+            raise ValidationError('Informe a unidade')
         content = 'Sua solicitação de acesso foi registrada e será avaliada em breve.'
         email = Email(to=self.instance.email, subject="Arbonotifica - Solicitação de Acesso", content=content)
         email.send()
