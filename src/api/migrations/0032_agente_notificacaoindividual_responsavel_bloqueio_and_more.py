@@ -35,8 +35,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "verbose_name": "Agente",
-                "verbose_name_plural": "Agentes",
+                "verbose_name": "Agente de Endemias",
+                "verbose_name_plural": "Agentes de Endemias",
             },
             bases=(models.Model, slth.ModelMixin),
         ),
@@ -53,6 +53,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="unidadesaude",
             name="agentes",
-            field=slth.db.models.ManyToManyField(blank=True, to="api.agente"),
+            field=slth.db.models.ManyToManyField(blank=True, to="api.agente", verbose_name="Agentes de Endemias"),
         ),
     ]

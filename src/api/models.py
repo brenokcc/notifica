@@ -41,8 +41,8 @@ class Agente(models.Model):
     email = models.CharField(verbose_name="E-mail", null=True)
 
     class Meta:
-        verbose_name = "Agente"
-        verbose_name_plural = "Agentes"
+        verbose_name = "Agente de Endemias"
+        verbose_name_plural = "Agentes de Endemias"
 
     def __str__(self):
         return self.nome
@@ -325,7 +325,7 @@ class UnidadeSaude(models.Model):
         Municipio, verbose_name="Município", on_delete=models.CASCADE
     )
     gestores = models.ManyToManyField(GestorUnidade, blank=True)
-    agentes = models.ManyToManyField(Agente, blank=True)
+    agentes = models.ManyToManyField(Agente, verbose_name="Agentes de Endemias", blank=True)
 
     objects = UnidadeSaudeQuerySet()
 
@@ -1227,7 +1227,7 @@ class NotificacaoIndividual(models.Model):
 
     # Bloqueio
     bloqueio = models.BooleanField(verbose_name='Bloqueio', null=True, blank=False, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
-    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Físico', 'Físico'], ['Químico', 'Químico']], null=True, pick=True)
+    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Físico', 'Físico'], ['Químico', 'Químico'], ['Físico e Químico', 'Físico e Químico']], null=True, pick=True)
     responsavel_bloqueio = models.ForeignKey(Agente, verbose_name='Responsável pelo Bloqueio', on_delete=models.CASCADE, null=True)
     data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
 
@@ -1273,8 +1273,10 @@ class NotificacaoIndividual(models.Model):
         return self.devolucao_set.ignore('notificacao')
     
     @meta('Qtd. de Dias Infectado')
-    def get_qtd_dias_infectado(self):
+    def get_qtd_dias_infectado(self, apenas_numero=False):
         total = (datetime.today().date() - self.data_primeiros_sintomas).days
+        if apenas_numero:
+            return total
         return Badge('gray' if total > 7 else 'green', f'{total} dia' if total == 1 else f'{total} dias')
     
     def get_bloqueio(self):
@@ -1284,6 +1286,8 @@ class NotificacaoIndividual(models.Model):
             return Badge('#2196f3', 'Físico', 'house-circle-xmark')
         elif self.tipo_bloqueio == 'Químico':
             return Badge('#2196f3', 'Químico', 'skull-crossbones')
+        elif self.tipo_bloqueio == 'Físico e Químico':
+            return Badge('#2196f3', 'Físico/Químico')
 
     @transaction.atomic
     def clonar(self, doenca):
