@@ -54,7 +54,7 @@ class ApiApplication(Application):
                 },
                 "users:Usuários": {
                     "Administradores": "administrador.administradores",
-                    "Agentes": "agente.agentes",
+                    "Agentes de Endemias": "agente.agentes",
                     "Gestores Municipais": "gestormunicipal.gestoresmunicipais",
                     "Reguladores": "regulador.reguladores",
                     "Gestores de Unidade": "gestorunidade.gestoresunidade",
