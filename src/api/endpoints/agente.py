@@ -16,7 +16,7 @@ class Agentes(endpoints.ListEndpoint[Agente]):
 class Cadastrar(endpoints.AddEndpoint[Agente]):
     class Meta:
         icon = 'plus'
-        verbose_name = 'Cadastrar Agente'
+        verbose_name = 'Cadastrar Agente de Endemias'
 
     def get(self):
         return (
@@ -28,7 +28,7 @@ class Visualizar(endpoints.ViewEndpoint[Agente]):
     class Meta:
         modal = False
         icon = 'eye'
-        verbose_name = 'Visualizar Agente'
+        verbose_name = 'Visualizar Agente de Endemias'
 
     def get(self):
         return (
@@ -39,7 +39,7 @@ class Visualizar(endpoints.ViewEndpoint[Agente]):
 class Editar(endpoints.EditEndpoint[Agente]):
     class Meta:
         icon = 'pen'
-        verbose_name = 'Editar Agente'
+        verbose_name = 'Editar Agente de Endemias'
 
     def get(self):
         return (
@@ -50,7 +50,7 @@ class Editar(endpoints.EditEndpoint[Agente]):
 class Excluir(endpoints.DeleteEndpoint[Agente]):
     class Meta:
         icon = 'trash'
-        verbose_name = 'Excluir Agente'
+        verbose_name = 'Excluir Agente de Endemias'
 
     def get(self):
         return (
