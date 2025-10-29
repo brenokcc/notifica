@@ -452,7 +452,7 @@ class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         ).actions('notificacaoindividual.registrarbloqueio')
     
     def check_permission(self):
-        return self.check_role("agente")
+        return self.check_role("agente", "regulador")
 
 
 class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -471,4 +471,4 @@ class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
     
     def check_permission(self):
-        return self.check_role("agente") and self.instance.get_qtd_dias_infectado(apenas_numero=True) < 8
+        return self.check_role("regulador") or (self.check_role("agente") and self.instance.get_qtd_dias_infectado(apenas_numero=True) < 8)
