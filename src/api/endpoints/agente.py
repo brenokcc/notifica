@@ -4,7 +4,7 @@ from ..models import *
 
 class Agentes(endpoints.ListEndpoint[Agente]):
     class Meta:
-        verbose_name = 'Agentes'
+        verbose_name = 'Agentes de Endemias'
 
     def get(self):
         return (
