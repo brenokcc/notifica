@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
                             ("gm", "Gestor Municipal"),
                             ("gu", "Gestor de Unidade"),
                             ("regulador", "Regulador"),
-                            ("agente", "Agente"),
+                            ("agente", "Agente de Endemia"),
                             ("notificante", "Notificante"),
                         ],
                         max_length=255,

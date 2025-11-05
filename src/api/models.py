@@ -34,22 +34,35 @@ class Administrador(models.Model):
         User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
 
-@role("agente", username="cpf", email="email")
+class AgenteQuerySet(models.QuerySet):
+    def all(self):
+        return super().all().search('cpf', 'nome').fields(
+            "cpf", "nome", "email", "get_municipio"
+        ).lookup('gm', municipio__gestores__cpf='username')
+
+
 class Agente(models.Model):
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
 
+    objects = AgenteQuerySet()
+
     class Meta:
+        icon = 'person-shelter'
         verbose_name = "Agente de Endemias"
         verbose_name_plural = "Agentes de Endemias"
 
     def __str__(self):
-        return self.nome
+        return f'{self.nome} ({self.cpf})'
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
+
+    @meta("Município")
+    def get_municipio(self):
+        return ", ".join(self.municipio_set.values_list("nome", flat=True))
 
 
 class Funcao(models.Model):
@@ -65,7 +78,7 @@ class Funcao(models.Model):
 
 class NotificanteQuerySet(models.QuerySet):
     def all(self):
-        return super().all().fields("cpf", "nome", "email", "funcao", "get_equipes")
+        return super().all().search('cpf', 'nome').fields("cpf", "nome", "email", "funcao", "get_equipes")
 
 
 class Notificante(models.Model):
@@ -101,7 +114,7 @@ class Notificante(models.Model):
 
 class GestorUnidadeQuerySet(models.QuerySet):
     def all(self):
-        return super().all().fields("cpf", "nome", "get_unidade")
+        return super().all().search('cpf', 'nome').fields("cpf", "nome", "get_unidade")
 
 
 class GestorUnidade(models.Model):
@@ -129,7 +142,7 @@ class GestorUnidade(models.Model):
 
 class GestorMunicipalQuerySet(models.QuerySet):
     def all(self):
-        return super().all().fields("cpf", "nome", "get_municipio")
+        return super().all().search('cpf', 'nome').fields("cpf", "nome", "get_municipio")
 
 
 class GestorMunicipal(models.Model):
@@ -157,7 +170,7 @@ class GestorMunicipal(models.Model):
 
 class ReguladorQuerySet(models.QuerySet):
     def all(self):
-        return super().all().fields("cpf", "nome", "get_municipio")
+        return super().all().search('cpf', 'nome').fields("cpf", "nome", "get_municipio")
 
 
 class Regulador(models.Model):
@@ -259,21 +272,25 @@ class MunicipioQuerySet(models.QuerySet):
         return (
             self.search("nome").filters("estado").lookup("administrador")
             .lookup("notificante", unidadesaude__equipe__notificantes__cpf="username")
+            .lookup("gm", gestores__cpf="username")
         )
 
 
 @role("gm", username="gestores__cpf", email="gestores__email", municipio="pk")
 @role("regulador", username="reguladores__cpf", email="reguladores__email", municipio="pk")
+@role("agente", username="agentes__cpf", email="agentes__email", unidade="pk")
 class Municipio(models.Model):
     estado = models.ForeignKey(Estado, verbose_name="Estado", on_delete=models.CASCADE)
     codigo = models.CharField(max_length=7, verbose_name="Código IBGE", unique=True)
     nome = models.CharField(verbose_name="Nome", max_length=60)
     gestores = models.ManyToManyField(GestorMunicipal, blank=True)
     reguladores = models.ManyToManyField(Regulador, blank=True)
+    agentes = models.ManyToManyField(Agente, verbose_name="Agentes de Endemias", blank=True)
 
     objects = MunicipioQuerySet()
 
     class Meta:
+        icon = "map-marked"
         verbose_name = "Município"
         verbose_name_plural = "Municípios"
 
@@ -285,7 +302,7 @@ class Municipio(models.Model):
             super()
             .serializer()
             .fieldset("Dados Gerais", (("codigo", "nome"), "estado"))
-            .fieldset("Equipe", ("gestores", "reguladores"))
+            .fieldset("Equipe", ("gestores", "reguladores", "agentes"))
         )
 
     def formfactory(self):
@@ -298,6 +315,7 @@ class Municipio(models.Model):
                 (
                     "gestores:gestormunicipal.cadastrar",
                     "reguladores:regulador.cadastrar",
+                    "agentes:agente.cadastrar"
                 ),
             )
         )
@@ -316,7 +334,6 @@ class UnidadeSaudeQuerySet(models.QuerySet):
 
 
 @role("gu", username="gestores__cpf", email="gestores__email", unidade="pk")
-@role("agente", username="agentes__cpf", email="agentes__email", unidade="pk")
 class UnidadeSaude(models.Model):
     codigo = models.CharField(verbose_name="CNES")
     nome = models.CharField(verbose_name="Nome")
@@ -325,7 +342,6 @@ class UnidadeSaude(models.Model):
         Municipio, verbose_name="Município", on_delete=models.CASCADE
     )
     gestores = models.ManyToManyField(GestorUnidade, blank=True)
-    agentes = models.ManyToManyField(Agente, verbose_name="Agentes de Endemias", blank=True)
 
     objects = UnidadeSaudeQuerySet()
 
@@ -349,7 +365,7 @@ class UnidadeSaude(models.Model):
         return (
             super()
             .formfactory()
-            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores:gestorunidade.cadastrar", "agentes:agente.cadastrar"))
+            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores:gestorunidade.cadastrar"))
         )
 
     def get_equipes(self):
@@ -401,7 +417,7 @@ class SolicitacaoCadastroQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search('cpf', 'nome').filters('papel', 'aprovada')
-            .fields('data', 'cpf', 'nome', 'papel', 'municipio', 'unidade', 'aprovada', 'avaliador', 'data_avaliacao')
+            .fields('data', 'cpf', 'nome', 'papel', 'municipio', 'unidade', 'aprovada', 'avaliador', 'data_avaliacao', 'observacao')
             .lookup("administrador")
             .lookup("gm", municipio__gestores__cpf="username")
             .lookup("gu", unidade__gestores__cpf="username")
@@ -412,7 +428,7 @@ class SolicitacaoCadastro(models.Model):
         ['gm', 'Gestor Municipal'],
         ['gu', 'Gestor de Unidade'],
         ['regulador', 'Regulador'],
-        ['agente', 'Agente'],
+        ['agente', 'Agente de Endemia'],
         ['notificante', 'Notificante'],
     ]
 
@@ -424,7 +440,7 @@ class SolicitacaoCadastro(models.Model):
     funcao = models.ForeignKey(Funcao, verbose_name="Profissão/Função", on_delete=models.CASCADE)
     papel = models.CharField(verbose_name="Papel", null=True, choices=PAPEIS, pick=True)
     municipio = models.ForeignKey(Municipio, verbose_name="Município", null=True)
-    unidade = models.ForeignKey(UnidadeSaude, verbose_name="Unidade", null=True, blank=True)
+    unidade = models.ForeignKey(UnidadeSaude, verbose_name="Unidade", null=True, blank=True, help_text="Obrigatório apenas para notificante.")
     equipe = models.ForeignKey(Equipe, verbose_name="Equipe", null=True, blank=True)
 
     aprovada = models.BooleanField(verbose_name="Aprovada", null=True, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
@@ -480,16 +496,16 @@ class SolicitacaoCadastro(models.Model):
 
     @transaction.atomic
     def processar(self):
+        model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante, 'agente': Agente, 'regulador': Regulador}[self.papel]
+        obj = (
+            model.objects.filter(cpf=self.cpf).first() or model()
+        )
+        obj.cpf = self.cpf
+        obj.nome = self.nome
+        obj.email = self.email
+        obj.funcao = self.funcao
+        obj.save()
         if self.aprovada:
-            model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante, 'agente': Agente, 'regulador': Regulador}[self.papel]
-            obj = (
-                model.objects.filter(cpf=self.cpf).first() or model()
-            )
-            obj.cpf = self.cpf
-            obj.nome = self.nome
-            obj.email = self.email
-            obj.funcao = self.funcao
-            obj.save()
             if self.papel == 'notificante':
                 if self.equipe is None:
                     raise ValidationError('Informe a equipe do notificante.')
@@ -501,10 +517,8 @@ class SolicitacaoCadastro(models.Model):
                 self.unidade.gestores.add(obj)
                 self.unidade.post_save()
             elif self.papel == 'agente':
-                if self.unidade is None:
-                    raise ValidationError('Informe a unidade do agente.')
-                self.unidade.agentes.add(obj)
-                self.unidade.post_save()
+                self.municipio.agentes.add(obj)
+                self.municipio.post_save()
             elif self.papel == 'gm':
                 if self.municipio is None:
                     raise ValidationError('Informe o município do gestor.')
@@ -756,7 +770,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
             .lookup("gu", unidade__gestores__cpf='username')
-            .lookup("agente", unidade__agentes__cpf='username')
+            .lookup("agente", unidade__municipio__agentes__cpf='username')
             .lookup("notificante", unidade__equipe__notificantes__cpf='username')
         ).distinct()
     
@@ -1223,11 +1237,11 @@ class NotificacaoIndividual(models.Model):
 
     # Observação
     observacao = models.TextField(verbose_name="Observação", null=True, blank=True)
-    validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
+    validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['', 'Pendente de Avaliação'], [False, 'Não'], [True, 'Sim']])
 
     # Bloqueio
     bloqueio = models.BooleanField(verbose_name='Bloqueio', null=True, blank=False, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
-    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Físico', 'Físico'], ['Químico', 'Químico'], ['Físico e Químico', 'Físico e Químico']], null=True, pick=True)
+    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Físico', 'Físico'], ['Químico', 'Químico'], ['Físico e Químico', 'Físico e Químico']], null=True, blank=True, pick=True)
     responsavel_bloqueio = models.ForeignKey(Agente, verbose_name='Responsável pelo Bloqueio', on_delete=models.CASCADE, null=True)
     data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
 
@@ -1279,9 +1293,14 @@ class NotificacaoIndividual(models.Model):
             return total
         return Badge('gray' if total > 7 else 'green', f'{total} dia' if total == 1 else f'{total} dias')
     
+    def pode_registrar_bloqueio(self):
+        return self.get_qtd_dias_infectado(apenas_numero=True) < 8
+
     def get_bloqueio(self):
         if self.bloqueio is None:
-            return Badge('gray', 'Pendente')
+            return Badge('gray', 'Pendente') if self.pode_registrar_bloqueio() else Badge('red', 'Prazo Perdido')
+        elif not self.bloqueio:
+            return Badge('red', 'Não')
         elif self.tipo_bloqueio == 'Físico':
             return Badge('#2196f3', 'Físico', 'house-circle-xmark')
         elif self.tipo_bloqueio == 'Químico':

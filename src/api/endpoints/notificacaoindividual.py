@@ -156,7 +156,6 @@ class Mixin:
 
     def on_sexo_change(self, sexo):
         if sexo:
-            print(sexo)
             if sexo.nome == "Masculino":
                 self.form.controller.set(
                     periodo_gestacao=PeriodoGestacao.objects.filter(
@@ -332,7 +331,7 @@ class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
         verbose_name = "Editar Notificação Individual"
 
     def check_permission(self):
-        return (self.check_role("regulador") and self.instance.data_envio) or ((self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username)
+        return (self.check_role("regulador") and self.instance.data_envio and not self.instance.devolvida) or ((self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username)
 
 
 class Excluir(endpoints.DeleteEndpoint[NotificacaoIndividual]):
@@ -452,7 +451,7 @@ class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         ).actions('notificacaoindividual.registrarbloqueio')
     
     def check_permission(self):
-        return self.check_role("agente", "regulador")
+        return self.check_role("agente", "regulador", "gm")
 
 
 class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -471,4 +470,4 @@ class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
     
     def check_permission(self):
-        return self.check_role("regulador") or (self.check_role("agente") and self.instance.get_qtd_dias_infectado(apenas_numero=True) < 8)
+        return self.check_role("regulador") or (self.check_role("agente") and self.instance.pode_registrar_bloqueio())

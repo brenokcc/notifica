@@ -11,7 +11,6 @@ class Reguladores(endpoints.ListEndpoint[Regulador]):
             super()
             .get()
             .actions(
-                "regulador.cadastrar",
                 "regulador.visualizar",
                 "regulador.editar",
                 "regulador.excluir",
@@ -28,7 +27,7 @@ class Cadastrar(endpoints.AddEndpoint[Regulador]):
         verbose_name = "Cadastrar Regulador"
 
     def check_permission(self):
-        return self.check_role("administrador")
+        return self.check_role("administrador", "gm")
 
 
 class Visualizar(endpoints.ViewEndpoint[Regulador]):

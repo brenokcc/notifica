@@ -9,7 +9,7 @@ class Agentes(endpoints.ListEndpoint[Agente]):
     def get(self):
         return (
             super().get()
-            .actions('agente.cadastrar', 'agente.visualizar', 'agente.editar', 'agente.excluir')
+            .actions('agente.visualizar', 'agente.editar', 'agente.excluir')
         )
 
 
@@ -22,6 +22,9 @@ class Cadastrar(endpoints.AddEndpoint[Agente]):
         return (
             super().get()
         )
+    
+    def check_permission(self):
+        return self.check_role("administrador", "gm")
 
         
 class Visualizar(endpoints.ViewEndpoint[Agente]):

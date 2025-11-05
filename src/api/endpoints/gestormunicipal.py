@@ -11,7 +11,6 @@ class GestoresMunicipais(endpoints.ListEndpoint[GestorMunicipal]):
             super()
             .get()
             .actions(
-                "gestormunicipal.cadastrar",
                 "gestormunicipal.visualizar",
                 "gestormunicipal.editar",
                 "gestormunicipal.excluir",

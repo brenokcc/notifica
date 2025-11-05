@@ -14,7 +14,12 @@ class Municipios(endpoints.ListEndpoint[Municipio]):
         )
 
     def check_permission(self):
-        return self.check_role("administrador")
+        return self.check_role("administrador", "gm")
+    
+    def contribute(self, entrypoint):
+        if entrypoint == 'menu':
+            return not self.check_role('gm', superuser=False)
+        return super().contribute(entrypoint)
 
 
 class Cadastrar(endpoints.AddEndpoint[Municipio]):
@@ -30,7 +35,7 @@ class Editar(endpoints.EditEndpoint[Municipio]):
         verbose_name = "Editar Município"
 
     def check_permission(self):
-        return self.check_role("administrador")
+        return self.check_role("administrador", "gm")
 
 
 class Excluir(endpoints.DeleteEndpoint[Municipio]):

@@ -38,7 +38,7 @@ class SolicitacoesCadastroPendentes(endpoints.ListEndpoint[SolicitacaoCadastro])
         return super().get_queryset().filter(aprovada__isnull=True).actions("solicitacaocadastro.visualizar", "solicitacaocadastro.avaliar")
     
     def check_permission(self):
-        return self.check_role("gm", "gu", "administrador") and self.get_queryset().exists()
+        return self.check_role("gm", "gu", "administrador") and super().get_queryset().exists()
 
 
 class RedefinirSenha(endpoints.AddEndpoint[SolicitacaoCadastro]):
@@ -96,11 +96,25 @@ class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
         return queryset.nolookup().filter(municipio=self.form.controller.get('municipio'))
 
     def post(self):
-        if self.instance.papel in ('agente', 'notificante') and not self.instance.unidade:
-            raise ValidationError('Informe a unidade')
+        if self.instance.papel == 'notificante':
+            if not self.instance.unidade:
+                raise ValidationError('Informe a unidade.')
+        else:
+            if self.instance.unidade:
+                raise ValidationError('Não é necessário informar a unidade.')
         content = 'Sua solicitação de acesso foi registrada e será avaliada em breve.'
         email = Email(to=self.instance.email, subject="Arbonotifica - Solicitação de Acesso", content=content)
         email.send()
+        if self.instance.unidade:
+            for gestor in self.instance.unidade.gestores.all():
+                content = 'Uma nova solicitação de acesso foi castrada para sua unidade.'
+                email = Email(to=gestor.email, subject="Arbonotifica - Solicitação de Acesso", content=content)
+                email.send()
+        else:
+            for gestor in self.instance.municipio.gestores.all():
+                content = 'Uma nova solicitação de acesso foi castrada para seu município.'
+                email = Email(to=gestor.email, subject="Arbonotifica - Solicitação de Acesso", content=content)
+                email.send()
         return super().post()
 
 

@@ -47,7 +47,7 @@ class Editar(endpoints.EditEndpoint[UnidadeSaude]):
         verbose_name = "Editar Unidade de Saúde"
 
     def check_permission(self):
-        return self.check_role("administrador", "gm") and self.check_instance()
+        return self.check_role("administrador", "gm", "gu") and self.check_instance()
 
 
 class Excluir(endpoints.DeleteEndpoint[UnidadeSaude]):

@@ -11,7 +11,6 @@ class GestoresUnidade(endpoints.ListEndpoint[GestorUnidade]):
             super()
             .get()
             .actions(
-                "gestorunidade.cadastrar",
                 "gestorunidade.visualizar",
                 "gestorunidade.editar",
                 "gestorunidade.excluir",
@@ -28,7 +27,7 @@ class Cadastrar(endpoints.AddEndpoint[GestorUnidade]):
         verbose_name = "Cadastrar Gestor de Unidade"
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador", "gm")
+        return self.check_role("regulador", "administrador", "gm", "gu")
 
 
 class Visualizar(endpoints.ViewEndpoint[GestorUnidade]):

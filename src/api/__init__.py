@@ -28,12 +28,14 @@ class ApiApplication(Application):
             "auth.logout",
         )
         self.dashboard.boxes.add(
+            "municipio.municipios",
+            "agente.agentes",
             "unidadesaude.unidadessaude",
             "notificacaoindividual.notificacoesindividuais",
+            "notificacaoindividual.bloqueios",
             # 'notificacaosurto.notificacoessurto',
             "estatistica.painel",
             "solicitacaocadastro.solicitacoescadastro",
-            "notificacaoindividual.bloqueios",
         )
         self.dashboard.todo.add(
             "notificacaoindividual.aguardandoenvio",

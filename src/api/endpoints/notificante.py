@@ -11,7 +11,7 @@ class Notificantes(endpoints.ListEndpoint[Notificante]):
             super()
             .get()
             .actions(
-                "notificante.cadastrar", "notificante.editar", "notificante.excluir"
+                "notificante.editar", "notificante.excluir"
             )
         )
 
