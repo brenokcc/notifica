@@ -270,7 +270,7 @@ class Estado(models.Model):
 class MunicipioQuerySet(models.QuerySet):
     def all(self):
         return (
-            self.search("nome").filters("estado").lookup("administrador")
+            self.search("nome", "gestores__nome").filters("estado").lookup("administrador")
             .lookup("notificante", unidadesaude__equipe__notificantes__cpf="username")
             .lookup("gm", gestores__cpf="username")
         )
@@ -300,9 +300,10 @@ class Municipio(models.Model):
     def serializer(self):
         return (
             super()
-            .serializer()
+            .serializer().actions('municipio.adicionaragente')
             .fieldset("Dados Gerais", (("codigo", "nome"), "estado"))
-            .fieldset("Equipe", ("gestores", "reguladores", "agentes"))
+            .fieldset("Gestão", ("gestores", "reguladores"))
+            .queryset('get_agentes')
         )
 
     def formfactory(self):
@@ -311,14 +312,18 @@ class Municipio(models.Model):
             .formfactory()
             .fieldset("Dados Gerais", (("codigo", "nome"), "estado"))
             .fieldset(
-                "Equipe",
+                "Gestão",
                 (
                     "gestores:gestormunicipal.cadastrar",
                     "reguladores:regulador.cadastrar",
-                    "agentes:agente.cadastrar"
                 ),
             )
         )
+    
+    def get_agentes(self):
+        return self.agentes.search('cpf', 'nome').fields(
+            "cpf", "nome", "email"
+        ).actions('agente.desvincular')
 
 
 class UnidadeSaudeQuerySet(models.QuerySet):
@@ -656,6 +661,8 @@ class ClassificacaoInfeccao(models.Model):
 
 
 class CriterioConfirmacao(models.Model):
+    EM_INVESTIGACAO = 3
+
     codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
 
@@ -1293,6 +1300,10 @@ class NotificacaoIndividual(models.Model):
             return total
         return Badge('gray' if total > 7 else 'green', f'{total} dia' if total == 1 else f'{total} dias')
     
+    @meta('Qtd. de Dias Infectado')
+    def get_qtd_dias_infectado_exportacao(self, apenas_numero=False):
+        return self.get_qtd_dias_infectado(True)
+
     def pode_registrar_bloqueio(self):
         return self.get_qtd_dias_infectado(apenas_numero=True) < 8
 
@@ -1663,6 +1674,12 @@ class Devolucao(models.Model):
     def __str__(self):
         return f'Devolução {self.id}'
 
+    def get_avaliador(self):
+        if self.avaliador:
+            if self.avaliador.first_name:
+                return f'{self.avaliador.first_name} ({self.avaliador.username})'
+            return self.avaliador.username
+
 
 class EvolucaoQuerySet(models.QuerySet):
     def all(self):
@@ -1683,3 +1700,9 @@ class Evolucao(models.Model):
 
     def __str__(self):
         return f'Evolução {self.id}'
+    
+    def get_notificante(self):
+        if self.notificante:
+            if self.notificante.first_name:
+                return f'{self.notificante.first_name} ({self.notificante.username})'
+            return self.notificante.username

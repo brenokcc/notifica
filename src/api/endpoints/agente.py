@@ -60,3 +60,18 @@ class Excluir(endpoints.DeleteEndpoint[Agente]):
             super().get()
         )
 
+
+class Desvincular(endpoints.InstanceEndpoint[Agente]):
+    class Meta:
+        icon = 'minus'
+        verbose_name = 'Desvincular'
+
+    def get(self):
+        return self.formfactory().fields().info('Ao confirmar o agente será desvinculado do município.')
+    
+    def check_permission(self):
+        return self.check_role("administrador", "gm")
+    
+    def post(self):
+        self.instance.municipio_set.first().agentes.remove(self.instance)
+        return super().post()

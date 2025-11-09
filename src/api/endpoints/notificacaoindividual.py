@@ -132,6 +132,13 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
 class Mixin:
 
+    def clean_data_encerramento(self, data):
+        data_encerramento = data.get('data_encerramento')
+        criterio_confirmacao = data.get('criterio_confirmacao')
+        if data_encerramento and criterio_confirmacao and criterio_confirmacao.id == CriterioConfirmacao.EM_INVESTIGACAO:
+            raise ValidationError('A data do encerramento não pode ser informada para casos em investigação')
+        return data_encerramento
+
     def clean_cpf(self, data):
         cpf = data.get('cpf')
         data_primeiros_sintomas = data['data_primeiros_sintomas']
@@ -144,6 +151,9 @@ class Mixin:
         if posterior and not self.instance.pk:
             raise ValidationError(f'Existe uma notificação posterior ({posterior.numero}) realizada a menos de um mês para esse CPF.')
         return cpf
+    
+    def on_criterio_confirmacao_change(self, criterio_confirmacao):
+        print(criterio_confirmacao)
 
     def on_data_nascimento_change(self, data_nascimento):
         self.form.controller.set(idade=age(data_nascimento))
@@ -237,6 +247,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             unidade=self.get_unidade_inicial(),
             pais=Pais.objects.order_by("id").first(),
             pais_infeccao=Pais.objects.order_by("id").first(),
+            criterio_confirmacao=CriterioConfirmacao.EM_INVESTIGACAO,
         )
         data_atualizado_cadsus = None
         esus_api_url = os.environ.get('ESUS_API_URL', 'http://localhost:8000')
@@ -423,6 +434,15 @@ class EvoluirCaso(endpoints.RelationEndpoint[Evolucao]):
     class Meta:
         icon = 'plus'
         verbose_name = 'Evoluir Caso'
+
+    def clean_data(self, data):
+        data = data['data']
+        if data < self.source.data_primeiros_sintomas:
+            raise ValidationError('A data deve ser maior do que a data dos primeiros sintomas.')
+        ultima_evolucao = self.source.evolucao_set.order_by('data').last()
+        if ultima_evolucao and data < ultima_evolucao.data:
+            raise ValidationError('A data deve ser maior do que a data da última evolução.')
+        return data
     
     def formfactory(self):
         return (
@@ -448,7 +468,11 @@ class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
             'id', 'numero', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado', 'nome', 'get_endereco',
             'unidade', 'get_status', 'get_bloqueio', 'data_bloqueio', 'responsavel_bloqueio'
-        ).actions('notificacaoindividual.registrarbloqueio')
+        ).actions('notificacaoindividual.registrarbloqueio').xlsx(
+            'numero', 'data', 'data_primeiros_sintomas',
+            'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
+            'unidade', 'status', 'bloqueio', 'data_bloqueio', 'responsavel_bloqueio', 'tipo_bloqueio'
+        )
     
     def check_permission(self):
         return self.check_role("agente", "regulador", "gm")

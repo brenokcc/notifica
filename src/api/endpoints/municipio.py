@@ -10,7 +10,7 @@ class Municipios(endpoints.ListEndpoint[Municipio]):
         return (
             super()
             .get()
-            .actions("municipio.cadastrar", "municipio.editar", "municipio.excluir")
+            .actions("municipio.visualizar", "municipio.cadastrar", "municipio.editar", "municipio.excluir")
         )
 
     def check_permission(self):
@@ -30,6 +30,21 @@ class Cadastrar(endpoints.AddEndpoint[Municipio]):
         return self.check_role("notificante", "administrador")
 
 
+class Visualizar(endpoints.ViewEndpoint[Municipio]):
+    class Meta:
+        modal = False
+        icon = 'eye'
+        verbose_name = 'Visualizar Município'
+
+    def get(self):
+        return (
+            super().get()
+        )
+    
+    def check_permission(self):
+        return self.check_role("gm", "administrador")
+
+
 class Editar(endpoints.EditEndpoint[Municipio]):
     class Meta:
         verbose_name = "Editar Município"
@@ -41,3 +56,23 @@ class Editar(endpoints.EditEndpoint[Municipio]):
 class Excluir(endpoints.DeleteEndpoint[Municipio]):
     class Meta:
         verbose_name = "Excluir Município"
+
+
+class AdicionarAgente(endpoints.InstanceEndpoint[Municipio]):
+    agente = endpoints.forms.ModelChoiceField(Agente.objects, label="Agente")
+    
+    class Meta:
+        icon = 'plus'
+        verbose_name = "Adicionar Agente de Endemia"
+
+    def get(self):
+        return super().formfactory().fields('agente:agente.cadastrar')
+
+    def check_permission(self):
+        return self.check_role("administrador", "gm")
+    
+    def post(self):
+        self.instance.agentes.add(self.cleaned_data['agente'])
+        return super().post()
+
+

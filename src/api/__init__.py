@@ -29,7 +29,6 @@ class ApiApplication(Application):
         )
         self.dashboard.boxes.add(
             "municipio.municipios",
-            "agente.agentes",
             "unidadesaude.unidadessaude",
             "notificacaoindividual.notificacoesindividuais",
             "notificacaoindividual.bloqueios",
