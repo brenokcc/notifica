@@ -65,6 +65,30 @@ class Agente(models.Model):
         return ", ".join(self.municipio_set.values_list("nome", flat=True))
 
 
+class Supervisor(models.Model):
+    cpf = models.CharField(verbose_name="CPF", blank=False)
+    nome = models.CharField(verbose_name="Nome")
+    email = models.CharField(verbose_name="E-mail", null=True)
+
+    objects = AgenteQuerySet()
+
+    class Meta:
+        icon = 'person'
+        verbose_name = "Supervisor de Endemia"
+        verbose_name_plural = "Supervisores de Endemia"
+
+    def __str__(self):
+        return f'{self.nome} ({self.cpf})'
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
+
+    @meta("Município")
+    def get_municipio(self):
+        return ", ".join(self.municipio_set.values_list("nome", flat=True))
+
+
 class Funcao(models.Model):
     nome = models.CharField(verbose_name="Nome")
 
@@ -278,14 +302,16 @@ class MunicipioQuerySet(models.QuerySet):
 
 @role("gm", username="gestores__cpf", email="gestores__email", municipio="pk")
 @role("regulador", username="reguladores__cpf", email="reguladores__email", municipio="pk")
-@role("agente", username="agentes__cpf", email="agentes__email", unidade="pk")
+@role("agente", username="agentes__cpf", email="agentes__email", municipio="pk")
+@role("supervisor", username="supervisores__cpf", email="supervisores__email", municipio="pk")
 class Municipio(models.Model):
     estado = models.ForeignKey(Estado, verbose_name="Estado", on_delete=models.CASCADE)
     codigo = models.CharField(max_length=7, verbose_name="Código IBGE", unique=True)
     nome = models.CharField(verbose_name="Nome", max_length=60)
     gestores = models.ManyToManyField(GestorMunicipal, blank=True)
     reguladores = models.ManyToManyField(Regulador, blank=True)
-    agentes = models.ManyToManyField(Agente, verbose_name="Agentes de Endemias", blank=True)
+    agentes = models.ManyToManyField(Agente, verbose_name="Agentes de Endemia", blank=True)
+    supervisores = models.ManyToManyField(Supervisor, verbose_name="Supervisores de Endemia", blank=True)
 
     objects = MunicipioQuerySet()
 
@@ -302,7 +328,7 @@ class Municipio(models.Model):
             super()
             .serializer().actions('municipio.adicionaragente')
             .fieldset("Dados Gerais", (("codigo", "nome"), "estado"))
-            .fieldset("Gestão", ("gestores", "reguladores"))
+            .fieldset("Gestão", ("gestores", "reguladores", "supervisores"))
             .queryset('get_agentes')
         )
 
@@ -316,6 +342,7 @@ class Municipio(models.Model):
                 (
                     "gestores:gestormunicipal.cadastrar",
                     "reguladores:regulador.cadastrar",
+                    "supervisores:supervisor.cadastrar",
                 ),
             )
         )

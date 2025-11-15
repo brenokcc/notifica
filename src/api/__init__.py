@@ -15,6 +15,7 @@ class ApiApplication(Application):
             gm="Gestor Municipal",
             notificante="Notificante",
             agente="Agente",
+            supervisor="Supervisor",
         )
         self.dashboard.usermenu.add(
             "dev.icons",

@@ -4,7 +4,7 @@ from ..models import *
 
 class Agentes(endpoints.ListEndpoint[Agente]):
     class Meta:
-        verbose_name = 'Agentes de Endemias'
+        verbose_name = 'Agentes de Endemia'
 
     def get(self):
         return (
@@ -16,7 +16,7 @@ class Agentes(endpoints.ListEndpoint[Agente]):
 class Cadastrar(endpoints.AddEndpoint[Agente]):
     class Meta:
         icon = 'plus'
-        verbose_name = 'Cadastrar Agente de Endemias'
+        verbose_name = 'Cadastrar Agente de Endemia'
 
     def get(self):
         return (
@@ -31,7 +31,7 @@ class Visualizar(endpoints.ViewEndpoint[Agente]):
     class Meta:
         modal = False
         icon = 'eye'
-        verbose_name = 'Visualizar Agente de Endemias'
+        verbose_name = 'Visualizar Agente de Endemia'
 
     def get(self):
         return (
@@ -42,7 +42,7 @@ class Visualizar(endpoints.ViewEndpoint[Agente]):
 class Editar(endpoints.EditEndpoint[Agente]):
     class Meta:
         icon = 'pen'
-        verbose_name = 'Editar Agente de Endemias'
+        verbose_name = 'Editar Agente de Endemia'
 
     def get(self):
         return (
@@ -53,7 +53,7 @@ class Editar(endpoints.EditEndpoint[Agente]):
 class Excluir(endpoints.DeleteEndpoint[Agente]):
     class Meta:
         icon = 'trash'
-        verbose_name = 'Excluir Agente de Endemias'
+        verbose_name = 'Excluir Agente de Endemia'
 
     def get(self):
         return (
