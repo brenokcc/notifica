@@ -63,7 +63,7 @@ class AdicionarAgente(endpoints.InstanceEndpoint[Municipio]):
     
     class Meta:
         icon = 'plus'
-        verbose_name = "Adicionar Agente de Endemia"
+        verbose_name = "Vincular Agente de Endemia"
 
     def get(self):
         return super().formfactory().fields('agente:agente.cadastrar')

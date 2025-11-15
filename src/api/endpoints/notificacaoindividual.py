@@ -41,7 +41,47 @@ class AguardandoEnvio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         return super().get_queryset().aguardando_envio()
 
     def check_permission(self):
-        return self.check_role("notificante", "administrador") and self.get_queryset().exists()
+        return self.check_role("notificante", "administrador")
+    
+
+class AguardandoResponsavelBloqueio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
+    class Meta:
+        modal = False
+        icon = "bell"
+        verbose_name = "Aguardando atributição de responsável pelo bloqueio"
+
+    def get_queryset(self):
+        return super().get_queryset().aguardando_responsavel_bloqueio()
+
+    def check_permission(self):
+        return self.check_role("supervisor")
+
+
+class AguardandoBloqueio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
+    class Meta:
+        modal = False
+        icon = "bell"
+        verbose_name = "Aguardando Bloqueio"
+
+    def get_queryset(self):
+        return super().get_queryset().aguardando_bloqueio().filter(responsavel_bloqueio__cpf=self.request.user.username)
+
+    def check_permission(self):
+        return self.check_role("agente")
+    
+
+class AguardandoJustificativaPerdaPrazoBloqueio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
+    class Meta:
+        modal = False
+        icon = "bell"
+        verbose_name = "Aguardando justificativa de perda de prazo"
+
+    def get_queryset(self):
+        return super().get_queryset().aguardando_justificativa_perda_prazo().filter(responsavel_bloqueio__cpf=self.request.user.username).actions('notificacaoindividual.justificarperdaprazobloqueio')
+
+    def check_permission(self):
+        return self.check_role("agente")
+
 
 class AguardandoCorrecao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
     class Meta:
@@ -56,7 +96,7 @@ class AguardandoCorrecao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         return queryset.filter(notificante__cpf=self.request.user.username)
 
     def check_permission(self):
-        return self.check_role("notificante", "administrador", "regulador") and self.get_queryset().exists()
+        return self.check_role("notificante", "administrador", "regulador")
 
 
 class AguardandoValidacao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
@@ -69,7 +109,7 @@ class AguardandoValidacao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         return super().get_queryset().aguardando_validacao()
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador") and self.get_queryset().exists()
+        return self.check_role("regulador", "administrador")
 
 
 
@@ -464,18 +504,26 @@ class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         verbose_name = "Bloqueios"
 
     def get(self):
-        return super().get().all().fields(
-            'id', 'numero', 'data', 'data_primeiros_sintomas',
-            'get_qtd_dias_infectado', 'nome', 'get_endereco',
-            'unidade', 'get_status', 'get_bloqueio', 'data_bloqueio', 'responsavel_bloqueio'
-        ).actions('notificacaoindividual.registrarbloqueio').xlsx(
-            'numero', 'data', 'data_primeiros_sintomas',
-            'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
-            'unidade', 'status', 'bloqueio', 'data_bloqueio', 'responsavel_bloqueio', 'tipo_bloqueio'
-        )
+        return super().get().bloqueios()
     
     def check_permission(self):
-        return self.check_role("agente", "regulador", "gm")
+        return self.check_role("agente", "regulador", "gm", "supervisor")
+
+
+class AtribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        icon = "person"
+        verbose_name = "Atribuir Responsável"
+
+    def get(self):
+        return self.formfactory().fields('responsavel_bloqueio')
+
+    def check_permission(self):
+        return self.check_role("supervisor") and self.instance.bloqueio is None
+    
+    def get_responsavel_bloqueio_queryset(self, queryset):
+        return queryset.nolookup().filter(municipio=self.instance.unidade.municipio)
 
 
 class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -495,3 +543,16 @@ class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     
     def check_permission(self):
         return self.check_role("regulador") or (self.check_role("agente") and self.instance.pode_registrar_bloqueio())
+    
+
+class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        icon = "question"
+        verbose_name = "Justificar"
+
+    def get(self):
+        return self.formfactory().fields('motivo_perda_prazo_bloqueio', 'observacao_bloqueio')
+    
+    def check_permission(self):
+        return self.check_role("regulador") or (self.check_role("agente") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio())

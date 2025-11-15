@@ -21,6 +21,7 @@ class Painel(endpoints.PublicEndpoint):
             ("get_total", "get_total_notificantes", "get_total_pacientes"),
             ("get_total_por_unidade", "get_total_por_sexo"),
             "get_mapa",
+            "get_total_por_bairro",
         )
 
     def check_permission(self):

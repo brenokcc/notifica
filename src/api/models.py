@@ -10,7 +10,7 @@ import qrcode
 import base64
 from io import BytesIO
 from uuid import uuid1
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db import transaction
 from slth.models import Email
 from slth.components import Badge
@@ -219,6 +219,65 @@ class Regulador(models.Model):
         super().save(*args, **kwargs)
         User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
+
+class MotivoPerdaPrazoBloqueio(models.Model):
+    nome = models.CharField(verbose_name='Nome')
+
+    class Meta:
+        verbose_name = 'Motivo de Perda de Prazo de Bloqueio'
+        verbose_name_plural = 'Motivos de Perda de Prazo de Bloqueio'
+
+
+    def __str__(self):
+        return self.nome
+
+
+class ChamadoQuerySet(models.QuerySet):
+    def all(self):
+        return self.filters('classificacao', 'atendido', 'resolvido')
+
+
+class Chamado(models.Model):
+    usuario = models.ForeignKey(User, verbose_name='', on_delete=models.CASCADE)
+    data_abertura = models.DateTimeField(verbose_name='Data da Abertura', auto_created=True)
+    descricao = models.TextField(verbose_name='Descrição', help_text='Descrição da solicitação ou problema')
+    classificacao = models.CharField(verbose_name='Classificação', choices=[['', 'Não-classificado'], ['tecnico', 'Técnico'], ['negocio', 'Negócio']], null=True, blank=True)
+    atendente = models.ForeignKey(User, verbose_name='Atendente', on_delete=models.CASCADE, null=True, blank=True, related_name='r1')
+    data_atendimento = models.DateTimeField(verbose_name='Data do Atendimento', null=True)
+    atendido = models.BooleanField(verbose_name="Atendido", null=True, blank=True)
+    resolvido = models.BooleanField(verbose_name="Resolvido", null=True, blank=True)
+    observacao = models.TextField(verbose_name='Observação', null=True, blank=True)
+    
+    class Meta:
+        icon = "concierge-bell"
+        verbose_name = 'Chamado'
+        verbose_name_plural = 'Chamados'
+
+    objects = ChamadoQuerySet()
+
+    def __str__(self):
+        return f'Chamado {self.id}'
+    
+    def save(self, *args, **kwargs):
+        if self.data_abertura is None:
+            self.data_abertura = datetime.now()
+        if self.data_atendimento and self.atendido is None:
+            self.atendido = True
+        if self.resolvido is not None and self.data_atendimento is None:
+            self.data_atendimento = datetime.now()
+        super().save(*args, **kwargs)
+    
+    def formfactory(self):
+        return super().formfactory().fields('usuario', 'descricao')
+    
+    def serializer(self):
+        return super().serializer().fieldset(
+            'Dados Gerais', fields=(('usuario', 'data_abertura'), 'descricao'),
+        ).fieldset(
+            'Dados do Atendimento', fields=(('classificacao', 'atendente')('data_atendimento', 'resolvido'), 'observacao'),
+        )
+
+
 class TipoNotificacao(models.Model):
     codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
@@ -294,7 +353,7 @@ class Estado(models.Model):
 class MunicipioQuerySet(models.QuerySet):
     def all(self):
         return (
-            self.search("nome", "gestores__nome").filters("estado").lookup("administrador")
+            self.fields("estado",  "nome", "gestores", "reguladores", "supervisores").search("nome", "gestores__nome").filters("estado").lookup("administrador")
             .lookup("notificante", unidadesaude__equipe__notificantes__cpf="username")
             .lookup("gm", gestores__cpf="username")
         )
@@ -326,7 +385,7 @@ class Municipio(models.Model):
     def serializer(self):
         return (
             super()
-            .serializer().actions('municipio.adicionaragente')
+            .serializer().actions('municipio.adicionaragente', "municipio.editar")
             .fieldset("Dados Gerais", (("codigo", "nome"), "estado"))
             .fieldset("Gestão", ("gestores", "reguladores", "supervisores"))
             .queryset('get_agentes')
@@ -797,13 +856,14 @@ class Hospital(models.Model):
 class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
-            self.search("cpf", "nome", "cartao_sus")
+            self.search("cpf", "nome", "cartao_sus", "numero")
             .fields("numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame")
             .filters("doenca", "municipio", "unidade", "notificante", "status", "validada",)
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
             .lookup("gu", unidade__gestores__cpf='username')
+            .lookup("supervisor", unidade__municipio__supervisores__cpf='username')
             .lookup("agente", unidade__municipio__agentes__cpf='username')
             .lookup("notificante", unidade__equipe__notificantes__cpf='username')
         ).distinct()
@@ -817,6 +877,31 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
                 "notificacaoindividual.visualizar", "notificacaoindividual.imprimir"
             )
         )
+    
+    def bloqueios(self):
+        return self.all().filters("doenca", "municipio", "unidade", "notificante", "status", "validada").filter(validada=True).fields(
+            'id', 'numero', 'data', 'data_primeiros_sintomas',
+            'get_qtd_dias_infectado', 'nome', 'get_endereco',
+            'unidade', 'responsavel_bloqueio', 'get_status', 'get_bloqueio', 'data_bloqueio'
+        ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio').xlsx(
+            'numero', 'data', 'data_primeiros_sintomas',
+            'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
+            'unidade', 'status', 'responsavel_bloqueio', 'bloqueio', 'data_bloqueio', 'tipo_bloqueio'
+        )
+    
+    def em_periodo_bloqueio(self):
+        sete_dias_atras = datetime.today().date() - timedelta(days=7)
+        return self.bloqueios().filter(data_primeiros_sintomas__gte=sete_dias_atras)
+    
+    def aguardando_justificativa_perda_prazo(self):
+        sete_dias_atras = datetime.today().date() - timedelta(days=7)
+        return self.bloqueios().filter(data_primeiros_sintomas__lt=sete_dias_atras, motivo_perda_prazo_bloqueio__isnull=True)
+    
+    def aguardando_responsavel_bloqueio(self):
+        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=True)
+    
+    def aguardando_bloqueio(self):
+        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, bloqueio__isnull=True)
 
     def aguardando_validacao(self):
         return (
@@ -851,6 +936,11 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     @meta("Total por Sexo")
     def get_total_por_sexo(self):
         return self.counter("sexo", chart="donut")
+    
+    @meta("Total por Bairro")
+    def get_total_por_bairro(self):
+        return self.counter("bairro")
+    
 
     @meta("Dourados/MS")
     def get_mapa(self):
@@ -1278,6 +1368,8 @@ class NotificacaoIndividual(models.Model):
     tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Físico', 'Físico'], ['Químico', 'Químico'], ['Físico e Químico', 'Físico e Químico']], null=True, blank=True, pick=True)
     responsavel_bloqueio = models.ForeignKey(Agente, verbose_name='Responsável pelo Bloqueio', on_delete=models.CASCADE, null=True)
     data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
+    motivo_perda_prazo_bloqueio = models.ForeignKey(MotivoPerdaPrazoBloqueio, verbose_name='Motivo da Perda de Prazo', on_delete=models.CASCADE, null=True, blank=False, pick=True)
+    observacao_bloqueio = models.TextField(verbose_name='Observação', help_text='Informe algo que considera relevante durante a realização do bloqueio', null=True, blank=True)
 
     # Token
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
@@ -1336,9 +1428,9 @@ class NotificacaoIndividual(models.Model):
 
     def get_bloqueio(self):
         if self.bloqueio is None:
-            return Badge('gray', 'Pendente') if self.pode_registrar_bloqueio() else Badge('red', 'Prazo Perdido')
+            return Badge('gray', 'Pendente') if self.pode_registrar_bloqueio() else Badge('red', 'Prazo Perdido', icon='user-check' if self.motivo_perda_prazo_bloqueio else 'question')
         elif not self.bloqueio:
-            return Badge('red', 'Não')
+            return Badge('#2196f3', 'Não')
         elif self.tipo_bloqueio == 'Físico':
             return Badge('#2196f3', 'Físico', 'house-circle-xmark')
         elif self.tipo_bloqueio == 'Químico':
@@ -1644,6 +1736,7 @@ class NotificacaoIndividual(models.Model):
                     "data_inicio_sinais_graves",
                 ),
             )
+            .fieldset("Dados do Bloqueio", (("bloqueio", "tipo_bloqueio"), ("responsavel_bloqueio", "data_bloqueio"), ("motivo_perda_prazo_bloqueio", "observacao_bloqueio")))
             .queryset("get_historico_evolucao")
             .fieldset("Outras Informações", ("observacao", ("data_envio", "validada")))
             .queryset("get_historico_devolucao")

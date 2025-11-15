@@ -12,7 +12,9 @@ header{
     background-color: #033770;
     color: #fac939;
 }
-
+.dropdown.usermenu li a{
+    line-height: normal !important;
+}
 table tbody tr:nth-child(odd){
     background-color: #f8f8f8;
 }

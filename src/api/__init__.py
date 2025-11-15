@@ -36,9 +36,13 @@ class ApiApplication(Application):
             # 'notificacaosurto.notificacoessurto',
             "estatistica.painel",
             "solicitacaocadastro.solicitacoescadastro",
+            "chamado.chamados",
         )
         self.dashboard.todo.add(
             "notificacaoindividual.aguardandoenvio",
+            "notificacaoindividual.aguardandoresponsavelbloqueio",
+            "notificacaoindividual.aguardandobloqueio",
+            "notificacaoindividual.aguardandojustificativaperdaprazobloqueio",
             "notificacaoindividual.aguardandocorrecao",
             "notificacaoindividual.aguardandovalidacao",
             "solicitacaocadastro.solicitacoescadastropendentes",
@@ -52,6 +56,7 @@ class ApiApplication(Application):
                     "Sexos": "sexo.sexos",
                     "Escolaridades": "escolaridade.escolaridades",
                     "Municípios": "municipio.municipios",
+                    "Motivos de Perda de Prazo de Bloqueio": "motivoperdaprazobloqueio.motivosperdaprazobloqueio",
                     "Ocupações": "ocupacao.ocupacoes",
                 },
                 "users:Usuários": {
