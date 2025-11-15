@@ -274,7 +274,7 @@ class Chamado(models.Model):
         return super().serializer().fieldset(
             'Dados Gerais', fields=(('usuario', 'data_abertura'), 'descricao'),
         ).fieldset(
-            'Dados do Atendimento', fields=(('classificacao', 'atendente')('data_atendimento', 'resolvido'), 'observacao'),
+            'Dados do Atendimento', fields=(('classificacao', 'atendente'), ('data_atendimento', 'resolvido'), 'observacao'),
         )
 
 
