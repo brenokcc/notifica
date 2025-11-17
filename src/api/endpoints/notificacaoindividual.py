@@ -152,7 +152,7 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
 
 class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
-    doenca = endpoints.forms.ModelChoiceField(Doenca.objects, label="Doença")
+    nova_doenca = endpoints.forms.ModelChoiceField(Doenca.objects, label="Doença")
     
     class Meta:
         icon = "copy"
@@ -160,10 +160,10 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         verbose_name = "Clonar"
 
     def get(self):
-        return self.formfactory().fields('doenca')
+        return self.formfactory().fields('nova_doenca')
 
     def post(self):
-        clone = self.instance.clonar(self.cleaned_data['doenca'])
+        clone = self.instance.clonar(self.cleaned_data['nova_doenca'])
         return self.redirect(f'/app/notificacaoindividual/visualizar/{clone.pk}/')
     
     def check_permission(self):
