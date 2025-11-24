@@ -172,9 +172,9 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
 class Mixin:
 
-    def on_criterio_confirmacao_change(self, criterio_confirmacao):
-        em_investigacao = criterio_confirmacao and criterio_confirmacao.nome == 'Em investigação' or False
-        self.form.controller.visible(not em_investigacao, 'data_encerramento')
+    # def on_criterio_confirmacao_change(self, criterio_confirmacao):
+    #     em_investigacao = criterio_confirmacao and criterio_confirmacao.nome == 'Em investigação' or False
+    #     self.form.controller.visible(not em_investigacao, 'data_encerramento')
 
     def clean_data_encerramento(self, data):
         data_encerramento = data.get('data_encerramento')
@@ -338,7 +338,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             info = "A data de atualização no CadSUS é {}.".format(data_atualizado_cadsus.strftime("%d/%m/%Y"))
         if self.instance.id is None or (self.instance.criterio_confirmacao and self.instance.criretorio_confirmacao.nome == "Em investigação"):
             hidden.append('data_encerramento')
-        return super().get().initial(**initial).info(info).hidden(*hidden)
+        return super().get().initial(**initial).info(info) #.hidden(*hidden)
 
     def check_permission(self):
         return self.check_role("notificante", "administrador")
