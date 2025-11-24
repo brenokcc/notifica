@@ -38,6 +38,9 @@ class ApiApplication(Application):
             "solicitacaocadastro.solicitacoescadastro",
             "chamado.chamados",
         )
+        self.dashboard.center.add(
+            "termouso.checar",
+        )
         self.dashboard.todo.add(
             "notificacaoindividual.aguardandoenvio",
             "notificacaoindividual.aguardandoresponsavelbloqueio",

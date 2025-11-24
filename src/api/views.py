@@ -7,4 +7,4 @@ def consultar_cpf(request, cpf):
     if request.META.get('HTTP_AUTHORIZATION') == esus_api_token:
         return JsonResponse(esus.consulta_cpf(cpf))
     else:
-        return JsonResponse({}, status_code=403)
+        return JsonResponse({})

@@ -2,7 +2,7 @@ from slth.db import models, role, meta
 import os
 import json
 from django.conf import settings
-from slth.components import GeoMap, FileLink
+from slth.components import GeoMap, FileLink, TemplateContent
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from slth.utils import age
@@ -14,6 +14,24 @@ from datetime import datetime, timedelta
 from django.db import transaction
 from slth.models import Email
 from slth.components import Badge
+
+
+
+class TermoUso(models.Model):
+    user = models.ForeignKey(User, verbose_name='Usuário', on_delete=models.CASCADE)
+    aceito = models.BooleanField(verbose_name='Aceito', help_text="Concordo e aceito com os termos acima descritos.", null=True)
+    data_assinatura = models.DateTimeField(verbose_name='Data da Assinatura', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Termo de Uso'
+        verbose_name_plural = 'Termos de Uso'
+
+    def __str__(self):
+        return f'Termo de Uso de {self.user}'
+
+    @meta(None)
+    def get_termo_consentimento_digital(self):
+        return TemplateContent('termouso.html', dict(atendimento=self))
 
 
 @role("administrador", username="cpf", email="email")

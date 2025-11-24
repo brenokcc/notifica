@@ -172,6 +172,10 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
 class Mixin:
 
+    def on_criterio_confirmacao_change(self, criterio_confirmacao):
+        em_investigacao = criterio_confirmacao and criterio_confirmacao.nome == 'Em investigação' or False
+        self.form.controller.visible(not em_investigacao, 'data_encerramento')
+
     def clean_data_encerramento(self, data):
         data_encerramento = data.get('data_encerramento')
         criterio_confirmacao = data.get('criterio_confirmacao')
@@ -191,9 +195,6 @@ class Mixin:
         if posterior and not self.instance.pk:
             raise ValidationError(f'Existe uma notificação posterior ({posterior.numero}) realizada a menos de um mês para esse CPF.')
         return cpf
-    
-    def on_criterio_confirmacao_change(self, criterio_confirmacao):
-        print(criterio_confirmacao)
 
     def on_data_nascimento_change(self, data_nascimento):
         self.form.controller.set(idade=age(data_nascimento))
@@ -277,6 +278,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
 
     def get(self):
         cpf = self.request.GET.get('cpf')
+        hidden = []
         initial = dict(
             cpf=cpf,
             data=date.today(),
@@ -334,7 +336,9 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         info = None
         if data_atualizado_cadsus:
             info = "A data de atualização no CadSUS é {}.".format(data_atualizado_cadsus.strftime("%d/%m/%Y"))
-        return super().get().initial(**initial).info(info)
+        if self.instance.id is None or (self.instance.criterio_confirmacao and self.instance.criretorio_confirmacao.nome == "Em investigação"):
+            hidden.append('data_encerramento')
+        return super().get().initial(**initial).info(info).hidden(*hidden)
 
     def check_permission(self):
         return self.check_role("notificante", "administrador")
