@@ -1,0 +1,213 @@
+<style>
+    .bold{
+        font-weight: bold;
+    }
+    .paragraph {
+        text-align: justify;
+        text-justify: inter-word;
+        text-indent: 50px;
+    }
+    .signature{
+        text-align: center;
+        width: 300px;
+        margin:auto
+    }
+    ol{
+        margin-left: 50px;
+    }
+</style>
+{% if impressao %}
+<style>
+    .small {
+        font-size: 12px;
+    }
+</style>
+{% endif %}
+
+<div style="text-align: center;"><img style="width: 150px;" src="{{ base_url }}/static/images/logo.png"/></div>
+<h3 style="text-align: center;">TERMOS DE USO E PRIVACIDADE — ARBONOTIFICA</h3>
+<h4 style="text-align: center;">
+    Sistema Municipal de Monitoramento de Arboviroses – SEMS/Dourados-MS<br>
+    Versão Final – Revisada em Novembro/2025
+</h4>
+
+<h5>1. Apresentação</h5>
+
+<p class="paragraph small">
+    O ArboNotifica é um sistema técnico de monitoramento e georreferenciamento de arboviroses, disponibilizado para uso institucional pela Secretaria Municipal de Saúde de Dourados/MS (SEMS).
+</p>
+<p class="paragraph small">
+    O sistema possui autoria intelectual própria e foi concebido a partir de estudos técnicos, análises territoriais e atividades de vigilância epidemiológica desenvolvidas no município em período anterior à criação de estruturas formais da Coordenação de Saúde Digital.
+</p>
+<p class="paragraph small">
+    Posteriormente, o sistema passou a ser aprimorado e institucionalizado para uso da SEMS, com apoio operacional de profissionais de tecnologia e parceiros técnicos, preservando-se integralmente sua concepção original.
+</p>
+
+<h5>2. Finalidade do Sistema</h5>
+<p class="paragraph small">
+    O ArboNotifica tem como propósitos:
+</p>
+<ol class="small">
+    <li>Registrar informações e notificações operacionais relacionadas a arboviroses;</li>
+    <li>Georreferenciar casos e gerar mapas analíticos;</li>
+    <li>Integrar dados cadastrais e territoriais provenientes do e-SUS AB;</li>
+    <li>Apoiar ações de bloqueio, investigação e resposta rápida;</li>
+    <li>Subsidiar a vigilância epidemiológica municipal;</li>
+    <li>Qualificar a gestão e o planejamento das ações de saúde.</li>
+</ol>
+
+<h5>3. Forma de Acesso</h5>
+<h5> 3.1. Acesso concedido pela gestão</h5>
+<p class="paragraph small">
+    Por meio de credenciais institucionais emitidas pela SEMS, com obrigatoriedade de <b>troca da senha inicial</b>.
+</p>
+<h5> 3.2. Solicitação de acesso pelo servidor</h5>
+<p class="paragraph small">
+    Permitida por formulário interno do sistema, sujeita à autorização conforme fluxos administrativos.
+</p>
+<h5>4. Dados Pessoais e Sensíveis Tratados</h5>
+<p class="paragraph small">
+    O ArboNotifica utiliza exclusivamente dados essenciais ao interesse público:
+</p>
+<ol class="small">
+    <li>dados cadastrais e de identificação;</li>
+    <li>endereço e geolocalização;</li>
+    <li>informações clínicas e operacionais vinculadas à vigilância;</li>
+    <li>dados territoriais e setorização das unidades de saúde;</li>
+    <li>dados provenientes do e-SUS AB;</li>
+    <li>registros inseridos pelos profissionais autorizados.</li>
+</ol>
+<p class="paragraph small">
+    O tratamento segue os princípios e bases legais da LGPD.
+</p>
+
+
+<h5>5. Integrações e Fontes de Dados</h5>
+<p class="paragraph small">
+    O sistema integra:
+</p>
+<ol class="small">
+    <li>dados territoriais estruturados pela SEMS;</li>
+    <li>dados cadastrais oriundos do e-SUS AB, via API própria;</li>
+    <li>informações operacionais registradas diretamente no sistema pelos profissionais.</li>
+</ol>
+<p class="paragraph small">
+    A API utiliza Django Rest Framework, autenticação JWT e camada dedicada de tokens.
+</p>
+
+
+<h5>6. Responsabilidades dos Usuários</h5>
+<p class="paragraph small">
+    Os usuários devem:
+</p>
+<ol class="small">
+    <li>utilizar o sistema exclusivamente para atividades institucionais;</li>
+    <li>proteger a confidencialidade dos dados acessados;</li>
+    <li>manter sigilo das credenciais;</li>
+    <li>registrar informações de forma correta e fidedigna;</li>
+    <li>observar este Termo, a LGPD e as normas internas da SEMS.</li>
+</ol>
+
+
+<h5>7. Responsabilidades da Gestão Municipal</h5>
+<p class="paragraph small">
+   A SEMS é responsável por:
+</p>
+<ol class="small">
+    <li>prover infraestrutura segura;</li>
+    <li>definir permissões e perfis de acesso;</li>
+    <li>manter logs e auditorias;</li>
+    <li>ofertar suporte técnico;</li>
+    <li>garantir a integridade e proteção dos dados.</li>
+</ol>
+<p class="paragraph small" style="background-color: #DDD;padding: 10px">
+    <strong>Nota Institucional</strong><br>
+    <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>O ArboNotifica foi desenvolvido para atender a necessidades reais identificadas no âmbito da Secretaria Municipal de Saúde de Dourados/MS (SEMS), especialmente relacionadas ao monitoramento territorial, à vigilância epidemiológica e às ações de bloqueio.<br>
+    <span>&nbsp;&nbsp;</span>Sua concepção técnica, metodologia, lógica de funcionamento e arquitetura original foram desenvolvidas de forma independente. A adoção do sistema pela SEMS ocorreu posteriormente, integrando uma solução já existente ao ecossistema digital da gestão municipal.<br>
+    <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>A CSDI atua nas funções de apoio técnico, implementação, integração e governança digital, preservando-se a autoria original do sistema.
+</p>
+
+
+<h5>8. Segurança da Informação</h5>
+<p class="paragraph small">
+    O sistema opera com:
+</p>
+<ol class="small">
+    <li>autenticação segura;</li>
+    <li>criptografia nos fluxos necessários;</li>
+    <li>tokens renováveis;</li>
+    <li>logs de auditoria;</li>
+    <li>controle de permissões;</li>
+    <li>segregação de funções;</li>
+    <li>mecanismos de monitoramento interno.</li>
+</ol>
+
+<h5>9. Direitos dos Titulares</h5>
+<p class="paragraph small">
+    O titular dos dados pode solicitar:
+</p>
+<ol class="small">
+    <li>informações sobre o tratamento;</li>
+    <li>retificação de dados;</li>
+    <li>esclarecimentos adicionais;</li>
+    <li>peticionamento conforme art. 18 da LGPD.</li>
+</ol>
+
+<h5>10. Retenção e Exclusão dos Dados</h5>
+<p class="paragraph small">
+    Os dados permanecem enquanto:
+</p>
+<ol class="small">
+    <li>necessários às ações de vigilância;</li>
+    <li>exigidos por legislação específica;</li>
+    <li>úteis ao planejamento e gestão da saúde municipal.</li>
+</ol>
+<p class="paragraph small">
+    Registros epidemiológicos possuem caráter permanente e não são eliminados.
+</p>
+
+<h5>11. Propriedade Intelectual</h5>
+<p class="paragraph small">
+    O ArboNotifica é:
+</p>
+<ol class="small">
+    <li>de autoria intelectual exclusiva, concebido de forma independente;</li>
+    <li>iniciado antes da existência de estruturas formais de saúde digital no município;</li>
+    <li>aprimorado posteriormente com apoio técnico operacional;</li>
+    <li>institucionalizado para uso na SEMS sem transferência de autoria;</li>
+    <li>protegido por direitos autorais e objeto de registro oficial.</li>
+</ol>
+<p class="paragraph small">
+    É vedado atribuir a concepção original ou a autoria técnica do sistema a unidades administrativas da SEMS que não tenham participado de sua criação.
+</p>
+
+<h5>12. Vedações</h5>
+<p class="paragraph small">
+    É proibido:
+</p>
+<ol class="small">
+    <li>tentar burlar ou modificar o sistema;</li>
+    <li>realizar engenharia reversa;</li>
+    <li>copiar, extrair ou redistribuir partes do sistema;</li>
+    <li>utilizar dados para fins pessoais, políticos ou comerciais;</li>
+    <li>divulgar informações sensíveis fora das finalidades institucionais.</li>
+</ol>
+<p class="paragraph small">
+    
+</p>
+
+<h5>13. Alterações dos Termos</h5>
+<p class="paragraph small">
+    Este Termo pode ser atualizado conforme necessidade legal, técnica ou operacional.
+</p>
+<p class="paragraph small">
+    A versão vigente estará sempre disponível no sistema.
+</p>
+
+<h5>14. Contato e Suporte</h5>
+<p class="paragraph small">
+    Coordenação de Saúde Digital e Inovação – CSDI/SEMS
+</p>
+<p class="paragraph small">
+    <strong>E-mail</strong>: infoest.sems@dourados.ms.gov.br
+</p>

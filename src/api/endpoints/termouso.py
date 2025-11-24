@@ -1,11 +1,68 @@
 from slth import endpoints
-from ..models import TermoUso
+from ..models import *
 from datetime import datetime
+
+
+class TermosUso(endpoints.ListEndpoint[TermoUso]):
+    class Meta:
+        verbose_name = 'Termos de Uso'
+
+    def get(self):
+        return (
+            super().get()
+            .actions('termouso.cadastrar', 'termouso.visualizar', 'termouso.editar', 'termouso.excluir')
+        )
+
+
+class Cadastrar(endpoints.AddEndpoint[TermoUso]):
+    class Meta:
+        icon = 'plus'
+        verbose_name = 'Cadastrar Termo de Uso'
+
+    def get(self):
+        return (
+            super().get()
+        )
+
+        
+class Visualizar(endpoints.ViewEndpoint[TermoUso]):
+    class Meta:
+        modal = False
+        icon = 'eye'
+        verbose_name = 'Visualizar Termo de Uso'
+
+    def get(self):
+        return (
+            super().get()
+        )
+    
+
+class Editar(endpoints.EditEndpoint[TermoUso]):
+    class Meta:
+        icon = 'pen'
+        verbose_name = 'Editar Termo de Uso'
+
+    def get(self):
+        return (
+            super().get()
+        )
+
+
+class Excluir(endpoints.DeleteEndpoint[TermoUso]):
+    class Meta:
+        icon = 'trash'
+        verbose_name = 'Excluir Termo de Uso'
+
+    def get(self):
+        return (
+            super().get()
+        )
 
 
 class Checar(endpoints.Endpoint):
     def get(self):
         self.redirect('/app/termouso/aceitar/')
+        return {}
 
     def check_permission(self):
         return self.request.user.is_authenticated and not TermoUso.objects.filter(user=self.request.user, aceito=True).exists()
@@ -28,7 +85,7 @@ class Aceitar(endpoints.Endpoint):
         termo_uso.aceito = True
         termo_uso.data_assinatura = datetime.now()
         termo_uso.save()
-        return super().post()
+        self.redirect('/app/dashboard/')
     
     def check_permission(self):
         return self.request.user.is_authenticated
