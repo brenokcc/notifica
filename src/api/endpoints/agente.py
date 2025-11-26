@@ -24,7 +24,7 @@ class Cadastrar(endpoints.AddEndpoint[Agente]):
         )
     
     def check_permission(self):
-        return self.check_role("administrador", "gm")
+        return self.check_role("administrador", "gm", "supervisor")
 
         
 class Visualizar(endpoints.ViewEndpoint[Agente]):
@@ -70,7 +70,7 @@ class Desvincular(endpoints.InstanceEndpoint[Agente]):
         return self.formfactory().fields().info('Ao confirmar o agente será desvinculado do município.')
     
     def check_permission(self):
-        return self.check_role("administrador", "gm")
+        return self.check_role("administrador", "gm", "supervisor")
     
     def post(self):
         self.instance.municipio_set.first().agentes.remove(self.instance)

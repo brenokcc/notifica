@@ -14,7 +14,7 @@ class Municipios(endpoints.ListEndpoint[Municipio]):
         )
 
     def check_permission(self):
-        return self.check_role("administrador", "gm")
+        return self.check_role("administrador", "gm", "supervisor")
     
     def contribute(self, entrypoint):
         if entrypoint == 'menu':
@@ -42,7 +42,7 @@ class Visualizar(endpoints.ViewEndpoint[Municipio]):
         )
     
     def check_permission(self):
-        return self.check_role("gm", "administrador")
+        return self.check_role("gm", "administrador", "supervisor")
 
 
 class Editar(endpoints.EditEndpoint[Municipio]):
@@ -69,10 +69,13 @@ class AdicionarAgente(endpoints.InstanceEndpoint[Municipio]):
         return super().formfactory().fields('agente:agente.cadastrar')
 
     def check_permission(self):
-        return self.check_role("administrador", "gm")
+        return self.check_role("administrador", "gm", "supervisor")
     
     def post(self):
         self.instance.agentes.add(self.cleaned_data['agente'])
         return super().post()
+    
+    def get_agente_queryset(self, queryset):
+        return queryset.nolookup()
 
 

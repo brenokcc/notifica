@@ -18,9 +18,9 @@ class Migration(migrations.Migration):
             field=slth.db.models.CharField(
                 blank=True,
                 choices=[
-                    ("Físico", "Físico"),
+                    ("Mecânico", "Mecânico"),
                     ("Químico", "Químico"),
-                    ("Físico e Químico", "Físico e Químico"),
+                    ("Mecânico e Químico", "Mecânico e Químico"),
                 ],
                 max_length=255,
                 null=True,

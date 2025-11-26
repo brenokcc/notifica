@@ -374,6 +374,7 @@ class MunicipioQuerySet(models.QuerySet):
             self.fields("estado",  "nome", "gestores", "reguladores", "supervisores").search("nome", "gestores__nome").filters("estado").lookup("administrador")
             .lookup("notificante", unidadesaude__equipe__notificantes__cpf="username")
             .lookup("gm", gestores__cpf="username")
+            .lookup("supervisor", supervisores__cpf="username")
         )
 
 
@@ -1383,7 +1384,7 @@ class NotificacaoIndividual(models.Model):
 
     # Bloqueio
     bloqueio = models.BooleanField(verbose_name='Bloqueio', null=True, blank=False, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
-    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Físico', 'Físico'], ['Químico', 'Químico'], ['Físico e Químico', 'Físico e Químico']], null=True, blank=True, pick=True)
+    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Mecânico', 'Mecânico'], ['Químico', 'Químico'], ['Mecânico e Químico', 'Mecânico e Químico']], null=True, blank=True, pick=True)
     responsavel_bloqueio = models.ForeignKey(Agente, verbose_name='Responsável pelo Bloqueio', on_delete=models.CASCADE, null=True)
     data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
     motivo_perda_prazo_bloqueio = models.ForeignKey(MotivoPerdaPrazoBloqueio, verbose_name='Motivo da Perda de Prazo', on_delete=models.CASCADE, null=True, blank=False, pick=True)
@@ -1424,7 +1425,7 @@ class NotificacaoIndividual(models.Model):
 
     @meta('Histórico de Evolução')
     def get_historico_evolucao(self):
-        return self.evolucao_set.ignore('notificacao')
+        return self.evolucao_set.all().ignore('notificacao')
     
     @meta('Histórico de Devolução')
     def get_historico_devolucao(self):
@@ -1448,13 +1449,13 @@ class NotificacaoIndividual(models.Model):
         if self.bloqueio is None:
             return Badge('gray', 'Pendente') if self.pode_registrar_bloqueio() else Badge('red', 'Prazo Perdido', icon='user-check' if self.motivo_perda_prazo_bloqueio else 'question')
         elif not self.bloqueio:
-            return Badge('#2196f3', 'Não')
-        elif self.tipo_bloqueio == 'Físico':
-            return Badge('#2196f3', 'Físico', 'house-circle-xmark')
+            return Badge('red', 'Não')
+        elif self.tipo_bloqueio == 'Mecânico':
+            return Badge('#2196f3', 'Mecânico', 'house-circle-xmark')
         elif self.tipo_bloqueio == 'Químico':
             return Badge('#2196f3', 'Químico', 'skull-crossbones')
-        elif self.tipo_bloqueio == 'Físico e Químico':
-            return Badge('#2196f3', 'Físico/Químico')
+        elif self.tipo_bloqueio == 'Mecânico e Químico':
+            return Badge('#2196f3', 'Mecânico/Químico')
 
     @transaction.atomic
     def clonar(self, doenca):
@@ -1821,13 +1822,13 @@ class Devolucao(models.Model):
 
 class EvolucaoQuerySet(models.QuerySet):
     def all(self):
-        return self
+        return self.fields('notificacao', 'notificante', 'get_unidade', 'data', 'observacao')
 
 
 class Evolucao(models.Model):
     notificacao = models.ForeignKey(NotificacaoIndividual, verbose_name='Notificação', on_delete=models.CASCADE)
     notificante = models.ForeignKey(User, verbose_name='Notificante', on_delete=models.CASCADE)
-    data = models.DateField(verbose_name='Data', auto_created=True)
+    data = models.DateTimeField(verbose_name='Data', auto_created=True)
     observacao = models.TextField(verbose_name='Motivo')
 
     class Meta:
@@ -1844,3 +1845,10 @@ class Evolucao(models.Model):
             if self.notificante.first_name:
                 return f'{self.notificante.first_name} ({self.notificante.username})'
             return self.notificante.username
+
+    @meta('Unidade')
+    def get_unidade(self):
+        if self.notificante:
+            equipe = Equipe.objects.filter(notificantes__cpf=self.notificante.username).first()
+            if equipe:
+                return equipe.unidade

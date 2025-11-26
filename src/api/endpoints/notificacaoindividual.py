@@ -481,7 +481,7 @@ class EvoluirCaso(endpoints.RelationEndpoint[Evolucao]):
 
     def clean_data(self, data):
         data = data['data']
-        if data < self.source.data_primeiros_sintomas:
+        if data.date() < self.source.data_primeiros_sintomas:
             raise ValidationError('A data deve ser maior do que a data dos primeiros sintomas.')
         ultima_evolucao = self.source.evolucao_set.order_by('data').last()
         if ultima_evolucao and data < ultima_evolucao.data:
