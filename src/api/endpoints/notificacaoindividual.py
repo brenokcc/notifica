@@ -181,6 +181,9 @@ class Mixin:
         criterio_confirmacao = data.get('criterio_confirmacao')
         if data_encerramento and criterio_confirmacao and criterio_confirmacao.id == CriterioConfirmacao.EM_INVESTIGACAO:
             raise ValidationError('A data do encerramento não pode ser informada para casos em investigação')
+        classificacao_infeccao = data.get('classificacao_infeccao')
+        if data_encerramento and not classificacao_infeccao:
+            raise ValidationError('Informe a classificação da infeção')
         return data_encerramento
 
     def clean_cpf(self, data):

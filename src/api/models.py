@@ -756,6 +756,7 @@ class TipoLocal(models.Model):
 class ClassificacaoInfeccao(models.Model):
     codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
+    positivo = models.BooleanField(verbose_name='Positivo', default=False)
 
     class Meta:
         verbose_name = "Classificação de Infecção"
@@ -1394,7 +1395,7 @@ class NotificacaoIndividual(models.Model):
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
     devolvida = models.BooleanField(verbose_name='Devolvida', null=True)
     token = models.CharField(verbose_name="Token", null=True, blank=True)
-    status = models.CharField(verbose_name="Status", default='Em Análise', choices=[['Em Análise', 'Em Análise'], ['Encerrada', 'Encerrada']])
+    status = models.CharField(verbose_name="Status", default='Em Análise', choices=[['Em Análise', 'Em Análise'], ['Positivo', 'Positivo'], ['Negativo', 'Negativo']])
 
     objects = NotificacaoIndividualQuerySet()
 
@@ -1405,8 +1406,10 @@ class NotificacaoIndividual(models.Model):
 
     @meta("Status")
     def get_status(self):
-        if self.status == 'Encerrada':
-            return Badge('#4caf50', 'Encerrada', 'check')
+        if self.status == 'Positivo':
+            return Badge('#4caf50', 'Positivo', 'check')
+        elif self.status == 'Negativo':
+            return Badge('red', 'Negativo', 'x')
         return Badge('#2196f3', 'Em Análise', 'eyedropper')
     
     @meta('Endereço')
@@ -1476,8 +1479,11 @@ class NotificacaoIndividual(models.Model):
         return self
     
     def save(self, *args, **kwargs):
-        if self.data_encerramento:
-            self.status = 'Encerrada'
+        if self.data_encerramento and self.classificacao_infeccao:
+            if self.classificacao_infeccao.positivo:
+                self.status = 'Positivo'
+            else:
+                self.status = 'Negativo'
         else:
             self.status = 'Em Análise'
         if self.token is None:

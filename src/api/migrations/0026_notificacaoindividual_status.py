@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='notificacaoindividual',
             name='status',
-            field=slth.db.models.CharField(choices=[('Em Análise', 'Em Análise'), ('Encerrada', 'Encerrada')], default='Em Análise', max_length=255, verbose_name='Status'),
+            field=slth.db.models.CharField(choices=[['Em Análise', 'Em Análise'], ['Positivo', 'Positivo'], ['Negativo', 'Negativo']], default='Em Análise', max_length=255, verbose_name='Status'),
         ),
     ]
