@@ -23,7 +23,7 @@ class Cadastrar(endpoints.AddEndpoint[Sexo]):
 
 class Editar(endpoints.EditEndpoint[Sexo]):
     class Meta:
-        verbose_name = "Editar Raça"
+        verbose_name = "Editar Sexo"
 
     def check_permission(self):
         return self.check_role("administrador")
@@ -31,4 +31,4 @@ class Editar(endpoints.EditEndpoint[Sexo]):
 
 class Excluir(endpoints.DeleteEndpoint[Sexo]):
     class Meta:
-        verbose_name = "Excluir Raça"
+        verbose_name = "Excluir Sexo"

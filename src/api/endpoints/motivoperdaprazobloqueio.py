@@ -46,6 +46,3 @@ class Excluir(endpoints.DeleteEndpoint[MotivoPerdaPrazoBloqueio]):
     class Meta:
         icon = 'trash'
         verbose_name = 'Excluir Motivo de Perda de Prazo de Bloqueio'
-
-    def check_permission(self):
-        return self.check_role('administrador')

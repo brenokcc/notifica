@@ -514,7 +514,7 @@ class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         return super().get().bloqueios()
     
     def check_permission(self):
-        return self.check_role("agente", "regulador", "gm", "supervisor")
+        return self.check_role("agente", "regulador", "gm", "supervisor", "administrador")
 
 
 class AtribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):

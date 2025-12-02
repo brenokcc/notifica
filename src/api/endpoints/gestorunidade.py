@@ -54,5 +54,3 @@ class Excluir(endpoints.DeleteEndpoint[GestorUnidade]):
         icon = "trash"
         verbose_name = "Excluir Gestor de Unidade"
 
-    def check_permission(self):
-        return self.check_role("administrador")

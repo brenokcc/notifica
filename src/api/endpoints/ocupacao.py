@@ -12,6 +12,9 @@ class Ocupacoes(endpoints.ListEndpoint[Ocupacao]):
             .get()
             .actions("ocupacao.cadastrar", "ocupacao.editar", "ocupacao.excluir")
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[Ocupacao]):

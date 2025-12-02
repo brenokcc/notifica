@@ -45,6 +45,9 @@ class Editar(endpoints.EditEndpoint[Regulador]):
         icon = "pen"
         verbose_name = "Editar Regulador"
 
+    def check_permission(self):
+        return self.check_role('administrador')
+
 
 class Excluir(endpoints.DeleteEndpoint[Regulador]):
     class Meta:

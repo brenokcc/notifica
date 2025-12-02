@@ -4,19 +4,22 @@ from ..models import *
 
 class Agentes(endpoints.ListEndpoint[Agente]):
     class Meta:
-        verbose_name = 'Agentes de Endemia'
+        verbose_name = 'Agentes de Endemias'
 
     def get(self):
         return (
             super().get()
             .actions('agente.visualizar', 'agente.editar', 'agente.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Cadastrar(endpoints.AddEndpoint[Agente]):
     class Meta:
         icon = 'plus'
-        verbose_name = 'Cadastrar Agente de Endemia'
+        verbose_name = 'Cadastrar Agente de Endemias'
 
     def get(self):
         return (
@@ -31,34 +34,25 @@ class Visualizar(endpoints.ViewEndpoint[Agente]):
     class Meta:
         modal = False
         icon = 'eye'
-        verbose_name = 'Visualizar Agente de Endemia'
+        verbose_name = 'Visualizar Agente de Endemias'
 
-    def get(self):
-        return (
-            super().get()
-        )
-    
+    def check_permission(self):
+        return self.check_role('administrador')
+
 
 class Editar(endpoints.EditEndpoint[Agente]):
     class Meta:
         icon = 'pen'
-        verbose_name = 'Editar Agente de Endemia'
+        verbose_name = 'Editar Agente de Endemias'
 
-    def get(self):
-        return (
-            super().get()
-        )
+    def check_permission(self):
+        return self.check_role('administrador')
 
 
 class Excluir(endpoints.DeleteEndpoint[Agente]):
     class Meta:
         icon = 'trash'
-        verbose_name = 'Excluir Agente de Endemia'
-
-    def get(self):
-        return (
-            super().get()
-        )
+        verbose_name = 'Excluir Agente de Endemias'
 
 
 class Desvincular(endpoints.InstanceEndpoint[Agente]):

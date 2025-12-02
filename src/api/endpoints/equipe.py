@@ -15,5 +15,3 @@ class Excluir(endpoints.DeleteEndpoint[Equipe]):
     class Meta:
         icon = 'trash'
         verbose_name = 'Excluir Equipe'
-
-

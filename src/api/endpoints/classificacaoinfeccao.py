@@ -46,6 +46,9 @@ class Editar(endpoints.EditEndpoint[ClassificacaoInfeccao]):
         icon = "pen"
         verbose_name = "Editar Classificação de Infecção"
 
+    def check_permission(self):
+        return self.check_role('administrador')
+
 
 class Excluir(endpoints.DeleteEndpoint[ClassificacaoInfeccao]):
     class Meta:

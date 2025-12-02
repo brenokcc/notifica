@@ -54,5 +54,3 @@ class Excluir(endpoints.DeleteEndpoint[GestorMunicipal]):
         icon = "trash"
         verbose_name = "Excluir Gestor de Municipal"
 
-    def check_permission(self):
-        return self.check_role("administrador")
