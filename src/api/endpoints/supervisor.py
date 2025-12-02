@@ -11,6 +11,9 @@ class Supervisores(endpoints.ListEndpoint[Supervisor]):
             super().get()
             .actions('supervisor.cadastrar', 'supervisor.visualizar', 'supervisor.editar', 'supervisor.excluir')
         )
+    
+    def check_permission(self):
+        return self.check_role("administrador")
 
 
 class Cadastrar(endpoints.AddEndpoint[Supervisor]):

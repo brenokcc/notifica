@@ -69,6 +69,7 @@ class ApiApplication(Application):
                     "Reguladores": "regulador.reguladores",
                     "Gestores de Unidade": "gestorunidade.gestoresunidade",
                     "Notificantes": "notificante.notificantes",
+                    "Supervisores de Agente de Endemias": "supervisor.supervisores",
                 },
                 "thermometer-quarter:Doenças": {
                     "Cadastro de Doenças": "doenca.doencas",
