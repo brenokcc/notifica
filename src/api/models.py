@@ -1467,9 +1467,9 @@ class NotificacaoIndividual(models.Model):
         for field in m2m:
             objects[field.name] = list(getattr(self, field.name).values_list('pk', flat=True))
         self.pk = None
-        sequence = int(NotificacaoIndividual.objects.filter(
-            numero__startswith=self.numero.split('-')[0]
-        ).order_by('numero').values_list('numero', flat=True).first().split('-')[-1]) + 1
+        prefix = self.numero.split('-')[0]
+        tokens = NotificacaoIndividual.objects.filter(numero__startswith=prefix).order_by('numero').values_list('numero', flat=True).last().split('-')
+        sequence = 1 if len(tokens) == 1 else int(tokens[-1]) + 1
         self.numero = '{}-{}'.format(self.numero.split('-')[0], sequence)
         self.doenca = doenca
         self.resultado_exame = None
@@ -1514,7 +1514,7 @@ class NotificacaoIndividual(models.Model):
                     )
         super().save(*args, **kwargs)
         if self.numero is None:
-            self.numero = '{}-1'.format(str(self.id).rjust(5, "0"))
+            self.numero = '{}'.format(str(self.id).rjust(5, "0"))
             super().save(*args, **kwargs)
 
     def get_idade(self):
