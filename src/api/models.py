@@ -1769,12 +1769,17 @@ class NotificacaoIndividual(models.Model):
             )
             .fieldset("Dados do Bloqueio", (("bloqueio", "tipo_bloqueio"), ("responsavel_bloqueio", "data_bloqueio"), ("motivo_perda_prazo_bloqueio", "observacao_bloqueio")))
             .queryset("get_historico_evolucao")
+            .queryset("get_registros_leitura_resultado")
             .fieldset("Outras Informações", ("observacao", ("data_envio", "validada")))
             .section('Dados do Envio da Ficha')
                 .actions("notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar")
                 .queryset("get_historico_devolucao")
                 .parent()
         )
+    
+    @meta('Histórico de Leitura do Resultado')
+    def get_registros_leitura_resultado(self):
+        return self.registroleituraresultado_set.all().fields('user', 'data')
 
     def __str__(self):
         return f"Notificação {self.numero} - {self.nome} ({self.cpf or self.cartao_sus}) - {self.data_primeiros_sintomas.strftime('%d/%m/%Y')}"
@@ -1784,7 +1789,7 @@ class NotificacaoIndividual(models.Model):
 
     @meta("Resultado do Exame")
     def get_resultado_exame(self):
-        return FileLink(self.resultado_exame.url, modal=True, icon='file') if self.resultado_exame else None
+        return FileLink(self.resultado_exame.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/') if self.resultado_exame else None
 
     def generate_qr_code_base64(self):
         qr = qrcode.QRCode(
@@ -1805,6 +1810,18 @@ class NotificacaoIndividual(models.Model):
 
     def is_pendente_correcao(self):
         return self.devolucao_set.filter(observacao_correcao__isnull=True)
+
+
+class RegistroLeituraResultado(models.Model):
+    notificacao = models.ForeignKey(NotificacaoIndividual, verbose_name='Notificação', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, verbose_name='Usuário', on_delete=models.CASCADE)
+    data = models.DateTimeField(verbose_name='Data/Hora')
+
+    @meta('Usuário')
+    def get_user(self):
+        if self.user.first_name:
+            return f'{self.user.first_name} ({self.user.username})'
+        return self.user.username
 
 class DevolucaoQuerySet(models.QuerySet):
     def all(self):

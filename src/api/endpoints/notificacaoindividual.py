@@ -128,6 +128,15 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
         return self.check_role("notificante", "regulador", "administrador", "gu", "gm")# and self.check_instance()
 
 
+class RegistrarLeituraResultado(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    def get(self):
+        RegistroLeituraResultado.objects.create(notificacao=self.instance, user=self.request.user, data=datetime.now())
+        return 0
+    
+    def check_permission(self):
+        return self.request.user.is_authenticated
+
+
 class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     class Meta:
         icon = "file-pdf"
@@ -171,6 +180,22 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
 
 class Mixin:
+
+    def on_endereco_change(self, endereco):
+        if endereco:
+            print(endereco)
+            self.form.controller.set(
+                pais=endereco.pais,
+                logradouro=endereco.logradouro,
+                numero_residencia=endereco.numero,
+                complemento=endereco.complemento,
+                bairro=endereco.bairro,
+                cep=endereco.cep,
+                distrito=endereco.distrito,
+                municipio_residencia=endereco.municipio
+            )
+        else:
+            print(None)
 
     # def on_criterio_confirmacao_change(self, criterio_confirmacao):
     #     em_investigacao = criterio_confirmacao and criterio_confirmacao.nome == 'Em investigação' or False
