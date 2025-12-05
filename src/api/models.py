@@ -1054,6 +1054,7 @@ class NotificacaoIndividual(models.Model):
     )
 
     # Dados Residenciais
+    endereco = models.ForeignKey('api.Endereco', verbose_name='Endereço Pré-cadastrado', on_delete=models.CASCADE, null=True, blank=True)
     pais = models.ForeignKey(
         Pais,
         verbose_name="País",
@@ -1578,6 +1579,7 @@ class NotificacaoIndividual(models.Model):
             .fieldset(
                 "Dados Residenciais",
                 (
+                    "endereco",
                     "pais:pais.cadastrar",
                     ("cep", "bairro"),
                     ("municipio_residencia:notificacaoindividual.cadastrarmunicipio", "distrito"),
@@ -1689,6 +1691,7 @@ class NotificacaoIndividual(models.Model):
             .fieldset(
                 "Dados Residenciais",
                 (
+                    "endereco",
                     "pais",
                     ("cep", "municipio_residencia"),
                     ("distrito", "bairro"),
@@ -1865,3 +1868,146 @@ class Evolucao(models.Model):
             equipe = Equipe.objects.filter(notificantes__cpf=self.notificante.username).first()
             if equipe:
                 return equipe.unidade
+
+
+class CategoriaVideo(models.Model):
+    nome = models.CharField(verbose_name='Nome')
+
+    class Meta:
+        verbose_name = 'Categoria de Video'
+        verbose_name_plural = 'Categorias de Video'
+
+    def __str__(self):
+        return self.nome
+
+
+class Video(models.Model):
+    titulo = models.CharField(verbose_name='Título')
+    categoria = models.ForeignKey(CategoriaVideo, verbose_name='Categoria', on_delete=models.CASCADE)
+    codigo = models.CharField(verbose_name='Código')
+    descricao = models.TextField(verbose_name='Descrição')
+
+    class Meta:
+        verbose_name = 'Video'
+        verbose_name_plural = 'Videos'
+
+    def __str__(self):
+        return self.titulo
+    
+    def get_embed_url(self):
+        return f'https://www.youtube.com/embed/{self.codigo}'
+
+
+class EnderecoQuerySet(models.QuerySet):
+    def all(self):
+        return self.fields('local', 'get_endereco')
+
+
+class Endereco(models.Model):
+    local = models.CharField(verbose_name='Local')
+    # Dados Residenciais
+    pais = models.ForeignKey(
+        Pais,
+        verbose_name="País",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    cep = models.CharField(verbose_name="CEP", null=True, blank=True)
+    municipio = models.ForeignKey(
+        Municipio,
+        verbose_name="Município da Residência",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    distrito = models.CharField(verbose_name="Distrito", null=True, blank=True)
+    zona = models.ForeignKey(
+        Zona, verbose_name="Zona", on_delete=models.CASCADE, null=True, pick=True
+    )
+    bairro = models.CharField(verbose_name="Bairro", null=True, blank=True)
+    logradouro = models.CharField(verbose_name="Logradouro", null=True, blank=True)
+    codigo_logradouro = models.CharField(
+        verbose_name="Código do Logradouro", null=True, blank=True
+    )
+    numero = models.CharField(
+        verbose_name="Número da Residência", null=True, blank=True
+    )
+    complemento = models.CharField(verbose_name="Complemento", null=True, blank=True)
+    latitude = models.CharField(verbose_name="Latitude", null=True, blank=True)
+    longitude = models.CharField(verbose_name="Longitude", null=True, blank=True)
+    referencia = models.CharField(
+        verbose_name="Ponto de Referência", null=True, blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Endereço'
+        verbose_name_plural = 'Endereços'
+
+    objects = EnderecoQuerySet()
+
+    def __str__(self):
+        return self.get_endereco()
+
+    def formfactory(self):
+        return (
+            super()
+            .formfactory()
+            .fieldset(
+                "Dados Gerais",
+                (
+                    "local",
+                ),
+            )
+            .fieldset(
+                "Dados do Endereço",
+                (
+                    "pais:pais.cadastrar",
+                    ("cep", "bairro"),
+                    ("municipio", "distrito"),
+                    ("logradouro", "codigo_logradouro"),
+                    ("numero", "complemento"),
+                    "zona",
+                    ("latitude", "longitude"),
+                    "referencia",
+                ),
+            )
+        )
+    
+    def serializer(self):
+        return (
+            super()
+            .serializer()
+            .fieldset(
+                "Dados Gerais",
+                (
+                    "local",
+                ),
+            )
+            .fieldset(
+                "Dados Residenciais",
+                (
+                    "pais:pais.cadastrar",
+                    ("cep", "bairro"),
+                    ("municipio", "distrito"),
+                    ("logradouro", "codigo_logradouro"),
+                    ("numero", "complemento"),
+                    "zona",
+                    ("latitude", "longitude"),
+                    "referencia",
+                ),
+            )
+        )
+
+    @meta('Endereço')
+    def get_endereco(self):
+        endereco = [
+            self.logradouro,
+            self.numero,
+            self.complemento,
+            self.bairro,
+            self.cep,
+            self.distrito,
+            self.municipio,
+            f'Zona {self.zona}' if self.zona else None,
+            ]
+        return ', '.join(str(info) for info in endereco if info)

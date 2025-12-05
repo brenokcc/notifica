@@ -1,0 +1,18 @@
+<h1>Videos</h1>
+<p>Nessa página você encontrará videos que lhe auxiliarão no uso da ferramenta e na execução do seu trabalho como profissional responsável pelo combate as arboviroes.</p>
+<div align="center">
+    {% for categoria in categorias %}
+        <h2>{{ categoria }}</h2>
+        {% for video in categoria.video_set.all %}
+            <div><strong>{{ video.titulo }}</strong></div>
+            <iframe width="560" height="315" src="{{ video.get_embed_url }}"
+                title="YouTube video player" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+            </iframe>
+            <p style="width: 560px; margin-bottom: 30px;">
+                {{ video.descricao }}
+            </p>
+        {% endfor %}
+    {% endfor %}
+</div>

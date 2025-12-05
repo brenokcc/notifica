@@ -88,11 +88,16 @@ class ApiApplication(Application):
                     "Zonas": "zona.zonas",
                     "Tipos de Local": "tipolocal.tiposlocal",
                     "Locais de Infecção": "localinfeccao.locaisinfeccao",
+                    "Endereços Pré-cadastrados": "endereco.enderecos",
                 },
                 "book-medical:Infeção": {
                     "Apresentações Clínicas": "apresentacaoclinica.apresentacoesclinicas",
                     "Classificações": "classificacaoinfeccao.classificacoesinfeccao",
                     "Critérios de Confirmação": "criterioconfirmacao.criteriosconfirmacao",
+                },
+                "display:Videos": {
+                    "Categorias": "categoriavideo.categoriasvideo",
+                    "Videos": "video.videos",
                 },
                 #"hospital-symbol:Hospitais": "hospital.hospitais",
                 # "contact-book:Solicitações de Cadastro": "solicitacaocadastro.solicitacoescadastro",
@@ -102,6 +107,7 @@ class ApiApplication(Application):
             }
         )
         self.dashboard.top.add("publico.quemsomos")
+        self.dashboard.top.add("publico.videos")
         self.dashboard.top.add("solicitacaocadastro.cadastrar", "solicitacaocadastro.redefinirsenha",)
         self.theme.light.default.update(color="#033770")
         self.theme.light.primary.update(color="#033770", background="#033770")
