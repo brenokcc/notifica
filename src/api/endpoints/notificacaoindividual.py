@@ -179,8 +179,11 @@ class Mixin:
     def clean_data_encerramento(self, data):
         data_encerramento = data.get('data_encerramento')
         criterio_confirmacao = data.get('criterio_confirmacao')
+        evolucacao_caso = data.get('evolucacao_caso')
         if data_encerramento and criterio_confirmacao and criterio_confirmacao.id == CriterioConfirmacao.EM_INVESTIGACAO:
             raise ValidationError('A data do encerramento não pode ser informada para casos em investigação')
+        if data_encerramento and evolucacao_caso and criterio_confirmacao.id == TipoEvolucao.EM_INVESTIGACAO:
+            raise ValidationError('A data do encerramento não pode ser informada para casos cuja evolução encontra-se em investigação')
         classificacao_infeccao = data.get('classificacao_infeccao')
         if data_encerramento and not classificacao_infeccao:
             raise ValidationError('Informe a classificação da infeção')
@@ -293,6 +296,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             pais=Pais.objects.order_by("id").first(),
             pais_infeccao=Pais.objects.order_by("id").first(),
             criterio_confirmacao=CriterioConfirmacao.EM_INVESTIGACAO,
+            evolucao_caso=TipoEvolucao.EM_INVESTIGACAO,
         )
         data_atualizado_cadsus = None
         esus_api_url = os.environ.get('ESUS_API_URL', 'http://localhost:8000')
@@ -380,7 +384,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         cartao_sus = self.cleaned_data['cartao_sus']
         if not cpf and not cartao_sus:
             raise ValidationError('Informe o CPF ou Cartão SUS.')
-        self.redirect('/app/notificacaoindividual/notificacoesindividuais/')
+        self.redirect(f'/app/notificacaoindividual/visualizar/{self.instance.pk}/')
 
 class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
     class Meta:

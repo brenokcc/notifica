@@ -42,21 +42,11 @@ class Editar(endpoints.EditEndpoint[TermoUso]):
         icon = 'pen'
         verbose_name = 'Editar Termo de Uso'
 
-    def get(self):
-        return (
-            super().get()
-        )
-
 
 class Excluir(endpoints.DeleteEndpoint[TermoUso]):
     class Meta:
         icon = 'trash'
         verbose_name = 'Excluir Termo de Uso'
-
-    def get(self):
-        return (
-            super().get()
-        )
 
 
 class Checar(endpoints.Endpoint):
@@ -89,5 +79,3 @@ class Aceitar(endpoints.Endpoint):
     
     def check_permission(self):
         return self.request.user.is_authenticated
-
-    

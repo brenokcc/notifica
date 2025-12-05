@@ -793,6 +793,8 @@ class ApresentacaoClinica(models.Model):
 
 
 class TipoEvolucao(models.Model):
+    EM_INVESTIGACAO = 5
+
     codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
 
@@ -967,7 +969,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         map = GeoMap(
             -54.815434332605591,
             -22.251316151125515,
-            zoom=10.2,
+            zoom=13,
             max_zoom=20,
             min_zoom=10,
             title="Geovisualização",
@@ -979,8 +981,9 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
                 map.add_polygon_feature(feature)
             for notificacao in self:
                 if notificacao.latitude and notificacao.longitude:
+                    descricao = f"Notificação {notificacao.numero} - {notificacao.nome} ({notificacao.cpf or notificacao.cartao_sus}) - {notificacao.data_primeiros_sintomas.strftime('%d/%m/%Y')}. Endereço: {notificacao.get_endereco()}"
                     map.add_point(
-                        notificacao.longitude, notificacao.latitude, notificacao
+                        notificacao.longitude, notificacao.latitude, descricao
                     )
             return map
 
@@ -1660,7 +1663,7 @@ class NotificacaoIndividual(models.Model):
         return (
             super()
             .serializer()
-            .actions("notificacaoindividual.editar", "notificacaoindividual.imprimir", "notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.evoluircaso")
+            .actions("notificacaoindividual.editar", "notificacaoindividual.imprimir", "notificacaoindividual.evoluircaso")
             .fieldset(
                 "Dados Gerais",
                 (
@@ -1764,7 +1767,10 @@ class NotificacaoIndividual(models.Model):
             .fieldset("Dados do Bloqueio", (("bloqueio", "tipo_bloqueio"), ("responsavel_bloqueio", "data_bloqueio"), ("motivo_perda_prazo_bloqueio", "observacao_bloqueio")))
             .queryset("get_historico_evolucao")
             .fieldset("Outras Informações", ("observacao", ("data_envio", "validada")))
-            .queryset("get_historico_devolucao")
+            .section('Dados do Envio da Ficha')
+                .actions("notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar")
+                .queryset("get_historico_devolucao")
+                .parent()
         )
 
     def __str__(self):
@@ -1832,6 +1838,7 @@ class EvolucaoQuerySet(models.QuerySet):
 
 
 class Evolucao(models.Model):
+
     notificacao = models.ForeignKey(NotificacaoIndividual, verbose_name='Notificação', on_delete=models.CASCADE)
     notificante = models.ForeignKey(User, verbose_name='Notificante', on_delete=models.CASCADE)
     data = models.DateTimeField(verbose_name='Data', auto_created=True)
