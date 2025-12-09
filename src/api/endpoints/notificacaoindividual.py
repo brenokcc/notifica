@@ -529,7 +529,7 @@ class EvoluirCaso(endpoints.RelationEndpoint[Evolucao]):
         )
 
     def check_permission(self):
-        return self.check_role("notificante") and self.source.validada and not self.source.data_encerramento
+        return self.check_role("notificante") and self.source.validada # and not self.source.data_encerramento
 
 
 class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
@@ -578,7 +578,7 @@ class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
     
     def check_permission(self):
-        return self.check_role("regulador") or (self.check_role("agente") and self.instance.pode_registrar_bloqueio())
+        return self.check_role("agente") and self.instance.pode_registrar_bloqueio()
     
 
 class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -591,4 +591,4 @@ class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivid
         return self.formfactory().fields('motivo_perda_prazo_bloqueio', 'observacao_bloqueio')
     
     def check_permission(self):
-        return self.check_role("regulador") or (self.check_role("agente") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio())
+        return self.check_role("agente") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio()

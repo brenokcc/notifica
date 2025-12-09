@@ -25,4 +25,4 @@ class Painel(endpoints.PublicEndpoint):
         )
 
     def check_permission(self):
-        return self.check_role("administrador", "gu", "gm",  "regulador", "agente")
+        return self.check_role("administrador", "gm",  "regulador", "agente")

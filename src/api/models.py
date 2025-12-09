@@ -886,7 +886,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
             .lookup("gu", unidade__gestores__cpf='username')
             .lookup("supervisor", unidade__municipio__supervisores__cpf='username')
-            .lookup("agente", unidade__municipio__agentes__cpf='username')
+            .lookup("agente", responsavel_bloqueio__cpf='username')
             .lookup("notificante", unidade__equipe__notificantes__cpf='username')
         ).distinct()
     
