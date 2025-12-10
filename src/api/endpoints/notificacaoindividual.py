@@ -1,4 +1,5 @@
 import requests
+from slth.models import Role
 from slth import endpoints
 from datetime import date, timedelta
 from ..models import *
@@ -302,6 +303,8 @@ class Checar(endpoints.Endpoint):
 
 
 class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
+    confirmacao_endereco = endpoints.forms.BooleanField(label="Endereço Atual", help_text="O paciente confirmou que o endereço informado corresponde a seu endereço atual.")
+    
     class Meta:
         modal = False
         icon = "plus"
@@ -318,6 +321,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
                 cpf=self.request.user.username
             ).first(),
             unidade=self.get_unidade_inicial(),
+            unidade_referencia=self.get_unidade_referencia_inicial(),
             pais=Pais.objects.order_by("id").first(),
             pais_infeccao=Pais.objects.order_by("id").first(),
             criterio_confirmacao=CriterioConfirmacao.EM_INVESTIGACAO,
@@ -397,12 +401,28 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
     def get_municipio_inicial(self):
         return UnidadeSaude.objects.filter(equipe__notificantes__cpf=self.request.user.username).values_list('municipio', flat=True).first()
 
+    def get_unidade_queryset(self, queryset):
+        role = Role.objects.filter(username=self.request.user.username).filter(active=True, name='notificante').first()
+        return queryset.filter(pk=role.get_scope_value().unidade_id).distinct()
+    
+    def get_unidade_referencia_queryset(self, queryset):
+        return queryset.nolookup().filter(referencia=True)
+
     def get_unidade_inicial(self):
-        qs = UnidadeSaude.objects.filter(equipe__notificantes__cpf=self.request.user.username)
+        qs = self.get_unidade_queryset(UnidadeSaude.objects)
         return qs.first() if qs.count() == 1 else None
+    
+    def get_unidade_referencia_inicial(self):
+        unidade = self.get_unidade_inicial()
+        if unidade and unidade.referencia:
+            return unidade
 
     def on_dengue_grave_change(self, value):
         self.form.controller.set(observacao=str(value))
+
+    def on_unidade_change(self, unidade):
+        if unidade and unidade.referencia:
+            self.form.controller.set(unidade_referencia=unidade)
 
     def post(self):
         cpf = self.cleaned_data['cpf']

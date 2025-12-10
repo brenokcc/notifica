@@ -447,6 +447,7 @@ class UnidadeSaudeQuerySet(models.QuerySet):
 class UnidadeSaude(models.Model):
     codigo = models.CharField(verbose_name="CNES")
     nome = models.CharField(verbose_name="Nome")
+    referencia = models.BooleanField(verbose_name='Referência', default=False)
 
     municipio = models.ForeignKey(
         Municipio, verbose_name="Município", on_delete=models.CASCADE
@@ -467,7 +468,7 @@ class UnidadeSaude(models.Model):
         return (
             super()
             .serializer().actions('unidadesaude.editar', 'unidadesaude.addequipe')
-            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores"))
+            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores", "referencia"))
             .queryset("get_equipes")
         )
 
@@ -475,7 +476,7 @@ class UnidadeSaude(models.Model):
         return (
             super()
             .formfactory()
-            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores:gestorunidade.cadastrar"))
+            .fieldset("Dados Gerais", (("codigo", "nome"), "municipio", "gestores:gestorunidade.cadastrar", "referencia"))
         )
 
     def get_equipes(self):
@@ -1002,7 +1003,10 @@ class NotificacaoIndividual(models.Model):
         Municipio, verbose_name="Município", on_delete=models.CASCADE, related_name="s1"
     )
     unidade = models.ForeignKey(
-        UnidadeSaude, verbose_name="Unidade de Saúde", on_delete=models.CASCADE
+        UnidadeSaude, verbose_name="Unidade de Saúde da Notificação", on_delete=models.CASCADE
+    )
+    unidade_referencia = models.ForeignKey(
+        UnidadeSaude, verbose_name="Unidade de Saúde de Referência", on_delete=models.CASCADE, null=True, related_name='r1'
     )
     data_primeiros_sintomas = models.DateField(
         verbose_name="Data dos Primeiros Sintomas"
@@ -1089,7 +1093,6 @@ class NotificacaoIndividual(models.Model):
     referencia = models.CharField(
         verbose_name="Ponto de Referência", null=True, blank=True
     )
-
     # Dados para Contato
     telefone = models.CharField(verbose_name="Telefone", null=True, blank=True)
     email = models.CharField(verbose_name="E-mail", null=True, blank=True)
@@ -1557,10 +1560,10 @@ class NotificacaoIndividual(models.Model):
             .fieldset(
                 "Dados Gerais",
                 (
-                    "doenca",
-                    "data",
+                    ("doenca", "data"),
                     ("notificante", "municipio"),
-                    ("unidade", "data_primeiros_sintomas"),
+                    ("unidade", "unidade_referencia"),
+                    "data_primeiros_sintomas"
                 ),
             )
             .fieldset(
@@ -1588,6 +1591,7 @@ class NotificacaoIndividual(models.Model):
                     "zona",
                     ("latitude", "longitude"),
                     "referencia",
+                    "confirmacao_endereco",
                 ),
             )
             .fieldset("Dados de Contato", (("telefone", "email"),))
@@ -1669,10 +1673,10 @@ class NotificacaoIndividual(models.Model):
             .fieldset(
                 "Dados Gerais",
                 (
-                    "numero",
                     ("doenca", "data"),
                     ("notificante", "municipio"),
-                    ("unidade", "data_primeiros_sintomas"),
+                    ("unidade", "unidade_referencia"),
+                    "data_primeiros_sintomas"
                 ),
             )
             .fieldset(
