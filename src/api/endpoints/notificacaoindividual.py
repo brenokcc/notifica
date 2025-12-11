@@ -463,7 +463,7 @@ class Enviar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     
     def post(self):
         self.instance.enviar()
-        return super().post()
+        self.redirect('/app/notificacaoindividual/notificacoesindividuais/')
 
     def check_permission(self):
         return (self.check_role('administrador') or self.instance.notificante.cpf == self.request.user.username) and self.instance.pode_ser_enviada()
