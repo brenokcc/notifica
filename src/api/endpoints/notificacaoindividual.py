@@ -215,7 +215,7 @@ class Mixin:
             raise ValidationError('Informe a classificação da infeção')
         return data_encerramento
 
-    def clean_cpf(self, data):
+    def _clean_cpf(self, data):
         cpf = data.get('cpf')
         data_primeiros_sintomas = data['data_primeiros_sintomas']
         limite_inferior = data_primeiros_sintomas - timedelta(days=30)
