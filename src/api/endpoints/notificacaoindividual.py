@@ -402,6 +402,8 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         return UnidadeSaude.objects.filter(equipe__notificantes__cpf=self.request.user.username).values_list('municipio', flat=True).first()
 
     def get_unidade_queryset(self, queryset):
+        if self.request.user.is_superuser:
+            return queryset
         role = Role.objects.filter(username=self.request.user.username).filter(active=True, name='notificante').first()
         return queryset.filter(pk=role.get_scope_value().unidade_id).distinct()
     
