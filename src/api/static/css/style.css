@@ -24,3 +24,6 @@ input{
 .object-title h1 {
     line-height: 2;
 }
+.group > div > a{
+    color: #bd9c36 !important;
+}

@@ -1435,7 +1435,7 @@ class NotificacaoIndividual(models.Model):
 
     @meta('Histórico de Evolução')
     def get_historico_evolucao(self):
-        return self.evolucao_set.all().ignore('notificacao')
+        return self.evolucao_set.all().fields('notificante', 'get_unidade', 'data', 'observacao')
     
     @meta('Histórico de Devolução')
     def get_historico_devolucao(self):
@@ -1669,7 +1669,7 @@ class NotificacaoIndividual(models.Model):
         return (
             super()
             .serializer()
-            .actions("notificacaoindividual.editar", "notificacaoindividual.imprimir", "notificacaoindividual.evoluircaso")
+            .actions("notificacaoindividual.editar", "notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.imprimir", "notificacaoindividual.evoluircaso")
             .fieldset(
                 "Dados Gerais",
                 (
@@ -1679,106 +1679,113 @@ class NotificacaoIndividual(models.Model):
                     "data_primeiros_sintomas"
                 ),
             )
-            .fieldset(
-                "Dados do Indivíduo",
-                (
-                    ("cpf", "cartao_sus"),
-                    "nome",
-                    ("data_nascimento", "idade"),
-                    "sexo",
-                    "periodo_gestacao",
-                    "raca",
-                    "escolaridade",
-                    "nome_mae",
-                ),
-            )
-            .fieldset(
-                "Dados Residenciais",
-                (
-                    "endereco",
-                    "pais",
-                    ("cep", "municipio_residencia"),
-                    ("distrito", "bairro"),
-                    ("logradouro", "codigo_logradouro"),
-                    ("numero_residencia", "complemento"),
-                    "zona",
-                    ("latitude", "longitude"),
-                    "referencia",
-                ),
-            )
-            .fieldset("Dados de Contato", (("telefone", "email"),))
-            .fieldset("Investigação", (("data_investigacao", "ocupacao_investigacao"),))
-            .fieldset(
-                "Notificação de Surto",
-                (
-                    ("data_primeiros_sintomas_surto", "numero_casos_suspeitos_surto"),
-                    "tipo_local_surto",
-                ),
-            )
-            .fieldset("Dados Clínicos", ("sinais_clinicos", "doencas_pre_existentes"))
-            .fieldset(
-                "Sorologia (IgM) Chikungunya",
-                (
-                    "data_primeira_amostra_chikungunya",
-                    "resultado_primeira_amostra_chikungunya",
-                    "data_segunda_amostra_chikungunya",
-                    "resultado_segunda_amostra_chikungunya",
-                ),
-            )
-            .fieldset(
-                "Exame de Neutralização por Redução de Placas (PRNT)",
-                ("data_coleta_exame_prnt", "resultado_exame_prnt"),
-            )
-            .fieldset(
-                "Sorologia (IgM) Dengue",
-                ("data_amostra_dengue", "resultado_amostra_dengue"),
-            )
-            .fieldset("Exame NS1", ("data_exame_ns1", "resultado_exame_ns1"))
-            .fieldset("Outros Exames", ("histopatologia", "imunohistoquimica"))
-            .fieldset("Isolamento", ("data_isolamento", "resultado_isolamento"))
-            .fieldset("RT-PCR", ("data_rt_pcr", "resultado_rt_pcr", "sorotipo"))
-            .fieldset("Vacinação", ("vacinado", "vacinado2", "data_ultima_vacina"))
-            .fieldset(
-                "Hospitalização", ("hospitalizacao", "data_hospitalizacao", "hospital")
-            )
-            .fieldset(
-                "Conclusão",
-                (
-                    ("pais_infeccao", "municipio_infeccao"),
-                    ("distrito_infeccao", "bairro_infeccao"),
-                    ("classificacao_infeccao", "criterio_confirmacao"),
-                    ("apresentacao_clinica", "evolucao_caso"),
-                    ("data_obito", "data_encerramento"),
-                    ("get_resultado_exame",)
-                ),
-            )
-            .fieldset(
-                "Dados Clínicos - Sinais de Alarme",
-                (
-                    "dengue_com_sinais_de_alarme",
-                    "sinais_alarme_dengue",
-                    "data_inicio_sinais_alarme",
-                ),
-            )
-            .fieldset(
-                "Dados Clínicos - Sinais de Gravidade",
-                (
-                    "dengue_grave",
-                    "sinais_extravasamento_plasma",
-                    "sinais_sangramento_grave",
-                    "sinais_comprometimento_orgaos",
-                    "outros_orgaos_afetados",
-                    "data_inicio_sinais_graves",
-                ),
-            )
-            .fieldset("Dados do Bloqueio", (("bloqueio", "tipo_bloqueio"), ("responsavel_bloqueio", "data_bloqueio"), ("motivo_perda_prazo_bloqueio", "observacao_bloqueio")))
-            .queryset("get_historico_evolucao")
-            .queryset("get_registros_leitura_resultado")
-            .fieldset("Outras Informações", ("observacao", ("data_envio", "validada")))
-            .section('Dados do Envio da Ficha')
-                .actions("notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar")
-                .queryset("get_historico_devolucao")
+            .group()
+                .section('Envio da Ficha')
+                    .fieldset("Dados do Envio", (("data_envio", "devolvida"), ("validada", "observacao")))
+                    .queryset("get_historico_devolucao")
+                    .parent()
+                .section('Dados do Indivíduo')
+                    .fieldset(
+                        "Dados Pessoais",
+                        (
+                            ("cpf", "cartao_sus"),
+                            "nome",
+                            ("data_nascimento", "idade"),
+                            "sexo",
+                            "periodo_gestacao",
+                            "raca",
+                            "escolaridade",
+                            "nome_mae",
+                        ),
+                    )
+                    .fieldset(
+                        "Dados Residenciais",
+                        (
+                            "endereco",
+                            "pais",
+                            ("cep", "municipio_residencia"),
+                            ("distrito", "bairro"),
+                            ("logradouro", "codigo_logradouro"),
+                            ("numero_residencia", "complemento"),
+                            "zona",
+                            ("latitude", "longitude"),
+                            "referencia",
+                        ),
+                    )
+                    .fieldset("Dados de Contato", (("telefone", "email"),))
                 .parent()
+                .section('Detalhamento')
+                    .fieldset("Investigação", (("data_investigacao", "ocupacao_investigacao"),))
+                    .fieldset(
+                        "Notificação de Surto",
+                        (
+                            ("data_primeiros_sintomas_surto", "numero_casos_suspeitos_surto"),
+                            "tipo_local_surto",
+                        ),
+                    )
+                    .fieldset("Dados Clínicos", ("sinais_clinicos", "doencas_pre_existentes"))
+                    .fieldset(
+                        "Sorologia (IgM) Chikungunya",
+                        (
+                            "data_primeira_amostra_chikungunya",
+                            "resultado_primeira_amostra_chikungunya",
+                            "data_segunda_amostra_chikungunya",
+                            "resultado_segunda_amostra_chikungunya",
+                        ),
+                    )
+                    .fieldset(
+                        "Exame de Neutralização por Redução de Placas (PRNT)",
+                        ("data_coleta_exame_prnt", "resultado_exame_prnt"),
+                    )
+                    .fieldset(
+                        "Sorologia (IgM) Dengue",
+                        ("data_amostra_dengue", "resultado_amostra_dengue"),
+                    )
+                    .fieldset("Exame NS1", ("data_exame_ns1", "resultado_exame_ns1"))
+                    .fieldset("Outros Exames", ("histopatologia", "imunohistoquimica"))
+                    .fieldset("Isolamento", ("data_isolamento", "resultado_isolamento"))
+                    .fieldset("RT-PCR", ("data_rt_pcr", "resultado_rt_pcr", "sorotipo"))
+                    .fieldset("Vacinação", ("vacinado", "vacinado2", "data_ultima_vacina"))
+                    .fieldset(
+                        "Hospitalização", ("hospitalizacao", "data_hospitalizacao", "hospital")
+                    )
+                .parent()
+                .fieldset("Dados do Bloqueio", (("bloqueio", "tipo_bloqueio"), ("responsavel_bloqueio", "data_bloqueio"), ("motivo_perda_prazo_bloqueio", "observacao_bloqueio")))
+                .queryset("get_historico_evolucao")
+                .section('Dados da Conclusão')
+                    .fieldset(
+                        "Conclusão",
+                        (
+                            ("pais_infeccao", "municipio_infeccao"),
+                            ("distrito_infeccao", "bairro_infeccao"),
+                            ("classificacao_infeccao", "criterio_confirmacao"),
+                            ("apresentacao_clinica", "evolucao_caso"),
+                            ("data_obito", "data_encerramento"),
+                            ("get_resultado_exame",)
+                        ),
+                    )
+                    .fieldset(
+                        "Dados Clínicos - Sinais de Alarme",
+                        (
+                            "dengue_com_sinais_de_alarme",
+                            "sinais_alarme_dengue",
+                            "data_inicio_sinais_alarme",
+                        ),
+                    )
+                    .fieldset(
+                        "Dados Clínicos - Sinais de Gravidade",
+                        (
+                            "dengue_grave",
+                            "sinais_extravasamento_plasma",
+                            "sinais_sangramento_grave",
+                            "sinais_comprometimento_orgaos",
+                            "outros_orgaos_afetados",
+                            "data_inicio_sinais_graves",
+                        ),
+                    )
+                    .queryset("get_registros_leitura_resultado")
+                .parent()
+            .parent()
         )
     
     @meta('Histórico de Leitura do Resultado')

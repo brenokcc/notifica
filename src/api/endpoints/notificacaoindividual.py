@@ -116,6 +116,7 @@ class AguardandoValidacao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
 
 class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
     class Meta:
+        icon = 'eye'
         modal = False
         verbose_name = "Visualizar Notificação Individual"
 
@@ -434,7 +435,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         self.redirect(f'/app/notificacaoindividual/visualizar/{self.instance.pk}/')
 
 class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
-    confirmacao_endereco = endpoints.forms.BooleanField(label="Endereço Atual", help_text="O paciente confirmou que o endereço informado corresponde a seu endereço atual.")
+    confirmacao_endereco = endpoints.forms.BooleanField(label="Endereço Atual", help_text="O paciente confirmou que o endereço informado corresponde a seu endereço atual.", required=False)
     
     class Meta:
         icon = 'pencil'
