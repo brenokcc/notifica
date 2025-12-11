@@ -434,6 +434,8 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         self.redirect(f'/app/notificacaoindividual/visualizar/{self.instance.pk}/')
 
 class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
+    confirmacao_endereco = endpoints.forms.BooleanField(label="Endereço Atual", help_text="O paciente confirmou que o endereço informado corresponde a seu endereço atual.")
+    
     class Meta:
         icon = 'pencil'
         modal = False
