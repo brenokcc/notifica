@@ -34,7 +34,7 @@ class TermoUso(models.Model):
         return TemplateContent('termouso.html', dict(atendimento=self))
 
 
-@role("administrador", username="cpf", email="email")
+@role("administrador", username="cpf", email="email", first_name='nome', last_name='nome')
 class Administrador(models.Model):
     cpf = models.CharField(verbose_name="CPF", blank=False)
     nome = models.CharField(verbose_name="Nome")
@@ -46,10 +46,6 @@ class Administrador(models.Model):
 
     def __str__(self):
         return self.nome
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
 
 class AgenteQuerySet(models.QuerySet):
@@ -73,10 +69,6 @@ class Agente(models.Model):
 
     def __str__(self):
         return f'{self.nome} ({self.cpf})'
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
     @meta("Município")
     def get_municipio(self):
@@ -97,10 +89,6 @@ class Supervisor(models.Model):
 
     def __str__(self):
         return f'{self.nome} ({self.cpf})'
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
     @meta("Município")
     def get_municipio(self):
@@ -148,11 +136,6 @@ class Notificante(models.Model):
     def formfactory(self):
         return super().formfactory().fieldset("", (("cpf",  "nome"), "email",  "funcao"))
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
-    
-
 
 class GestorUnidadeQuerySet(models.QuerySet):
     def all(self):
@@ -176,10 +159,6 @@ class GestorUnidade(models.Model):
     @meta("Unidade")
     def get_unidade(self):
         return ", ".join(self.unidadesaude_set.values_list("nome", flat=True))
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
     
 
 class GestorMunicipalQuerySet(models.QuerySet):
@@ -205,10 +184,6 @@ class GestorMunicipal(models.Model):
     def get_municipio(self):
         return ", ".join(self.municipio_set.values_list("nome", flat=True))
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
-
 
 class ReguladorQuerySet(models.QuerySet):
     def all(self):
@@ -232,10 +207,6 @@ class Regulador(models.Model):
     @meta("Município")
     def get_municipio(self):
         return ", ".join(self.municipio_set.values_list("nome", flat=True))
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        User.objects.filter(username=self.cpf).update(first_name=self.nome.split()[0])
 
 
 class MotivoPerdaPrazoBloqueio(models.Model):
@@ -378,10 +349,10 @@ class MunicipioQuerySet(models.QuerySet):
         )
 
 
-@role("gm", username="gestores__cpf", email="gestores__email", municipio="pk")
-@role("regulador", username="reguladores__cpf", email="reguladores__email", municipio="pk")
-@role("agente", username="agentes__cpf", email="agentes__email", municipio="pk")
-@role("supervisor", username="supervisores__cpf", email="supervisores__email", municipio="pk")
+@role("gm", username="gestores__cpf", email="gestores__email", first_name='gestores__nome', last_name='gestores__nome', municipio="pk")
+@role("regulador", username="reguladores__cpf", email="reguladores__email", first_name='reguladores__nome', last_name='reguladores__nome', municipio="pk")
+@role("agente", username="agentes__cpf", email="agentes__email", first_name='agentes__nome', last_name='agentes__nome', municipio="pk")
+@role("supervisor", username="supervisores__cpf", email="supervisores__email", first_name='supervisores__nome', last_name='supervisores__nome', municipio="pk")
 class Municipio(models.Model):
     estado = models.ForeignKey(Estado, verbose_name="Estado", on_delete=models.CASCADE)
     codigo = models.CharField(max_length=7, verbose_name="Código IBGE", unique=True)
@@ -443,7 +414,7 @@ class UnidadeSaudeQuerySet(models.QuerySet):
         )
 
 
-@role("gu", username="gestores__cpf", email="gestores__email", unidade="pk")
+@role("gu", username="gestores__cpf", email="gestores__email", first_name='gestores__nome', last_name='gestores__nome', unidade="pk")
 class UnidadeSaude(models.Model):
     codigo = models.CharField(verbose_name="CNES")
     nome = models.CharField(verbose_name="Nome")
@@ -492,7 +463,7 @@ class EquipeQuerySet(models.QuerySet):
         )
 
 
-@role("notificante", username="notificantes__cpf", email="notificantes__email", unidade="pk")
+@role("notificante", username="notificantes__cpf", email="notificantes__email", first_name='notificantes__nome', last_name='notificantes__nome', unidade="pk")
 class Equipe(models.Model):
     unidade = models.ForeignKey(UnidadeSaude, verbose_name='Unidade de Saúde', on_delete=models.CASCADE)
     codigo = models.CharField(verbose_name='INE', null=True, blank=True)
