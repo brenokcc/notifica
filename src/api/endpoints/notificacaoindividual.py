@@ -514,9 +514,16 @@ class Finalizar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def get(self):
         return self.formfactory(self.instance).fields("validada")
+        
+
+    def post(self):
+        self.instance.data_validacao = datetime.now()
+        self.instance.responsavel_validacao = Regulador.objects.filter(cpf=self.request.user.username).first()
+        self.instance.save()
+        return super().post()
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador") and self.instance.pode_ser_finalizada()
+        return self.check_role("regulador") and self.instance.pode_ser_finalizada()
 
 
 class CadastrarMunicipio(endpoints.AddEndpoint[Municipio]):
@@ -581,7 +588,7 @@ class AtribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory().fields('responsavel_bloqueio')
 
     def check_permission(self):
-        return self.check_role("supervisor") and self.instance.bloqueio is None
+        return self.check_role("supervisor") and self.instance.bloqueio is None and self.instance.pode_registrar_bloqueio()
     
     def get_responsavel_bloqueio_queryset(self, queryset):
         return queryset.nolookup().filter(municipio=self.instance.unidade.municipio)
@@ -597,6 +604,10 @@ class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory().fields('bloqueio', 'tipo_bloqueio')
     
     def post(self):
+        if self.instance.bloqueio and not self.instance.tipo_bloqueio:
+            raise ValidationError('Informe o tipo de bloqueio.')
+        if not self.instance.bloqueio and self.instance.tipo_bloqueio:
+            raise ValidationError('Não é necessário informar o tipo de bloqueio.')
         self.instance.data_bloqueio = datetime.now()
         self.instance.responsavel_bloqueio = Agente.objects.filter(cpf=self.request.user.username).first()
         self.instance.save()
@@ -604,7 +615,7 @@ class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     
     def check_permission(self):
         return self.check_role("agente") and self.instance.pode_registrar_bloqueio()
-    
+
 
 class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
@@ -617,3 +628,16 @@ class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivid
     
     def check_permission(self):
         return self.check_role("agente") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio()
+    
+
+class DetalharJustificativaBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    class Meta:
+        modal = True
+        icon = "eye"
+        verbose_name = "Ver Justificativa"
+
+    def get(self):
+        return self.serializer().fields('motivo_perda_prazo_bloqueio', 'observacao_bloqueio')
+    
+    def check_permission(self):
+        return self.check_role("regulador", "administrador") and self.instance.motivo_perda_prazo_bloqueio

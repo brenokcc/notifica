@@ -851,8 +851,8 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
-            .fields("numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame")
-            .filters("doenca", "municipio", "unidade", "notificante", "status", "validada",)
+            .fields("numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame", "tipo_bloqueio")
+            .filters("doenca", "municipio", "unidade", "notificante", "status", "validada", "bloqueio", "tipo_bloqueio")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
@@ -877,7 +877,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             'id', 'numero', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado', 'nome', 'get_endereco',
             'unidade', 'responsavel_bloqueio', 'get_status', 'get_bloqueio', 'data_bloqueio'
-        ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio').xlsx(
+        ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio', 'notificacaoindividual.detalharjustificativabloqueio').xlsx(
             'numero', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
             'unidade', 'status', 'responsavel_bloqueio', 'bloqueio', 'data_bloqueio', 'tipo_bloqueio'
@@ -1360,7 +1360,9 @@ class NotificacaoIndividual(models.Model):
     # Observação
     observacao = models.TextField(verbose_name="Observação", null=True, blank=True)
     validada = models.BooleanField(verbose_name="Validada", null=True, blank=True, choices=[['', 'Pendente de Avaliação'], [False, 'Não'], [True, 'Sim']])
-
+    data_validacao = models.DateTimeField(verbose_name='Data do Validação', null=True, blank=True)
+    responsavel_validacao = models.ForeignKey(Regulador, verbose_name='Responsável pelo Validação', on_delete=models.CASCADE, null=True)
+    
     # Bloqueio
     bloqueio = models.BooleanField(verbose_name='Bloqueio', null=True, blank=False, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
     tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Mecânico', 'Mecânico'], ['Químico', 'Químico'], ['Mecânico e Químico', 'Mecânico e Químico']], null=True, blank=True, pick=True)
@@ -1652,7 +1654,7 @@ class NotificacaoIndividual(models.Model):
             )
             .group()
                 .section('Envio da Ficha')
-                    .fieldset("Dados do Envio", (("data_envio", "devolvida"), ("validada", "observacao")))
+                    .fieldset("Dados do Envio", (("data_envio", "devolvida"), ("validada", "data_validacao"), ("responsavel_validacao", "observacao")))
                     .queryset("get_historico_devolucao")
                     .parent()
                 .section('Dados do Indivíduo')
