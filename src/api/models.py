@@ -852,14 +852,16 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
             .fields("numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame", "tipo_bloqueio")
-            .filters("doenca", "municipio", "unidade", "notificante", "status", "validada", "bloqueio", "tipo_bloqueio")
+            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "validada", "bloqueio", "tipo_bloqueio")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
             .lookup("gu", unidade__gestores__cpf='username')
+            .lookup("gu", unidade_referencia__gestores__cpf='username')
             .lookup("supervisor", unidade__municipio__supervisores__cpf='username')
             .lookup("agente", responsavel_bloqueio__cpf='username')
             .lookup("notificante", unidade__equipe__notificantes__cpf='username')
+            .lookup("notificante", unidade_referencia__equipe__notificantes__cpf='username')
         ).distinct()
     
     def aguardando_envio(self):
