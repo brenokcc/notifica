@@ -21,6 +21,7 @@ class SolicitacoesCadastro(
                 "solicitacaocadastro.cadastrar",
                 "solicitacaocadastro.visualizar",
                 "solicitacaocadastro.excluir",
+                "solicitacaocadastro.cancelaravaliacao",
             )
         )
 
@@ -138,6 +139,11 @@ class Avaliar(endpoints.InstanceEndpoint[SolicitacaoCadastro]):
         if self.instance.papel == "notificante":
             fields = "aprovada", "equipe", "observacao"
         return self.formfactory(self.instance).fieldset("", fields)
+    
+    def clean(self, data):
+        equipe = data.get('equipe')
+        if self.instance.papel == "notificante" and not equipe:
+            raise ValidationError("Informe a equipe do notificante")
 
     def post(self):
         self.instance.avaliador = self.request.user
@@ -157,3 +163,23 @@ class Excluir(endpoints.DeleteEndpoint[SolicitacaoCadastro]):
     class Meta:
         icon = "trash"
         verbose_name = "Excluir Solicitação de Cadastro"
+
+
+class CancelarAvaliacao(endpoints.InstanceEndpoint[SolicitacaoCadastro]):
+    class Meta:
+        icon = "x"
+        verbose_name = "Cancelar Avaliação"
+
+    def get(self):
+        return self.formfactory(self.instance).fields()
+    
+    def post(self):
+        self.instance.aprovada = None
+        self.instance.avaliador = None
+        self.instance.data_avaliacao = None
+        self.instance.save()
+        return super().post()
+    
+    def check_permission(self):
+        return self.instance.data_avaliacao # and self.request.user.is_superuser
+    

@@ -62,7 +62,7 @@ class AguardandoBloqueio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
     class Meta:
         modal = False
         icon = "bell"
-        verbose_name = "Aguardando Bloqueio"
+        verbose_name = "Aguardando bloqueio"
 
     def get_queryset(self):
         return super().get_queryset().aguardando_bloqueio().filter(responsavel_bloqueio__cpf=self.request.user.username)
@@ -70,6 +70,19 @@ class AguardandoBloqueio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
     def check_permission(self):
         return self.check_role("agente")
     
+
+class AguardandoDevolucaoBloqueio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
+    class Meta:
+        modal = False
+        icon = "bell"
+        verbose_name = "Aguardando devolução de bloqueio"
+
+    def get_queryset(self):
+        return super().get_queryset().aguardando_devolucao_bloqueio()
+
+    def check_permission(self):
+        return self.check_role("supervisor")
+
 
 class AguardandoJustificativaPerdaPrazoBloqueio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
     class Meta:
@@ -588,10 +601,33 @@ class AtribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory().fields('responsavel_bloqueio')
 
     def check_permission(self):
-        return self.check_role("supervisor") and self.instance.bloqueio is None and self.instance.pode_registrar_bloqueio()
+        return self.check_role("supervisor") and self.instance.data_devolucao_bloqueio is None and self.instance.bloqueio is None and self.instance.pode_registrar_bloqueio()
     
     def get_responsavel_bloqueio_queryset(self, queryset):
         return queryset.nolookup().filter(municipio=self.instance.unidade.municipio)
+
+
+class ReatribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        icon = "person"
+        verbose_name = "Reatribuir Responsável"
+
+    def get(self):
+        return self.formfactory().fields('responsavel_bloqueio')
+
+    def check_permission(self):
+        return self.check_role("supervisor") and self.instance.data_devolucao_bloqueio is not None and self.instance.bloqueio is None and self.instance.pode_registrar_bloqueio()
+    
+    def get_responsavel_bloqueio_queryset(self, queryset):
+        return queryset.nolookup().filter(municipio=self.instance.unidade.municipio)
+
+    def post(self):
+        self.instance.data_devolucao_bloqueio = None
+        self.instance.motivo_devolucao_bloqueio = None
+        self.instance.observacao_devolucao_bloqueio = None
+        self.instance.save()
+        return super().post()
 
 
 class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -614,7 +650,25 @@ class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
     
     def check_permission(self):
-        return self.check_role("agente") and self.instance.pode_registrar_bloqueio()
+        return self.check_role("agente") and self.instance.pode_registrar_bloqueio() and self.instance.data_devolucao_bloqueio is None
+
+
+class DevolverBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        icon = "left-long"
+        verbose_name = "Devolver Bloqueio"
+
+    def get(self):
+        return self.formfactory().fields('motivo_devolucao_bloqueio', 'observacao_devolucao_bloqueio')
+    
+    def post(self):
+        self.instance.data_devolucao_bloqueio = datetime.now()
+        self.instance.save()
+        return super().post()
+    
+    def check_permission(self):
+        return self.check_role("agente") and self.instance.pode_registrar_bloqueio() and self.instance.data_devolucao_bloqueio is None
 
 
 class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -640,4 +694,17 @@ class DetalharJustificativaBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivi
         return self.serializer().fields('motivo_perda_prazo_bloqueio', 'observacao_bloqueio')
     
     def check_permission(self):
-        return self.check_role("regulador", "administrador") and self.instance.motivo_perda_prazo_bloqueio
+        return self.check_role("regulador", "supervisor", "gm", "administrador") and self.instance.motivo_perda_prazo_bloqueio
+    
+
+class DetalharDevolucaoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    class Meta:
+        modal = True
+        icon = "eye"
+        verbose_name = "Detalhar Devolução"
+
+    def get(self):
+        return self.serializer().fields('responsavel_bloqueio', 'motivo_devolucao_bloqueio', 'observacao_devolucao_bloqueio')
+    
+    def check_permission(self):
+        return self.check_role("regulador", "supervisor", "gm", "administrador") and self.instance.motivo_devolucao_bloqueio

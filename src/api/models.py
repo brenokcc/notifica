@@ -216,6 +216,16 @@ class MotivoPerdaPrazoBloqueio(models.Model):
         verbose_name = 'Motivo de Perda de Prazo de Bloqueio'
         verbose_name_plural = 'Motivos de Perda de Prazo de Bloqueio'
 
+    def __str__(self):
+        return self.nome
+    
+
+class MotivoDevolucaoBloqueio(models.Model):
+    nome = models.CharField(verbose_name='Nome')
+
+    class Meta:
+        verbose_name = 'Motivo para Devolução de Bloqueio'
+        verbose_name_plural = 'Motivos para Devolução de Bloqueio'
 
     def __str__(self):
         return self.nome
@@ -879,7 +889,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             'id', 'numero', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado', 'nome', 'get_endereco',
             'unidade', 'responsavel_bloqueio', 'get_status', 'get_bloqueio', 'data_bloqueio'
-        ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio', 'notificacaoindividual.detalharjustificativabloqueio').xlsx(
+        ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.reatribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.devolverbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio', 'notificacaoindividual.detalhardevolucaobloqueio', 'notificacaoindividual.detalharjustificativabloqueio').xlsx(
             'numero', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
             'unidade', 'status', 'responsavel_bloqueio', 'bloqueio', 'data_bloqueio', 'tipo_bloqueio'
@@ -896,8 +906,11 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def aguardando_responsavel_bloqueio(self):
         return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=True)
     
+    def aguardando_devolucao_bloqueio(self):
+        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, data_devolucao_bloqueio__isnull=False)
+    
     def aguardando_bloqueio(self):
-        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, bloqueio__isnull=True)
+        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, bloqueio__isnull=True, data_devolucao_bloqueio__isnull=True)
 
     def aguardando_validacao(self):
         return (
@@ -1373,6 +1386,10 @@ class NotificacaoIndividual(models.Model):
     motivo_perda_prazo_bloqueio = models.ForeignKey(MotivoPerdaPrazoBloqueio, verbose_name='Motivo da Perda de Prazo', on_delete=models.CASCADE, null=True, blank=False, pick=True)
     observacao_bloqueio = models.TextField(verbose_name='Observação', help_text='Informe algo que considera relevante durante a realização do bloqueio', null=True, blank=True)
 
+    data_devolucao_bloqueio = models.DateTimeField(verbose_name='Data da Devolução do Bloqueio', null=True, blank=True)
+    motivo_devolucao_bloqueio = models.ForeignKey(MotivoDevolucaoBloqueio, verbose_name='Motivo para Devolução do Bloqueio', on_delete=models.CASCADE, null=True, blank=False, pick=True)
+    observacao_devolucao_bloqueio = models.TextField(verbose_name='Observação', help_text='Informe algo que considera relevante para a devolução de solicitação do bloqueio', null=True, blank=True)
+
     # Token
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
     devolvida = models.BooleanField(verbose_name='Devolvida', null=True)
@@ -1432,7 +1449,13 @@ class NotificacaoIndividual(models.Model):
 
     def get_bloqueio(self):
         if self.bloqueio is None:
-            return Badge('gray', 'Pendente') if self.pode_registrar_bloqueio() else Badge('red', 'Prazo Perdido', icon='user-check' if self.motivo_perda_prazo_bloqueio else 'question')
+            if self.pode_registrar_bloqueio():
+                if self.data_devolucao_bloqueio:
+                    return Badge('purple', 'Devolvido', icon='user-check' if self.motivo_devolucao_bloqueio else 'question')
+                else:
+                    return Badge('gray', 'Pendente')
+            else:
+                return Badge('red', 'Prazo Perdido', icon='user-check' if self.motivo_perda_prazo_bloqueio else 'question')
         elif not self.bloqueio:
             return Badge('red', 'Não')
         elif self.tipo_bloqueio == 'Mecânico':

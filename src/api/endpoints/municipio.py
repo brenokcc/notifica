@@ -18,7 +18,7 @@ class Municipios(endpoints.ListEndpoint[Municipio]):
     
     def contribute(self, entrypoint):
         if entrypoint == 'menu':
-            return not self.check_role('gm', superuser=False)
+            return not self.check_role('gm', 'supervisor', superuser=False)
         return super().contribute(entrypoint)
 
 
