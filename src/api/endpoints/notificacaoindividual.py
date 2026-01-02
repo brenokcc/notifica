@@ -368,6 +368,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
                 nome=dados['cidadao'],
                 sexo=sexo,
                 data_nascimento=data_nascimento,
+                idade=age(data_nascimento),
                 raca=raca,
                 escolaridade=escolaridade,
                 nome_mae=dados['mae'],
@@ -599,6 +600,11 @@ class AtribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def get(self):
         return self.formfactory().fields('responsavel_bloqueio')
+    
+    def post(self):
+        self.instance.data_atribuicao_bloqueio = datetime.now()
+        self.instance.save()
+        return super().post()
 
     def check_permission(self):
         return self.check_role("supervisor") and self.instance.data_devolucao_bloqueio is None and self.instance.bloqueio is None and self.instance.pode_registrar_bloqueio()
@@ -668,7 +674,7 @@ class DevolverBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
     
     def check_permission(self):
-        return self.check_role("agente") and self.instance.pode_registrar_bloqueio() and self.instance.data_devolucao_bloqueio is None
+        return self.check_role("agente") and self.instance.pode_registrar_bloqueio() and self.instance.data_devolucao_bloqueio is None and self.instance.bloqueio is None
 
 
 class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -704,7 +710,7 @@ class DetalharDevolucaoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual
         verbose_name = "Detalhar Devolução"
 
     def get(self):
-        return self.serializer().fields('responsavel_bloqueio', 'motivo_devolucao_bloqueio', 'observacao_devolucao_bloqueio')
+        return self.serializer().fields('responsavel_bloqueio', 'data_devolucao_bloqueio', 'motivo_devolucao_bloqueio', 'observacao_devolucao_bloqueio')
     
     def check_permission(self):
         return self.check_role("regulador", "supervisor", "gm", "administrador") and self.instance.motivo_devolucao_bloqueio

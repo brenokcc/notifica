@@ -775,7 +775,7 @@ class ApresentacaoClinica(models.Model):
 
 
 class TipoEvolucao(models.Model):
-    EM_INVESTIGACAO = 5
+    EM_INVESTIGACAO = 10
 
     codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
@@ -890,7 +890,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             'get_qtd_dias_infectado', 'nome', 'get_endereco',
             'unidade', 'responsavel_bloqueio', 'get_status', 'get_bloqueio', 'data_bloqueio'
         ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.reatribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.devolverbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio', 'notificacaoindividual.detalhardevolucaobloqueio', 'notificacaoindividual.detalharjustificativabloqueio').xlsx(
-            'numero', 'data', 'data_primeiros_sintomas',
+            'numero', 'doenca', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
             'unidade', 'status', 'responsavel_bloqueio', 'bloqueio', 'data_bloqueio', 'tipo_bloqueio'
         )
@@ -1382,6 +1382,7 @@ class NotificacaoIndividual(models.Model):
     bloqueio = models.BooleanField(verbose_name='Bloqueio', null=True, blank=False, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
     tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Mecânico', 'Mecânico'], ['Químico', 'Químico'], ['Mecânico e Químico', 'Mecânico e Químico']], null=True, blank=True, pick=True)
     responsavel_bloqueio = models.ForeignKey(Agente, verbose_name='Responsável pelo Bloqueio', on_delete=models.CASCADE, null=True)
+    data_atribuicao_bloqueio = models.DateTimeField(verbose_name='Data da Atribuição do Bloqueio', null=True, blank=True)
     data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
     motivo_perda_prazo_bloqueio = models.ForeignKey(MotivoPerdaPrazoBloqueio, verbose_name='Motivo da Perda de Prazo', on_delete=models.CASCADE, null=True, blank=False, pick=True)
     observacao_bloqueio = models.TextField(verbose_name='Observação', help_text='Informe algo que considera relevante durante a realização do bloqueio', null=True, blank=True)
@@ -1523,7 +1524,7 @@ class NotificacaoIndividual(models.Model):
             super().save(*args, **kwargs)
 
     def get_idade(self):
-        return age(self.data_nascimento)
+        return age(self.data_nascimento) if self.data_nascimento else None
     
     def pode_ser_enviada(self):
         return self.data_envio is None
@@ -1748,7 +1749,7 @@ class NotificacaoIndividual(models.Model):
                         "Hospitalização", ("hospitalizacao", "data_hospitalizacao", "hospital")
                     )
                 .parent()
-                .fieldset("Dados do Bloqueio", (("bloqueio", "tipo_bloqueio"), ("responsavel_bloqueio", "data_bloqueio"), ("motivo_perda_prazo_bloqueio", "observacao_bloqueio")))
+                .fieldset("Dados do Bloqueio", ("responsavel_bloqueio", ("bloqueio", "tipo_bloqueio"), ("data_atribuicao_bloqueio", "data_bloqueio"), ("motivo_perda_prazo_bloqueio", "observacao_bloqueio")))
                 .queryset("get_historico_evolucao")
                 .section('Dados da Conclusão')
                     .fieldset(
