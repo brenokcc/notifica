@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from uuid import uuid1
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -186,6 +187,9 @@ EMAIL_USE_TLS = bool(os.environ.get('EMAIL_USE_TLS'))
 
 SINGLE_ROLE = True
 
-if os.path.exists('/Users') or os.path.exists('/home/ubuntu'):
+if os.path.exists('/Users'):
     DEBUG = True
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+else:
+    DEFAULT_PASSWORD = lambda user: uuid1().hex
