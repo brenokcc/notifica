@@ -1,0 +1,2 @@
+export DATABASE_HOST=localhost
+export DATABASE_DB=arbonotifica

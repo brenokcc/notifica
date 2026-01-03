@@ -192,4 +192,5 @@ if os.path.exists('/Users'):
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 else:
+    DEBUG = False
     DEFAULT_PASSWORD = lambda user: uuid1().hex
