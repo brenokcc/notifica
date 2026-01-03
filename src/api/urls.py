@@ -13,4 +13,5 @@ urlpatterns = [
     path("", dispatcher),
     path("media/<path:file_path>/", media, name="secure_media"),
     path("consultar_cpf/<str:cpf>/", consultar_cpf, name="consulta_cpf"),
+    path('sentry-debug/', lambda request: 1/0),
 ]
