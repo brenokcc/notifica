@@ -8,3 +8,4 @@ ADD manage.py .
 ADD entrypoint.sh .
 RUN apk add glib pango font-dejavu
 RUN pip install -U slthcore
+RUN pip install "sentry-sdk[django]"
