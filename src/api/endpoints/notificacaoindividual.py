@@ -339,7 +339,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             pais=Pais.objects.order_by("id").first(),
             pais_infeccao=Pais.objects.order_by("id").first(),
             criterio_confirmacao=CriterioConfirmacao.EM_INVESTIGACAO,
-            evolucao_caso=TipoEvolucao.EM_INVESTIGACAO,
+            evolucao_caso=TipoEvolucao.objects.filter(nome='Em Investigação').values_list('pk', flat=True).first(),
         )
         data_atualizado_cadsus = None
         esus_api_url = os.environ.get('ESUS_API_URL', 'http://localhost:8000')
