@@ -207,7 +207,9 @@ class Mixin:
                 bairro=endereco.bairro,
                 cep=endereco.cep,
                 distrito=endereco.distrito,
-                municipio_residencia=endereco.municipio
+                municipio_residencia=endereco.municipio,
+                latitude=endereco.latitude,
+                longitude=endereco.longitude,
             )
         else:
             print(None)

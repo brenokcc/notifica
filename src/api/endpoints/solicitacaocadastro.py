@@ -36,7 +36,7 @@ class SolicitacoesCadastroPendentes(endpoints.ListEndpoint[SolicitacaoCadastro])
         verbose_name = "Solicitações de cadastro pendentes"
 
     def get_queryset(self):
-        return super().get_queryset().filter(aprovada__isnull=True).actions("solicitacaocadastro.visualizar", "solicitacaocadastro.avaliar")
+        return super().get_queryset().filter(aprovada__isnull=True).actions("solicitacaocadastro.visualizar", "solicitacaocadastro.avaliar", "solicitacaocadastro.excluir")
     
     def check_permission(self):
         return self.check_role("gm", "gu", "administrador") and super().get_queryset().exists()
@@ -97,6 +97,14 @@ class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
         return queryset.nolookup().filter(municipio=self.form.controller.get('municipio'))
 
     def post(self):
+        qs = SolicitacaoCadastro.objects.filter(
+            cpf=self.instance.cpf,
+            papel=self.instance.papel,
+            municipio=self.instance.municipio,
+            unidade=self.instance.unidade,
+        ).exclude(pk=self.instance.pk).exclude(aprovada=False)
+        if qs.exists():
+            raise ValidationError('Já existe uma solicitação para o CPF e papel informados pendente de avaliação ou aprovada.')
         if self.instance.papel == 'notificante':
             if not self.instance.unidade:
                 raise ValidationError('Informe a unidade.')
@@ -163,6 +171,9 @@ class Excluir(endpoints.DeleteEndpoint[SolicitacaoCadastro]):
     class Meta:
         icon = "trash"
         verbose_name = "Excluir Solicitação de Cadastro"
+
+    def check_permission(self):
+        return self.check_role("gm", "gu", "administrador") and self.instance.aprovada is None
 
 
 class CancelarAvaliacao(endpoints.InstanceEndpoint[SolicitacaoCadastro]):

@@ -45,6 +45,7 @@ class Migration(migrations.Migration):
                         choices=[
                             ("gm", "Gestor Municipal"),
                             ("gu", "Gestor de Unidade"),
+                            ("supervisor", "Supervisor"),
                             ("regulador", "Regulador"),
                             ("agente", "Agente de Endemia"),
                             ("notificante", "Notificante"),

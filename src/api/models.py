@@ -519,6 +519,7 @@ class SolicitacaoCadastro(models.Model):
     PAPEIS = [
         ['gm', 'Gestor Municipal'],
         ['gu', 'Gestor de Unidade'],
+        ['supervisor', 'Supervisor'],
         ['regulador', 'Regulador'],
         ['agente', 'Agente de Endemia'],
         ['notificante', 'Notificante'],
@@ -588,7 +589,7 @@ class SolicitacaoCadastro(models.Model):
 
     @transaction.atomic
     def processar(self):
-        model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante, 'agente': Agente, 'regulador': Regulador}[self.papel]
+        model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante, 'agente': Agente, 'regulador': Regulador, 'supervisor': Supervisor}[self.papel]
         obj = (
             model.objects.filter(cpf=self.cpf).first() or model()
         )
@@ -608,6 +609,9 @@ class SolicitacaoCadastro(models.Model):
                     raise ValidationError('Informe a unidade do gestor.')
                 self.unidade.gestores.add(obj)
                 self.unidade.post_save()
+            elif self.papel == 'supervisor':
+                self.municipio.supervisores.add(obj)
+                self.municipio.post_save()
             elif self.papel == 'agente':
                 self.municipio.agentes.add(obj)
                 self.municipio.post_save()
