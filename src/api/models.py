@@ -211,6 +211,7 @@ class Regulador(models.Model):
 
 class MotivoPerdaPrazoBloqueio(models.Model):
     nome = models.CharField(verbose_name='Nome')
+    encerrar_chamado = models.BooleanField(verbose_name='Encerrar Chamado', default=False)
 
     class Meta:
         verbose_name = 'Motivo de Perda de Prazo de Bloqueio'
@@ -1414,6 +1415,8 @@ class NotificacaoIndividual(models.Model):
             return Badge('#4caf50', 'Positivo', 'check')
         elif self.status == 'Negativo':
             return Badge('red', 'Negativo', 'x')
+        elif self.status == 'Finalizada':
+            return Badge('purple', 'Finalizada')
         return Badge('#2196f3', 'Em Análise', 'eyedropper')
     
     @meta('Endereço')
@@ -1495,7 +1498,10 @@ class NotificacaoIndividual(models.Model):
             else:
                 self.status = 'Negativo'
         else:
-            self.status = 'Em Análise'
+            if self.data_encerramento:
+                self.status = 'Finalizada'
+            else:
+                self.status = 'Em Análise'
         if self.token is None:
             self.token = uuid1().hex
         if self.data_primeiros_sintomas:

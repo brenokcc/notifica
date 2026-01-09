@@ -688,8 +688,14 @@ class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivid
     def get(self):
         return self.formfactory().fields('motivo_perda_prazo_bloqueio', 'observacao_bloqueio')
     
+    def post(self):
+        if self.instance.motivo_perda_prazo_bloqueio and self.instance.motivo_perda_prazo_bloqueio.encerrar_chamado:
+            self.instance.data_encerramento = date.today()
+            self.instance.save()
+        return super().post()
+    
     def check_permission(self):
-        return self.check_role("agente") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio()
+        return self.check_role("agente", "supervisor") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio()
     
 
 class DetalharJustificativaBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
