@@ -695,7 +695,7 @@ class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivid
         return super().post()
     
     def check_permission(self):
-        return self.check_role("agente", "supervisor") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio()
+        return self.check_role("agente", "supervisor") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio() and self.instance.bloqueio is None
     
 
 class DetalharJustificativaBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
