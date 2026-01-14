@@ -7,6 +7,7 @@ from ..utils import buscar_endereco
 from slth.integrations.google import places
 from slth.utils import age
 from slth.components import FileViewer
+from requests.exceptions import Timeout
 
 
 class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
@@ -347,8 +348,11 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         esus_api_url = os.environ.get('ESUS_API_URL', 'http://localhost:8000')
         esus_api_token = os.environ.get('ESUS_API_TOKEN', '')
         headers = {'Authorization': f'Token {esus_api_token}'}
-        response = requests.get('{}/consultar_cpf/{}/'.format(esus_api_url, cpf), headers=headers)
-        dados = response.status_code == 200 and response.json() or {}
+        try:
+            response = requests.get('{}/consultar_cpf/{}/'.format(esus_api_url, cpf), headers=headers, timeout=10)
+            dados = response.status_code == 200 and response.json() or {}
+        except Timeout:
+            dados = {}
         if dados:
             sexo = Sexo.objects.filter(codigo=(dados['sexo'].upper()[0])).first() if dados['sexo'] else None
             data_nascimento = datetime.strptime(dados['dt_nascimento'], "%Y-%m-%d").date() if dados['dt_nascimento'] else None
