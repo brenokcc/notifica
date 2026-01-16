@@ -1389,8 +1389,12 @@ class NotificacaoIndividual(models.Model):
     responsavel_bloqueio = models.ForeignKey(Agente, verbose_name='Responsável pelo Bloqueio', on_delete=models.CASCADE, null=True)
     data_atribuicao_bloqueio = models.DateTimeField(verbose_name='Data da Atribuição do Bloqueio', null=True, blank=True)
     data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
-    motivo_perda_prazo_bloqueio = models.ForeignKey(MotivoPerdaPrazoBloqueio, verbose_name='Motivo da Perda de Prazo', on_delete=models.CASCADE, null=True, blank=False, pick=True)
     observacao_bloqueio = models.TextField(verbose_name='Observação', help_text='Informe algo que considera relevante durante a realização do bloqueio', null=True, blank=True)
+    # Perda de Prazo do Bloqueio
+    motivo_perda_prazo_bloqueio = models.ForeignKey(MotivoPerdaPrazoBloqueio, verbose_name='Motivo da Perda de Prazo', on_delete=models.CASCADE, null=True, blank=False, pick=True)
+    data_perda_prazo_bloqueio = models.DateTimeField(verbose_name='Data da Justificativa da Perda de Prazo', null=True, blank=True)
+    responsavel_perda_prazo_bloqueio = models.ForeignKey(Supervisor, verbose_name='Responsável pela Justificativa da Perda de Prazo', on_delete=models.CASCADE, null=True)
+    observacao_perda_prazo_bloqueio = models.TextField(verbose_name='Observação da Perda do Prazo', help_text='Informe algo que considera relevante sobre a perda de prazo do bloqueio', null=True, blank=True)
 
     data_devolucao_bloqueio = models.DateTimeField(verbose_name='Data da Devolução do Bloqueio', null=True, blank=True)
     motivo_devolucao_bloqueio = models.ForeignKey(MotivoDevolucaoBloqueio, verbose_name='Motivo para Devolução do Bloqueio', on_delete=models.CASCADE, null=True, blank=False, pick=True)
@@ -1759,7 +1763,10 @@ class NotificacaoIndividual(models.Model):
                         "Hospitalização", ("hospitalizacao", "data_hospitalizacao", "hospital")
                     )
                 .parent()
-                .fieldset("Dados do Bloqueio", ("responsavel_bloqueio", ("bloqueio", "tipo_bloqueio"), ("data_atribuicao_bloqueio", "data_bloqueio"), ("motivo_perda_prazo_bloqueio", "observacao_bloqueio")))
+                .section('Bloqueio')
+                    .fieldset("Dados do Bloqueio", ("responsavel_bloqueio", ("bloqueio", "tipo_bloqueio"), ("data_atribuicao_bloqueio", "data_bloqueio"), "observacao_bloqueio"))
+                    .fieldset("Perda de Prazo do Bloqueio", ("motivo_perda_prazo_bloqueio", ("data_perda_prazo_bloqueio", "responsavel_perda_prazo_bloqueio"), 'observacao_perda_prazo_bloqueio'))
+                .parent()
                 .queryset("get_historico_evolucao")
                 .section('Dados da Conclusão')
                     .fieldset(

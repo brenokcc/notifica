@@ -462,6 +462,12 @@ class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
         modal = False
         verbose_name = "Editar Notificação Individual"
 
+    def on_cep_change(self, cep):
+        alterou_cep = NotificacaoIndividual.objects.filter(pk=self.instance.pk).values_list('cep', flat=True).first() != cep
+        self.form.controller.set(
+            **buscar_endereco(cep, municipio="municipio_residencia")
+        ) if (not self.form.controller.get('bairro') or alterou_cep) else None
+
     def check_permission(self):
         return (self.check_role("regulador") and self.instance.data_envio and not self.instance.devolvida) or ((self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username)
 
@@ -690,12 +696,14 @@ class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivid
         verbose_name = "Justificar"
 
     def get(self):
-        return self.formfactory().fields('motivo_perda_prazo_bloqueio', 'observacao_bloqueio')
+        return self.formfactory().fields('motivo_perda_prazo_bloqueio', 'observacao_perda_prazo_bloqueio')
     
     def post(self):
+        self.instance.data_perda_prazo_bloqueio = datetime.now()
+        self.instance.responsavel_perda_prazo_bloqueio = Supervisor.objects.filter(cpf=self.request.user.username).first()
         if self.instance.motivo_perda_prazo_bloqueio and self.instance.motivo_perda_prazo_bloqueio.encerrar_chamado:
             self.instance.data_encerramento = date.today()
-            self.instance.save()
+        self.instance.save()
         return super().post()
     
     def check_permission(self):
@@ -709,7 +717,7 @@ class DetalharJustificativaBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivi
         verbose_name = "Ver Justificativa"
 
     def get(self):
-        return self.serializer().fields('motivo_perda_prazo_bloqueio', 'observacao_bloqueio')
+        return self.serializer().fieldset(None, ('motivo_perda_prazo_bloqueio', ('data_perda_prazo_bloqueio', 'responsavel_perda_prazo_bloqueio'), 'observacao_perda_prazo_bloqueio'))
     
     def check_permission(self):
         return self.check_role("regulador", "supervisor", "gm", "administrador") and self.instance.motivo_perda_prazo_bloqueio
