@@ -997,7 +997,7 @@ class NotificacaoIndividual(models.Model):
         UnidadeSaude, verbose_name="Unidade de Saúde da Notificação", on_delete=models.CASCADE
     )
     unidade_referencia = models.ForeignKey(
-        UnidadeSaude, verbose_name="Unidade de Saúde de Referência", on_delete=models.CASCADE, null=True, related_name='r1'
+        UnidadeSaude, verbose_name="UBS de Referência", on_delete=models.CASCADE, null=True, related_name='r1'
     )
     data_primeiros_sintomas = models.DateField(
         verbose_name="Data dos Primeiros Sintomas"

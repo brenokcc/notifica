@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="r1",
                 to="api.unidadesaude",
-                verbose_name="Unidade de Saúde de Referência",
+                verbose_name="UBS de Referência",
             ),
         ),
         migrations.AddField(
