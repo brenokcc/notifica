@@ -338,7 +338,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
                 cpf=self.request.user.username
             ).first(),
             unidade=self.get_unidade_inicial(),
-            unidade_referencia=self.get_unidade_referencia_inicial(),
+            # unidade_referencia=self.get_unidade_referencia_inicial(),
             pais=Pais.objects.order_by("id").first(),
             pais_infeccao=Pais.objects.order_by("id").first(),
             criterio_confirmacao=CriterioConfirmacao.EM_INVESTIGACAO,
