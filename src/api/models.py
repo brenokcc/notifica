@@ -1548,7 +1548,7 @@ class NotificacaoIndividual(models.Model):
         self.save()
 
     def pode_ser_devolvida(self):
-        return self.validada is None and not self.devolvida
+        return self.validada is None and not self.devolvida and self.data_envio
     
     def devolver(self, avaliador, motivo):
         self.devolvida = True
