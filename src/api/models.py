@@ -1564,7 +1564,7 @@ class NotificacaoIndividual(models.Model):
         self.devolucao_set.filter(observacao_correcao__isnull=True).update(data_correcao=datetime.now(), observacao_correcao=observacao)
 
     def pode_ser_finalizada(self):
-        return self.validada is None and not self.devolvida
+        return self.validada is None and not self.devolvida and self.data_envio
 
     def formfactory(self):
         return (
