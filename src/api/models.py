@@ -534,7 +534,7 @@ class SolicitacaoCadastro(models.Model):
     funcao = models.ForeignKey(Funcao, verbose_name="Profissão/Função", on_delete=models.CASCADE)
     papel = models.CharField(verbose_name="Papel", null=True, choices=PAPEIS, pick=True)
     municipio = models.ForeignKey(Municipio, verbose_name="Município", null=True)
-    unidade = models.ForeignKey(UnidadeSaude, verbose_name="Unidade", null=True, blank=True, help_text="Obrigatório apenas para notificante.")
+    unidade = models.ForeignKey(UnidadeSaude, verbose_name="Unidade", null=True, blank=True, help_text="Obrigatório apenas para gestor de unidade notificante.")
     equipe = models.ForeignKey(Equipe, verbose_name="Equipe", null=True, blank=True)
 
     aprovada = models.BooleanField(verbose_name="Aprovada", null=True, choices=[['', ''], [False, 'Não'], [True, 'Sim']])

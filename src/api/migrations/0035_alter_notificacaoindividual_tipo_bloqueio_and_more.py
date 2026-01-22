@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
             name="unidade",
             field=slth.db.models.ForeignKey(
                 blank=True,
-                help_text="Obrigatório apenas para notificante.",
+                help_text="Obrigatório apenas para gestor de unidade notificante.",
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 to="api.unidadesaude",
