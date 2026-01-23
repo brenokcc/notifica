@@ -590,6 +590,7 @@ class SolicitacaoCadastro(models.Model):
 
     @transaction.atomic
     def processar(self):
+        definir_senha = not User.objects.filter(username=self.cpf).exists()
         model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante, 'agente': Agente, 'regulador': Regulador, 'supervisor': Supervisor}[self.papel]
         obj = (
             model.objects.filter(cpf=self.cpf).first() or model()
@@ -627,8 +628,8 @@ class SolicitacaoCadastro(models.Model):
                 self.municipio.reguladores.add(obj)
                 self.municipio.post_save()
             password = None
-            user = User.objects.filter(username=self.cpf).first()
-            if not user.token_set.exists():
+            if definir_senha:
+                user = User.objects.filter(username=self.cpf).first()
                 password = '123' if settings.DEBUG else uuid1().hex[0:6]
                 user.set_password(password)
                 user.save()
