@@ -192,6 +192,7 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = bool(os.environ.get('EMAIL_USE_TLS'))
 
 SINGLE_ROLE = True
+TOKEN_LIFE_TIME = 30
 
 if os.path.exists('/Users'):
     DEBUG = True

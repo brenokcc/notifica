@@ -99,6 +99,7 @@ class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
     def post(self):
         qs = SolicitacaoCadastro.objects.filter(
             cpf=self.instance.cpf,
+            email=self.instance.email,
             papel=self.instance.papel,
             municipio=self.instance.municipio,
             unidade=self.instance.unidade,

@@ -628,7 +628,7 @@ class SolicitacaoCadastro(models.Model):
                 self.municipio.post_save()
             password = None
             user = User.objects.filter(username=self.cpf).first()
-            if not user.last_login:
+            if not user.token_set.exists():
                 password = '123' if settings.DEBUG else uuid1().hex[0:6]
                 user.set_password(password)
                 user.save()
