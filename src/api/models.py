@@ -1607,7 +1607,6 @@ class NotificacaoIndividual(models.Model):
             .fieldset(
                 "Dados Gerais",
                 (
-                    "sinan",
                     ("doenca", "data"),
                     ("notificante", "municipio"),
                     ("unidade", "unidade_referencia"),
