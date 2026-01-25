@@ -26,7 +26,8 @@ class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
                 "notificacaoindividual.imprimir",
                 "notificacaoindividual.clonar",
             )
-            .order_by("numero")
+            .xlsx()
+            .order_by("-numero")
         )
 
     def check_permission(self):
@@ -219,6 +220,27 @@ class Mixin:
     #     em_investigacao = criterio_confirmacao and criterio_confirmacao.nome == 'Em investigação' or False
     #     self.form.controller.visible(not em_investigacao, 'data_encerramento')
 
+    def clean_hospitalizacao(self, data):
+        hospitalizacao = data.get('hospitalizacao')
+        situacao_hospitalar = data.get('situacao_hospitalar')
+        if hospitalizacao and not situacao_hospitalar:
+            raise ValidationError('Informe a situação hospitalar')
+
+    def clean_situacao_hospitalar(self, data):
+        situacao_hospitalar = data.get('situacao_hospitalar')
+        data_hospitalizacao = data.get('data_hospitalizacao')
+        numero_prontuario = data.get('numero_prontuario')
+        data_alta = data.get('data_alta')
+        data_obito = data.get('data_obito')
+        if situacao_hospitalar and not data_hospitalizacao:
+            raise ValidationError('Informe a data da hospitalização.')
+        if situacao_hospitalar and not numero_prontuario:
+            raise ValidationError('Informe o número do prontuário.')
+        if situacao_hospitalar == 'Alta' and not data_alta:
+            raise ValidationError('Informe a data da alta.')
+        if situacao_hospitalar == 'Óbito' and not data_obito:
+            raise ValidationError('Informe a data do óbito na seção destinada a conclusão.') 
+
     def clean_data_encerramento(self, data):
         data_encerramento = data.get('data_encerramento')
         criterio_confirmacao = data.get('criterio_confirmacao')
@@ -326,6 +348,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         modal = False
         icon = "plus"
         verbose_name = "Cadastrar Notificação Individual"
+        submit_label = "Avançar"
 
     def get(self):
         cpf = self.request.GET.get('cpf')
@@ -461,6 +484,7 @@ class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
         icon = 'pencil'
         modal = False
         verbose_name = "Editar Notificação Individual"
+        submit_label = "Salvar"
 
     def on_cep_change(self, cep):
         alterou_cep = NotificacaoIndividual.objects.filter(pk=self.instance.pk).values_list('cep', flat=True).first() != cep

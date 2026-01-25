@@ -68,7 +68,7 @@ class Agente(models.Model):
         verbose_name_plural = "Agentes de Endemias"
 
     def __str__(self):
-        return f'{self.nome} ({self.cpf})'
+        return f'{self.nome} ({self.cpf})' if settings.DEBUG else self.nome
 
     @meta("Município")
     def get_municipio(self):
@@ -88,7 +88,7 @@ class Supervisor(models.Model):
         verbose_name_plural = "Supervisores de Endemia"
 
     def __str__(self):
-        return f'{self.nome} ({self.cpf})'
+        return f'{self.nome} ({self.cpf})' if settings.DEBUG else self.nome
 
     @meta("Município")
     def get_municipio(self):
@@ -124,7 +124,7 @@ class Notificante(models.Model):
         verbose_name_plural = "Notificantes"
 
     def __str__(self):
-        return f'{self.nome} ({self.cpf})'
+        return f'{self.nome} ({self.cpf})' if settings.DEBUG else self.nome
 
     @meta("Equipe")
     def get_equipes(self):
@@ -154,7 +154,7 @@ class GestorUnidade(models.Model):
         verbose_name_plural = "Gestores de Unidade"
 
     def __str__(self):
-        return f'{self.nome} ({self.cpf})'
+        return f'{self.nome} ({self.cpf})' if settings.DEBUG else self.nome
 
     @meta("Unidade")
     def get_unidade(self):
@@ -178,7 +178,7 @@ class GestorMunicipal(models.Model):
         verbose_name_plural = "Gestores Municipais"
 
     def __str__(self):
-        return f'{self.nome} ({self.cpf})'
+        return f'{self.nome} ({self.cpf})' if settings.DEBUG else self.nome
 
     @meta("Município")
     def get_municipio(self):
@@ -202,7 +202,7 @@ class Regulador(models.Model):
         verbose_name_plural = "Reguladores"
 
     def __str__(self):
-        return f'{self.nome} ({self.cpf})'
+        return f'{self.nome} ({self.cpf})' if settings.DEBUG else self.nome
 
     @meta("Município")
     def get_municipio(self):
@@ -867,8 +867,8 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
-            .fields("numero", "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_resultado_exame", "tipo_bloqueio")
-            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "validada", "bloqueio", "tipo_bloqueio")
+            .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_situacao_hospitalar", "get_resultado_exame", "tipo_bloqueio")
+            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "validada", "bloqueio", "tipo_bloqueio", "situacao_hospitalar")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
@@ -895,8 +895,20 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             'id', 'numero', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado', 'nome', 'get_endereco',
             'unidade', 'responsavel_bloqueio', 'get_status', 'get_bloqueio', 'data_bloqueio'
-        ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.reatribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.devolverbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio', 'notificacaoindividual.detalhardevolucaobloqueio', 'notificacaoindividual.detalharjustificativabloqueio').xlsx(
-            'numero', 'doenca', 'data', 'data_primeiros_sintomas',
+        ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.reatribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.devolverbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio', 'notificacaoindividual.detalhardevolucaobloqueio', 'notificacaoindividual.detalharjustificativabloqueio').xlsx2()
+    
+    def xlsx(self):
+        return super().xlsx(
+            'numero', 'sinan', 'doenca', 'unidade', "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "status",
+            'get_qtd_dias_infectado_exportacao', 'get_endereco',
+            'responsavel_bloqueio', 'bloqueio', 'data_bloqueio', 'tipo_bloqueio',
+            'hospitalizacao', 'situacao_hospitalar', 'data_hospitalizacao', 'numero_prontuario', 'hospital', 'data_alta', 'data_obito',
+            'classificacao_infeccao', 'criterio_confirmacao', 'apresentacao_clinica', 'evolucao_caso', 'data_encerramento'
+        )
+    
+    def xlsx2(self):
+        return super().xlsx(
+            'numero', 'sinan', 'doenca', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
             'unidade', 'status', 'responsavel_bloqueio', 'bloqueio', 'data_bloqueio', 'tipo_bloqueio'
         )
@@ -984,6 +996,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
 class NotificacaoIndividual(models.Model):
     # Dados Gerais
     numero = models.CharField(verbose_name='Número', max_length=10, null=True, db_index=True)
+    sinan = models.CharField(verbose_name='Número da Notificação no SINAN', null=True, blank=True)
     doenca = models.ForeignKey(
         Doenca, verbose_name="Doença", on_delete=models.CASCADE, pick=True
     )
@@ -1265,15 +1278,20 @@ class NotificacaoIndividual(models.Model):
     hospitalizacao = models.BooleanField(
         verbose_name="Ocorreu Hospitalização", null=True
     )
+    situacao_hospitalar = models.CharField(verbose_name="Situação Hospitalar", blank=True, null=True, choices=[['Internado', 'Internado'], ['Alta', 'Alta'], ['Óbito', 'Óbito']], pick=True)
     data_hospitalizacao = models.DateField(
         verbose_name="Data da Hospitalização", null=True, blank=True
     )
+    numero_prontuario = models.CharField(verbose_name='Número do Prontuário', null=True, blank=True)
     hospital = models.ForeignKey(
         Hospital,
         verbose_name="Hospital",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+    )
+    data_alta = models.DateField(
+        verbose_name="Data da Alta", null=True, blank=True
     )
 
     # Conclusão
@@ -1391,6 +1409,8 @@ class NotificacaoIndividual(models.Model):
     data_atribuicao_bloqueio = models.DateTimeField(verbose_name='Data da Atribuição do Bloqueio', null=True, blank=True)
     data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
     observacao_bloqueio = models.TextField(verbose_name='Observação', help_text='Informe algo que considera relevante durante a realização do bloqueio', null=True, blank=True)
+    latitude_bloqueio = models.CharField(verbose_name="Latitude do Bloqueio", null=True, blank=True)
+    longitude_bloqueio = models.CharField(verbose_name="Longitude do Bloqueio", null=True, blank=True)
     # Perda de Prazo do Bloqueio
     motivo_perda_prazo_bloqueio = models.ForeignKey(MotivoPerdaPrazoBloqueio, verbose_name='Motivo da Perda de Prazo', on_delete=models.CASCADE, null=True, blank=False, pick=True)
     data_perda_prazo_bloqueio = models.DateTimeField(verbose_name='Data da Justificativa da Perda de Prazo', null=True, blank=True)
@@ -1423,6 +1443,18 @@ class NotificacaoIndividual(models.Model):
         elif self.status == 'Finalizada':
             return Badge('purple', 'Finalizada')
         return Badge('#2196f3', 'Em Análise', 'eyedropper')
+    
+    @meta("Situação Hospitalar")
+    def get_situacao_hospitalar(self):
+        if self.situacao_hospitalar:
+            if self.situacao_hospitalar == 'Alta':
+                return Badge('#4caf50', 'Alta', 'check')
+            elif self.situacao_hospitalar == 'Internado':
+                return Badge('#2196f3', 'Internado', 'hospital-user')
+            elif self.situacao_hospitalar == 'Óbito':
+                return Badge('red', 'Óbito', 'cross')
+        else:
+            return Badge('#BBBBBB', 'Não-hospitalizado')
     
     @meta('Endereço')
     def get_endereco(self):
@@ -1521,6 +1553,7 @@ class NotificacaoIndividual(models.Model):
                 "data_rt_pcr",
                 "data_ultima_vacina",
                 "data_hospitalizacao",
+                "data_alta",
                 "data_obito",
                 "data_encerramento",
                 "data_inicio_sinais_alarme",
@@ -1574,10 +1607,11 @@ class NotificacaoIndividual(models.Model):
             .fieldset(
                 "Dados Gerais",
                 (
+                    "sinan",
                     ("doenca", "data"),
                     ("notificante", "municipio"),
                     ("unidade", "unidade_referencia"),
-                    "data_primeiros_sintomas"
+                    ("data_primeiros_sintomas", "sinan")
                 ),
             )
             .fieldset(
@@ -1641,7 +1675,7 @@ class NotificacaoIndividual(models.Model):
             .fieldset("Isolamento", ("data_isolamento", "resultado_isolamento"))
             .fieldset("Vacinação", ("vacinado", "vacinado2", "data_ultima_vacina"))
             .fieldset(
-                "Hospitalização", ("hospitalizacao", "data_hospitalizacao", "hospital:hospital.cadastrar")
+                "Hospitalização", (("hospitalizacao", "situacao_hospitalar"), ("data_hospitalizacao", "numero_prontuario"), ("hospital:hospital.cadastrar", "data_alta"))
             )
             .fieldset(
                 "Conclusão",
@@ -1690,7 +1724,7 @@ class NotificacaoIndividual(models.Model):
                     ("doenca", "data"),
                     ("notificante", "municipio"),
                     ("unidade", "unidade_referencia"),
-                    "data_primeiros_sintomas"
+                    ("data_primeiros_sintomas", "sinan")
                 ),
             )
             .group()
@@ -1761,7 +1795,7 @@ class NotificacaoIndividual(models.Model):
                     .fieldset("RT-PCR", ("data_rt_pcr", "resultado_rt_pcr", "sorotipo"))
                     .fieldset("Vacinação", ("vacinado", "vacinado2", "data_ultima_vacina"))
                     .fieldset(
-                        "Hospitalização", ("hospitalizacao", "data_hospitalizacao", "hospital")
+                        "Hospitalização", (("hospitalizacao", "situacao_hospitalar"), ("data_hospitalizacao", "numero_prontuario"), ("hospital", "data_alta"))
                     )
                 .parent()
                 .section('Bloqueio')
