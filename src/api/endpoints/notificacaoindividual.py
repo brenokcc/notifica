@@ -560,13 +560,14 @@ class Finalizar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     class Meta:
         icon = "check"
-        verbose_name = "Finalizar"
+        verbose_name = "Finalizar Cadastro"
 
     def get(self):
-        return self.formfactory(self.instance).fields("validada")
+        return self.formfactory(self.instance).fields().info('Ao confirmar essa operação, a ficha será marcada como "validada".')
         
 
     def post(self):
+        self.instance.validada = True
         self.instance.data_validacao = datetime.now()
         self.instance.responsavel_validacao = Regulador.objects.filter(cpf=self.request.user.username).first()
         self.instance.save()
