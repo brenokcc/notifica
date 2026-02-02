@@ -863,12 +863,33 @@ class Hospital(models.Model):
         return self.nome
 
 
+class SemanaEpidemiologicaQuerySet(models.QuerySet):
+    def all(self):
+        return self
+
+
+class SemanaEpidemiologica(models.Model):
+    ano = models.IntegerField(verbose_name='Ano')
+    numero = models.IntegerField(verbose_name='Número')
+    inicio = models.DateField(verbose_name='Início')
+    termino = models.DateField(verbose_name='Término')
+
+    class Meta:
+        verbose_name = 'Semana Epidemiológica'
+        verbose_name_plural = 'Semanas Epidemiológicas'
+
+    objects = SemanaEpidemiologicaQuerySet()
+
+    def __str__(self):
+        return f'{self.numero}ª semana/{self.ano}'
+
+
 class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
             .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_situacao_hospitalar", "get_resultado_exame", "tipo_bloqueio")
-            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "validada", "bloqueio", "tipo_bloqueio", "situacao_hospitalar")
+            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "validada", "tipo_bloqueio", "situacao_hospitalar")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
@@ -901,7 +922,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return super().xlsx(
             'numero', 'sinan', 'doenca', 'unidade', "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "status",
             'get_qtd_dias_infectado_exportacao', 'get_endereco',
-            'responsavel_bloqueio', 'bloqueio', 'data_bloqueio', 'tipo_bloqueio',
+            'responsavel_bloqueio', 'data_bloqueio', 'tipo_bloqueio',
             'hospitalizacao', 'situacao_hospitalar', 'data_hospitalizacao', 'numero_prontuario', 'hospital', 'data_alta', 'data_obito',
             'classificacao_infeccao', 'criterio_confirmacao', 'apresentacao_clinica', 'evolucao_caso', 'data_encerramento'
         )
@@ -910,7 +931,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return super().xlsx(
             'numero', 'sinan', 'doenca', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
-            'unidade', 'status', 'responsavel_bloqueio', 'bloqueio', 'data_bloqueio', 'tipo_bloqueio'
+            'unidade', 'status', 'responsavel_bloqueio', 'data_bloqueio', 'tipo_bloqueio'
         )
     
     def em_periodo_bloqueio(self):
@@ -928,7 +949,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, data_devolucao_bloqueio__isnull=False)
     
     def aguardando_bloqueio(self):
-        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, bloqueio__isnull=True, data_devolucao_bloqueio__isnull=True)
+        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, tipo_bloqueio__isnull=True, data_devolucao_bloqueio__isnull=True)
 
     def aguardando_validacao(self):
         return (
@@ -967,7 +988,6 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     @meta("Total por Bairro")
     def get_total_por_bairro(self):
         return self.counter("bairro")
-    
 
     @meta("Dourados/MS")
     def get_mapa(self):
@@ -984,12 +1004,12 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             for feature in features:
                 feature["properties"]["info"] = feature["properties"]["ubsf"]
                 map.add_polygon_feature(feature)
-            for notificacao in self:
-                if notificacao.latitude and notificacao.longitude:
-                    descricao = f"Notificação {notificacao.numero} - {notificacao.nome} ({notificacao.cpf or notificacao.cartao_sus}) - {notificacao.data_primeiros_sintomas.strftime('%d/%m/%Y')}. Endereço: {notificacao.get_endereco()}"
-                    map.add_point(
-                        notificacao.longitude, notificacao.latitude, descricao
-                    )
+            for notificacao in self.filter(latitude__isnull=False, longitude__isnull=False):
+                descricao = f"Notificação {notificacao.numero} - {notificacao.nome} ({notificacao.cpf or notificacao.cartao_sus}) - {notificacao.data_primeiros_sintomas.strftime('%d/%m/%Y')}. Endereço: {notificacao.get_endereco()}"
+                map.add_point(notificacao.longitude, notificacao.latitude, descricao)
+            for notificacao in self.filter(latitude_bloqueio__isnull=False, longitude_bloqueio__isnull=False):
+                descricao = f"Notificação {notificacao.numero} - {notificacao.nome} ({notificacao.cpf or notificacao.cartao_sus}) - {notificacao.data_primeiros_sintomas.strftime('%d/%m/%Y')}. Endereço: {notificacao.get_endereco()}.<br>Bloqueio: {notificacao.tipo_bloqueio}.<br>Responsável pelo Bloqueio: {notificacao.responsavel_bloqueio}"
+                map.add_point(notificacao.longitude_bloqueio, notificacao.latitude_bloqueio, descricao, color='yellow')
             return map
 
 
@@ -1016,6 +1036,7 @@ class NotificacaoIndividual(models.Model):
     data_primeiros_sintomas = models.DateField(
         verbose_name="Data dos Primeiros Sintomas"
     )
+    semana_epidemiologica = models.ForeignKey(SemanaEpidemiologica, verbose_name='Semana Epidemiológica', on_delete=models.CASCADE, null=True)
 
     # Dados do Indivíduo
     cpf = models.CharField(verbose_name="CPF", null=True, blank=True)
@@ -1354,7 +1375,9 @@ class NotificacaoIndividual(models.Model):
     data_encerramento = models.DateField(
         verbose_name="Data do Encerramento", null=True, blank=True
     )
-    resultado_exame = models.FileField(verbose_name='Resultado do Exame', upload_to='resultados_exames', null=True, blank=True)
+    resultado_exame = models.FileField(verbose_name='Resultado do 1º Exame', upload_to='resultados_exames', null=True, blank=True)
+    resultado_exame2 = models.FileField(verbose_name='Resultado do 2º Exame', upload_to='resultados_exames', null=True, blank=True)
+    resultado_exame3 = models.FileField(verbose_name='Resultado do 3º Exame', upload_to='resultados_exames', null=True, blank=True)
 
     # Dados Clínicos - Sinais de Alarme
     dengue_com_sinais_de_alarme = models.BooleanField(
@@ -1403,8 +1426,7 @@ class NotificacaoIndividual(models.Model):
     responsavel_validacao = models.ForeignKey(Regulador, verbose_name='Responsável pelo Validação', on_delete=models.CASCADE, null=True)
     
     # Bloqueio
-    bloqueio = models.BooleanField(verbose_name='Bloqueio', null=True, blank=False, choices=[['', ''], [False, 'Não'], [True, 'Sim']])
-    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Mecânico', 'Mecânico'], ['Químico', 'Químico'], ['Mecânico e Químico', 'Mecânico e Químico']], null=True, blank=True, pick=True)
+    tipo_bloqueio = models.CharField(verbose_name='Tipo de Bloqueio', choices=[['Nenhum', 'Nenhum'], ['Mecânico', 'Mecânico'], ['Químico', 'Químico'], ['Mecânico e Químico', 'Mecânico e Químico']], null=True, blank=False, pick=True)
     responsavel_bloqueio = models.ForeignKey(Agente, verbose_name='Responsável pelo Bloqueio', on_delete=models.CASCADE, null=True)
     data_atribuicao_bloqueio = models.DateTimeField(verbose_name='Data da Atribuição do Bloqueio', null=True, blank=True)
     data_bloqueio = models.DateTimeField(verbose_name='Data do Bloqueio', null=True, blank=True)
@@ -1493,7 +1515,7 @@ class NotificacaoIndividual(models.Model):
         return self.get_qtd_dias_infectado(apenas_numero=True) < 8
 
     def get_bloqueio(self):
-        if self.bloqueio is None:
+        if self.tipo_bloqueio is None:
             if self.pode_registrar_bloqueio():
                 if self.data_devolucao_bloqueio:
                     return Badge('purple', 'Devolvido', icon='user-check' if self.motivo_devolucao_bloqueio else 'question')
@@ -1501,8 +1523,8 @@ class NotificacaoIndividual(models.Model):
                     return Badge('gray', 'Pendente')
             else:
                 return Badge('red', 'Prazo Perdido', icon='user-check' if self.motivo_perda_prazo_bloqueio else 'question')
-        elif not self.bloqueio:
-            return Badge('red', 'Não')
+        elif self.tipo_bloqueio == 'Nenhum':
+            return Badge('red', 'Nenhum')
         elif self.tipo_bloqueio == 'Mecânico':
             return Badge('#2196f3', 'Mecânico', 'house-circle-xmark')
         elif self.tipo_bloqueio == 'Químico':
@@ -1588,6 +1610,9 @@ class NotificacaoIndividual(models.Model):
         self.devolvida = True
         self.save()
         self.devolucao_set.create(avaliador=avaliador, data=datetime.now(), motivo=motivo)
+        content = f'A ficha de número {self.numero} foi devolvida para correção. Acesse o sistema para mais detalhes.'
+        email = Email(to=self.notificante.email, subject="Arbonotifica - Devolução de Ficha", content=content, action="Acessar", url=settings.SITE_URL)
+        email.send()
         
     def pode_ser_reenviada(self):
         return self.devolvida and self.devolucao_set.filter(observacao_correcao__isnull=True).exists()
@@ -1687,7 +1712,7 @@ class NotificacaoIndividual(models.Model):
                     ("classificacao_infeccao", "criterio_confirmacao"),
                     ("apresentacao_clinica", "evolucao_caso"),
                     ("data_obito", "data_encerramento"),
-                    ('resultado_exame',)
+                    'resultado_exame', 'resultado_exame2', 'resultado_exame3',
                 ),
             )
             .fieldset(
@@ -1798,7 +1823,7 @@ class NotificacaoIndividual(models.Model):
                     )
                 .parent()
                 .section('Bloqueio')
-                    .fieldset("Dados do Bloqueio", ("responsavel_bloqueio", ("bloqueio", "tipo_bloqueio"), ("data_atribuicao_bloqueio", "data_bloqueio"), "observacao_bloqueio"))
+                    .fieldset("Dados do Bloqueio", (("responsavel_bloqueio", "tipo_bloqueio"), ("data_atribuicao_bloqueio", "data_bloqueio"), ("latitude_bloqueio", "longitude_bloqueio"), "observacao_bloqueio"))
                     .fieldset("Perda de Prazo do Bloqueio", ("motivo_perda_prazo_bloqueio", ("data_perda_prazo_bloqueio", "responsavel_perda_prazo_bloqueio"), 'observacao_perda_prazo_bloqueio'))
                 .parent()
                 .queryset("get_historico_evolucao")
@@ -1811,7 +1836,7 @@ class NotificacaoIndividual(models.Model):
                             ("classificacao_infeccao", "criterio_confirmacao"),
                             ("apresentacao_clinica", "evolucao_caso"),
                             ("data_obito", "data_encerramento"),
-                            ("get_resultado_exame",)
+                            ("get_resultado_exame1", "get_resultado_exame2", "get_resultado_exame3")
                         ),
                     )
                     .fieldset(
@@ -1848,9 +1873,21 @@ class NotificacaoIndividual(models.Model):
     def get_url_impressao(self):
         return f"{settings.SITE_URL}/api/notificacaoindividual/imprimir/{self.id}/?token={self.token}"
 
+    @meta("Resultado do 1º Exame")
+    def get_resultado_exame1(self):
+        return FileLink(self.resultado_exame.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/') if self.resultado_exame else None
+
+    @meta("Resultado do 2º Exame")
+    def get_resultado_exame2(self):
+        return FileLink(self.resultado_exame2.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/?n=2') if self.resultado_exame2 else None
+
+    @meta("Resultado do 3º Exame")
+    def get_resultado_exame3(self):
+        return FileLink(self.resultado_exame3.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/?n=3') if self.resultado_exame3 else None
+
     @meta("Resultado do Exame")
     def get_resultado_exame(self):
-        return FileLink(self.resultado_exame.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/') if self.resultado_exame else None
+        return self.get_resultado_exame3() or self.get_resultado_exame2() or self.get_resultado_exame1()
 
     def generate_qr_code_base64(self):
         qr = qrcode.QRCode(

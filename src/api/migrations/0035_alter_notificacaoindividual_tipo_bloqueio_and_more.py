@@ -16,8 +16,9 @@ class Migration(migrations.Migration):
             model_name="notificacaoindividual",
             name="tipo_bloqueio",
             field=slth.db.models.CharField(
-                blank=True,
+                blank=False,
                 choices=[
+                    ("Nenhum", "Nenhum"),
                     ("Mecânico", "Mecânico"),
                     ("Químico", "Químico"),
                     ("Mecânico e Químico", "Mecânico e Químico"),

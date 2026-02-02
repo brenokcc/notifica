@@ -9,3 +9,5 @@ src/static
 src/media
 dados.json
 .env
+geolocation.log
+

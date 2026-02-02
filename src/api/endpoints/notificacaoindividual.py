@@ -8,6 +8,7 @@ from slth.integrations.google import places
 from slth.utils import age
 from slth.components import FileViewer
 from requests.exceptions import Timeout
+from django.core.cache import cache
 
 
 class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
@@ -144,7 +145,6 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
     def check_permission(self):
         return self.check_role("notificante", "regulador", "administrador", "gu", "gm")# and self.check_instance()
 
-
 class RegistrarLeituraResultado(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     def get(self):
         RegistroLeituraResultado.objects.create(notificacao=self.instance, user=self.request.user, data=datetime.now())
@@ -200,7 +200,6 @@ class Mixin:
 
     def on_endereco_change(self, endereco):
         if endereco:
-            print(endereco)
             self.form.controller.set(
                 pais=endereco.pais,
                 logradouro=endereco.logradouro,
@@ -213,8 +212,6 @@ class Mixin:
                 latitude=endereco.latitude,
                 longitude=endereco.longitude,
             )
-        else:
-            print(None)
 
     # def on_criterio_confirmacao_change(self, criterio_confirmacao):
     #     em_investigacao = criterio_confirmacao and criterio_confirmacao.nome == 'Em investigação' or False
@@ -350,7 +347,9 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         verbose_name = "Cadastrar Notificação Individual"
         submit_label = "Avançar"
 
-    def get(self):
+    def get_initial_data(self):
+        if len(self.request.GET) > 1:
+            return {}, None
         cpf = self.request.GET.get('cpf')
         hidden = []
         initial = dict(
@@ -371,11 +370,17 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         esus_api_url = os.environ.get('ESUS_API_URL', 'http://localhost:8000')
         esus_api_token = os.environ.get('ESUS_API_TOKEN', '')
         headers = {'Authorization': f'Token {esus_api_token}'}
-        try:
-            response = requests.get('{}/consultar_cpf/{}/'.format(esus_api_url, cpf), headers=headers, timeout=10)
-            dados = response.status_code == 200 and response.json() or {}
-        except Timeout:
-            dados = {}
+        dados = cache.get(f'cpf-{cpf}', None)
+        if dados is None:
+            try:
+                if esus_api_token:
+                    response = requests.get('{}/consultar_cpf/{}/'.format(esus_api_url, cpf), headers=headers, timeout=10)
+                    dados = response.status_code == 200 and response.json() or {}
+                else:
+                    dados = {}
+            except Timeout:
+                dados = {}
+            cache.set(f'cpf-{cpf}', dados, timeout=600)
         if dados:
             sexo = Sexo.objects.filter(codigo=(dados['sexo'].upper()[0])).first() if dados['sexo'] else None
             data_nascimento = datetime.strptime(dados['dt_nascimento'], "%Y-%m-%d").date() if dados['dt_nascimento'] else None
@@ -418,6 +423,10 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             info = "A data de atualização no CadSUS é {}.".format(data_atualizado_cadsus.strftime("%d/%m/%Y"))
         if self.instance.id is None or (self.instance.criterio_confirmacao and self.instance.criretorio_confirmacao.nome == "Em investigação"):
             hidden.append('data_encerramento')
+        return initial, info
+    
+    def get(self):
+        initial, info = self.get_initial_data()
         return super().get().initial(**initial).info(info) #.hidden(*hidden)
 
     def check_permission(self):
@@ -623,7 +632,7 @@ class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         verbose_name = "Bloqueios"
 
     def get(self):
-        return super().get().bloqueios()
+        return super().get().bloqueios().order_by("-numero")
     
     def check_permission(self):
         return self.check_role("agente", "regulador", "gm", "supervisor", "administrador")
@@ -644,7 +653,7 @@ class AtribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
 
     def check_permission(self):
-        return self.check_role("supervisor") and self.instance.data_devolucao_bloqueio is None and self.instance.bloqueio is None and self.instance.pode_registrar_bloqueio()
+        return self.check_role("supervisor") and self.instance.data_devolucao_bloqueio is None and self.instance.tipo_bloqueio is None and self.instance.pode_registrar_bloqueio()
     
     def get_responsavel_bloqueio_queryset(self, queryset):
         return queryset.nolookup().filter(municipio=self.instance.unidade.municipio)
@@ -660,7 +669,7 @@ class ReatribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory().fields('responsavel_bloqueio')
 
     def check_permission(self):
-        return self.check_role("supervisor") and self.instance.data_devolucao_bloqueio is not None and self.instance.bloqueio is None and self.instance.pode_registrar_bloqueio()
+        return self.check_role("supervisor") and self.instance.data_devolucao_bloqueio is not None and self.instance.tipo_bloqueio is None and self.instance.pode_registrar_bloqueio()
     
     def get_responsavel_bloqueio_queryset(self, queryset):
         return queryset.nolookup().filter(municipio=self.instance.unidade.municipio)
@@ -674,19 +683,20 @@ class ReatribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
 
 class RegistrarBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    geo = endpoints.forms.GeoField(label="Geolocalização")
 
     class Meta:
         icon = "store-slash"
         verbose_name = "Bloqueio"
 
     def get(self):
-        return self.formfactory().fields('bloqueio', 'tipo_bloqueio')
+        return self.formfactory().fields('tipo_bloqueio', 'geo')
     
     def post(self):
-        if self.instance.bloqueio and not self.instance.tipo_bloqueio:
-            raise ValidationError('Informe o tipo de bloqueio.')
-        if not self.instance.bloqueio and self.instance.tipo_bloqueio:
-            raise ValidationError('Não é necessário informar o tipo de bloqueio.')
+        if self.cleaned_data['geo']:
+            lat, long = self.cleaned_data['geo'].split(",")
+            self.instance.latitude_bloqueio = lat
+            self.instance.longitude_bloqueio = long
         self.instance.data_bloqueio = datetime.now()
         self.instance.responsavel_bloqueio = Agente.objects.filter(cpf=self.request.user.username).first()
         self.instance.save()
@@ -711,7 +721,7 @@ class DevolverBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
     
     def check_permission(self):
-        return self.check_role("agente") and self.instance.pode_registrar_bloqueio() and self.instance.data_devolucao_bloqueio is None and self.instance.bloqueio is None
+        return self.check_role("agente") and self.instance.pode_registrar_bloqueio() and self.instance.data_devolucao_bloqueio is None and self.instance.tipo_bloqueio is None
 
 
 class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -732,7 +742,7 @@ class JustificarPerdaPrazoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivid
         return super().post()
     
     def check_permission(self):
-        return self.check_role("agente", "supervisor") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio() and self.instance.bloqueio is None
+        return self.check_role("agente", "supervisor") and self.instance.motivo_perda_prazo_bloqueio is None and not self.instance.pode_registrar_bloqueio() and self.instance.tipo_bloqueio is None
     
 
 class DetalharJustificativaBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
