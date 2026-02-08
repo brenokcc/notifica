@@ -106,7 +106,7 @@ class Cadastrar(endpoints.AddEndpoint[SolicitacaoCadastro]):
         ).exclude(pk=self.instance.pk).exclude(aprovada=False)
         if qs.exists():
             raise ValidationError('Já existe uma solicitação para o CPF e papel informados pendente de avaliação ou aprovada.')
-        if self.instance.papel == 'notificante' or self.instance.papel == 'gu':
+        if self.instance.papel == 'notificante' or self.instance.papel == 'gu' or self.instance.papel == 'ru':
             if not self.instance.unidade:
                 raise ValidationError('Informe a unidade.')
         else:

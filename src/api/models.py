@@ -538,6 +538,7 @@ class SolicitacaoCadastroQuerySet(models.QuerySet):
             self.search('cpf', 'nome').filters('papel', 'aprovada')
             .fields('data', 'cpf', 'nome', 'papel', 'municipio', 'unidade', 'aprovada', 'avaliador', 'data_avaliacao', 'observacao')
             .lookup("administrador")
+            .lookup("regulador", municipio__reguladores__cpf="username")
             .lookup("gm", municipio__gestores__cpf="username")
             .lookup("gu", unidade__gestores__cpf="username")
         )
@@ -546,6 +547,7 @@ class SolicitacaoCadastro(models.Model):
     PAPEIS = [
         ['gm', 'Gestor Municipal'],
         ['gu', 'Gestor de Unidade'],
+        ['ru', 'Regulador de Unidade'],
         ['supervisor', 'Supervisor'],
         ['regulador', 'Regulador'],
         ['agente', 'Agente de Endemia'],
@@ -617,7 +619,7 @@ class SolicitacaoCadastro(models.Model):
     @transaction.atomic
     def processar(self):
         definir_senha = not User.objects.filter(username=self.cpf).exists()
-        model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'notificante': Notificante, 'agente': Agente, 'regulador': Regulador, 'supervisor': Supervisor}[self.papel]
+        model = {'gm': GestorMunicipal, 'gu': GestorUnidade, 'ru': ReguladorUnidade, 'notificante': Notificante, 'agente': Agente, 'regulador': Regulador, 'supervisor': Supervisor}[self.papel]
         obj = (
             model.objects.filter(cpf=self.cpf).first() or model()
         )
@@ -636,6 +638,11 @@ class SolicitacaoCadastro(models.Model):
                 if self.unidade is None:
                     raise ValidationError('Informe a unidade do gestor.')
                 self.unidade.gestores.add(obj)
+                self.unidade.post_save()
+            elif self.papel == 'ru':
+                if self.unidade is None:
+                    raise ValidationError('Informe a unidade do regulador de unidade.')
+                self.unidade.reguladores.add(obj)
                 self.unidade.post_save()
             elif self.papel == 'supervisor':
                 self.municipio.supervisores.add(obj)
