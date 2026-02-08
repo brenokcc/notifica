@@ -32,7 +32,7 @@ class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
         )
 
     def check_permission(self):
-        return self.check_role("notificante", "regulador", "administrador", "gu", "gm")
+        return self.check_role("notificante", "regulador", "ru", "administrador", "gu", "gm")
 
 
 class AguardandoEnvio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
@@ -46,6 +46,19 @@ class AguardandoEnvio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
 
     def check_permission(self):
         return self.check_role("notificante", "administrador")
+
+
+class AguardandoRegistroSINAN(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
+    class Meta:
+        modal = False
+        icon = "bell"
+        verbose_name = "Notificações individuais aguardando registro no SINAN"
+
+    def get_queryset(self):
+        return super().get_queryset().aguardando_registro_sinan()
+
+    def check_permission(self):
+        return self.check_role("gm", "administrador")
     
 
 class AguardandoResponsavelBloqueio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
@@ -108,7 +121,7 @@ class AguardandoCorrecao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
 
     def get_queryset(self):
         queryset = super().get_queryset().aguardando_correcao()
-        if self.check_role("regulador"):
+        if self.check_role("regulador", "ru"):
             return queryset
         return queryset.filter(notificante__cpf=self.request.user.username)
 
@@ -126,7 +139,7 @@ class AguardandoValidacao(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         return super().get_queryset().aguardando_validacao()
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador")
+        return self.check_role("regulador", "ru", "administrador")
 
 
 
@@ -143,7 +156,7 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
         return serializer
 
     def check_permission(self):
-        return self.check_role("notificante", "regulador", "administrador", "gu", "gm")# and self.check_instance()
+        return self.check_role("notificante", "regulador", "ru", "administrador", "gu", "gm")# and self.check_instance()
 
 class RegistrarLeituraResultado(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     def get(self):
@@ -172,7 +185,7 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def check_permission(self):
         return (
-            (self.check_role("notificante", "regulador", "administrador", "gu", "gm") and self.check_instance() and self.instance.data_envio)
+            (self.check_role("notificante", "regulador", "ru", "administrador", "gu", "gm") and self.check_instance() and self.instance.data_envio)
             or self.request.GET.get("token") == self.instance.token
         )
 
@@ -193,7 +206,7 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.redirect(f'/app/notificacaoindividual/visualizar/{clone.pk}/')
     
     def check_permission(self):
-        return self.check_role("regulador", "administrador")
+        return self.check_role("regulador", "ru", "administrador")
 
 
 class Mixin:
@@ -502,7 +515,7 @@ class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
         ) if (not self.form.controller.get('bairro') or alterou_cep) else None
 
     def check_permission(self):
-        return (self.check_role("regulador") and self.instance.data_envio and not self.instance.devolvida) or ((self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username)
+        return (self.check_role("regulador", "ru") and self.instance.data_envio and not self.instance.devolvida) or ((self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username)
 
 
 class Excluir(endpoints.DeleteEndpoint[NotificacaoIndividual]):
@@ -544,7 +557,7 @@ class Devolver(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
 
     def check_permission(self):
-        return self.check_role("regulador", "administrador") and self.instance.pode_ser_devolvida()
+        return self.check_role("regulador", "ru", "administrador") and self.instance.pode_ser_devolvida()
 
 
 class Reenviar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -583,7 +596,7 @@ class Finalizar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
 
     def check_permission(self):
-        return self.check_role("regulador") and self.instance.pode_ser_finalizada()
+        return self.check_role("regulador", "ru") and self.instance.pode_ser_finalizada()
 
 
 class CadastrarMunicipio(endpoints.AddEndpoint[Municipio]):
@@ -635,7 +648,7 @@ class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
         return super().get().bloqueios().order_by("-numero")
     
     def check_permission(self):
-        return self.check_role("agente", "regulador", "gm", "supervisor", "administrador")
+        return self.check_role("agente", "regulador", "ru", "gm", "supervisor", "administrador")
 
 
 class AtribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -658,6 +671,24 @@ class AtribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     def get_responsavel_bloqueio_queryset(self, queryset):
         return queryset.nolookup().filter(municipio=self.instance.unidade.municipio)
 
+
+class RegistrarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        icon = "file-circle-check"
+        verbose_name = "Registro SINAN"
+
+    def get(self):
+        return self.formfactory().fields('sinan', 'registrado_sinan')
+    
+    def post(self):
+        if self.cleaned_data['registrado_sinan'] and not self.cleaned_data['sinan']:
+            raise ValidationError("Informe o número no SINAN")
+        return super().post()
+    
+    def check_permission(self):
+        return self.check_role('gm') and not self.instance.registrado_sinan
+    
 
 class ReatribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
@@ -755,7 +786,7 @@ class DetalharJustificativaBloqueio(endpoints.InstanceEndpoint[NotificacaoIndivi
         return self.serializer().fieldset(None, ('motivo_perda_prazo_bloqueio', ('data_perda_prazo_bloqueio', 'responsavel_perda_prazo_bloqueio'), 'observacao_perda_prazo_bloqueio'))
     
     def check_permission(self):
-        return self.check_role("regulador", "supervisor", "gm", "administrador") and self.instance.motivo_perda_prazo_bloqueio
+        return self.check_role("regulador", "ru", "supervisor", "gm", "administrador") and self.instance.motivo_perda_prazo_bloqueio
     
 
 class DetalharDevolucaoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
@@ -768,4 +799,4 @@ class DetalharDevolucaoBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual
         return self.serializer().fields('responsavel_bloqueio', 'data_devolucao_bloqueio', 'motivo_devolucao_bloqueio', 'observacao_devolucao_bloqueio')
     
     def check_permission(self):
-        return self.check_role("regulador", "supervisor", "gm", "administrador") and self.instance.motivo_devolucao_bloqueio
+        return self.check_role("regulador", "ru", "supervisor", "gm", "administrador") and self.instance.motivo_devolucao_bloqueio

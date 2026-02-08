@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             model_name="notificacaoindividual",
             name="data_validacao",
             field=slth.db.models.DateTimeField(
-                blank=True, null=True, verbose_name="Data do Validação"
+                blank=True, null=True, verbose_name="Data da Validação"
             ),
         ),
         migrations.AddField(

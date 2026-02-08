@@ -16,6 +16,8 @@ class ApiApplication(Application):
             notificante="Notificante",
             agente="Agente",
             supervisor="Supervisor",
+            ru="Regulador de Unidade",
+            regulador="Regulador",
         )
         self.dashboard.usermenu.add(
             "dev.icons",
@@ -49,6 +51,7 @@ class ApiApplication(Application):
             "notificacaoindividual.aguardandodevolucaobloqueio",
             "notificacaoindividual.aguardandocorrecao",
             "notificacaoindividual.aguardandovalidacao",
+            "notificacaoindividual.aguardandoregistrosinan",
             "solicitacaocadastro.solicitacoescadastropendentes",
         )
         self.menu.add(

@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             model_name="notificacaoindividual",
             name="data_atribuicao_bloqueio",
             field=slth.db.models.DateTimeField(
-                blank=True, null=True, verbose_name="Data da Atribuição do Bloqueio"
+                blank=True, null=True, verbose_name="Data da Atribuição do Agente"
             ),
         ),
     ]
