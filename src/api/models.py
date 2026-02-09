@@ -230,7 +230,7 @@ class ReguladorUnidade(models.Model):
 
     @meta("Unidade")
     def get_unidade(self):
-        return ", ".join(self.unidade_set.values_list("nome", flat=True))
+        return ", ".join(self.unidadesaude_set.values_list("nome", flat=True))
 
 
 class MotivoPerdaPrazoBloqueio(models.Model):

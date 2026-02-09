@@ -73,6 +73,7 @@ class ApiApplication(Application):
                     "Gestores Municipais": "gestormunicipal.gestoresmunicipais",
                     "Reguladores": "regulador.reguladores",
                     "Gestores de Unidade": "gestorunidade.gestoresunidade",
+                    "Reguladores de Unidade": "reguladorunidade.reguladoresunidade",
                     "Notificantes": "notificante.notificantes",
                     "Supervisores de Agente de Endemias": "supervisor.supervisores",
                 },

@@ -24,7 +24,7 @@ class Reguladores(endpoints.ListEndpoint[Regulador]):
 class Cadastrar(endpoints.AddEndpoint[Regulador]):
     class Meta:
         icon = "plus"
-        verbose_name = "Cadastrar Regulador"
+        verbose_name = "Cadastrar Regulador de Unidade"
 
     def check_permission(self):
         return self.check_role("administrador", "gm")
@@ -34,7 +34,7 @@ class Visualizar(endpoints.ViewEndpoint[Regulador]):
     class Meta:
         modal = False
         icon = "eye"
-        verbose_name = "Visualizar Regulador"
+        verbose_name = "Visualizar Regulador de Unidade"
 
     def check_permission(self):
         return self.check_role("administrador")
@@ -43,7 +43,7 @@ class Visualizar(endpoints.ViewEndpoint[Regulador]):
 class Editar(endpoints.EditEndpoint[Regulador]):
     class Meta:
         icon = "pen"
-        verbose_name = "Editar Regulador"
+        verbose_name = "Editar Regulador de Unidade"
 
     def check_permission(self):
         return self.check_role('administrador')
@@ -52,4 +52,4 @@ class Editar(endpoints.EditEndpoint[Regulador]):
 class Excluir(endpoints.DeleteEndpoint[Regulador]):
     class Meta:
         icon = "trash"
-        verbose_name = "Excluir Regulador"
+        verbose_name = "Excluir Regulador de Unidade"

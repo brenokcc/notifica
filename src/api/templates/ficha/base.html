@@ -92,6 +92,18 @@
                 top: 10px;
                 font-weight: bold;
             }
+            .numero-sinan{
+                color: white;
+                background-color: #1d2847;
+                width: 100px;
+                float: left;
+                padding: 5px;
+                border-radius: 5px;
+                position: absolute;
+                left: 10px;
+                top: 10px;
+                font-weight: bold;
+            }
             .page-break{
                 page-break-before:always;
             }
@@ -103,8 +115,11 @@
             <tr><td>SISTEMA DE INFORMAÇÃO DE AGRAVOS DE NOTIFICAÇÃO</td></tr>
             <tr><td>{% block title %}{% endblock %}</td></tr>
         </table>
-
+        {% if obj.sinan %}
+            <div class="numero-sinan">SINAN: {{ obj.sinan }}</div>
+        {% endif %}
         <div class="numero-notificacao">Nº {{ obj.numero }}</div>
+
         
         {% block secoes %}
 
