@@ -1519,8 +1519,8 @@ class NotificacaoIndividual(models.Model):
 
     @meta("Status")
     def get_status(self):
-        if self.status == 'Finalizad':
-            return Badge('purple', 'Finalizad')
+        if self.status == 'Finalizado':
+            return Badge('purple', 'Finalizado')
         return Badge('#2196f3', 'Em Análise', 'eyedropper')
     
     @meta("Status da Infecção")
