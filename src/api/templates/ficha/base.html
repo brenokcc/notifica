@@ -101,8 +101,19 @@
                 border-radius: 5px;
                 position: absolute;
                 left: 10px;
-                top: 10px;
                 font-weight: bold;
+            }
+            .numero-sinan1{
+                top: 10px;
+            }
+            .numero-sinan2{
+                top: 35px;
+            }
+            .numero-sinan3{
+                top: 60px;
+            }
+            .numero-sinan4{
+                top: 85px;
             }
             .page-break{
                 page-break-before:always;
@@ -116,7 +127,9 @@
             <tr><td>{% block title %}{% endblock %}</td></tr>
         </table>
         {% if obj.sinan %}
-            <div class="numero-sinan">SINAN: {{ obj.sinan }}</div>
+            {% for numero, sigla_doenca in obj.get_numeros_sinan %}
+                <div class="numero-sinan numero-sinan{{ forloop.counter }}">SINAN [{{ sigla_doenca }}]: {{ numero }}</div>
+            {% endfor %}
         {% endif %}
         <div class="numero-notificacao">Nº {{ obj.numero }}</div>
 

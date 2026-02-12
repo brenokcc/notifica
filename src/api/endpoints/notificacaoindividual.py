@@ -39,13 +39,15 @@ class AguardandoEnvio(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
     class Meta:
         modal = False
         icon = "bell"
-        verbose_name = "Notificações individuais aguardando envio"
+        verbose_name = "Notificações individuais aguardando envio do notificante"
 
     def get_queryset(self):
+        if self.check_role("notificante"):
+            return super().get_queryset().aguardando_envio(self.request.user)
         return super().get_queryset().aguardando_envio()
 
     def check_permission(self):
-        return self.check_role("notificante", "administrador")
+        return self.check_role("notificante", "administrador", "regulador", "ru")
 
 
 class AguardandoRegistroSINAN(endpoints.QuerySetEndpoint[NotificacaoIndividual]):
@@ -535,11 +537,28 @@ class Enviar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory(self.instance).fields().info('Após o envio não será mais possível editar os dados da notificação a não ser que ela seja devolvida.')
     
     def post(self):
-        self.instance.enviar()
+        self.instance.enviar(self.request.user)
         self.redirect('/app/notificacaoindividual/notificacoesindividuais/')
 
     def check_permission(self):
         return (self.check_role('administrador') or self.instance.notificante.cpf == self.request.user.username) and self.instance.pode_ser_enviada()
+
+
+class Receber(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    class Meta:
+        icon = 'left-long'
+        verbose_name = 'Forçar Recebimento'
+
+    def get(self):
+        return self.formfactory(self.instance).fields().info('Após o recebimento, o notificante não poderá mais editar os dados da notificação a não ser que ela seja devolvida.')
+    
+    def post(self):
+        self.instance.enviar(self.request.user)
+        self.redirect(f'/app/notificacaoindividual/visualizar/{self.instance.pk}/')
+
+    def check_permission(self):
+        return self.check_role('regulador', "ru", "administrador") and self.instance.pode_ser_enviada()
+
 
 
 class Devolver(endpoints.InstanceEndpoint[NotificacaoIndividual]):

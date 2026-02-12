@@ -317,6 +317,7 @@ class TipoNotificacao(models.Model):
 class Doenca(models.Model):
     nome = models.CharField(verbose_name="Nome")
     cid10 = models.CharField(verbose_name="CID10")
+    sigla = models.CharField(verbose_name='Sigla', null=True, blank=True)
     modelo_ficha = models.CharField(
         verbose_name="Modelo da Ficha",
         null=True,
@@ -332,6 +333,9 @@ class Doenca(models.Model):
 
     def __str__(self):
         return self.nome
+    
+    def get_sigla(self):
+        return self.sigla or self.nome[0]
 
 
 class Ocupacao(models.Model):
@@ -935,15 +939,17 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             .lookup("notificante", unidade_referencia__equipe__notificantes__cpf='username')
         ).distinct()
     
-    def aguardando_envio(self):
-        return (
+    def aguardando_envio(self, user=None):
+        qs = (
             self.all()
             .filter(data_envio__isnull=True).exclude(devolvida=True)
-            .filter(notificante__cpf=self.request.user.username)
             .actions(
                 "notificacaoindividual.visualizar", "notificacaoindividual.imprimir"
             )
         )
+        if user:
+            qs = qs.filter(notificante__cpf=user.username)
+        return qs
     
     def aguardando_registro_sinan(self):
         return (
@@ -1495,10 +1501,16 @@ class NotificacaoIndividual(models.Model):
 
     # Token
     data_envio = models.DateField(verbose_name='Data do Envio', null=True, blank=True)
+    responsavel_pelo_envio = models.ForeignKey(User, verbose_name='Responsável pelo Envio', on_delete=models.CASCADE, null=True)
+    
     devolvida = models.BooleanField(verbose_name='Devolvida', null=True)
     token = models.CharField(verbose_name="Token", null=True, blank=True)
     status_infeccao = models.CharField(verbose_name="Status da Infecção", default='Em Análise', choices=[['Em Análise', 'Em Análise'], ['Positivo', 'Positivo'], ['Negativo', 'Negativo']])
     status = models.CharField(verbose_name="Status", default='Em Análise', choices=[['Em Análise', 'Em Análise'], ['Finalizado', 'Finalizado']])
+
+    data_cancelamento = models.DateTimeField(verbose_name='Data do Cancelamento', null=True, blank=True)
+    responsavel_pelo_cancelamento = models.ForeignKey(User, verbose_name='Responsável pelo Cancelamento', on_delete=models.CASCADE, null=True, related_name='rc1')
+    observacao_cancelamento = models.TextField(verbose_name='Observação', help_text='Informe o motivo pelo qual a ficha está sendo cancelada', null=True, blank=True)
 
     objects = NotificacaoIndividualQuerySet()
 
@@ -1516,6 +1528,13 @@ class NotificacaoIndividual(models.Model):
                 return Badge("#dfb21d", self.sinan, 'file-circle-question')
         else:
             return Badge("#ce4343", 'Pendente', 'file-circle-exclamation')
+        
+    def get_numeros_sinan(self):
+        numeros = []
+        for notificacao in NotificacaoIndividual.objects.filter(numero__startswith=self.numero.split('-')[0], sinan__isnull=False):
+            numeros.append((notificacao.sinan, notificacao.doenca.get_sigla()))
+        print(numeros)
+        return numeros
 
     @meta("Status")
     def get_status(self):
@@ -1648,6 +1667,7 @@ class NotificacaoIndividual(models.Model):
         self.numero = '{}-{}'.format(self.numero.split('-')[0], sequence)
         self.doenca = doenca
         self.resultado_exame = None
+        self.sinan = None
         self.save()
         for name, pks in objects.items():
             getattr(self, name).set(pks)
@@ -1702,9 +1722,22 @@ class NotificacaoIndividual(models.Model):
     def pode_ser_enviada(self):
         return self.data_envio is None
 
-    def enviar(self):
+    def enviar(self, user):
+        self.responsavel_pelo_envio = user
         self.data_envio = datetime.now()
         self.save()
+
+    def get_responsavel_pelo_envio(self):
+        if self.responsavel_pelo_envio_id:
+            if self.responsavel_pelo_envio.username == self.notificante.cpf:
+                return self.notificante
+            regulador = Regulador.objects.filter(cpf=self.responsavel_pelo_envio.username).first()
+            if regulador:
+                return regulador
+            regulador = ReguladorUnidade.objects.filter(cpf=self.responsavel_pelo_envio.username).first()
+            if regulador:
+                return regulador
+            return self.responsavel_pelo_envio
 
     def pode_ser_devolvida(self):
         return self.validada is None and not self.devolvida and self.data_envio
@@ -1844,10 +1877,11 @@ class NotificacaoIndividual(models.Model):
         return (
             super()
             .serializer()
-            .actions("notificacaoindividual.editar", "notificacaoindividual.enviar", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.imprimir", "notificacaoindividual.evoluircaso", "notificacaoindividual.registrarsinan")
+            .actions("notificacaoindividual.editar", "notificacaoindividual.enviar", "notificacaoindividual.receber", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.imprimir", "notificacaoindividual.clonar", "notificacaoindividual.evoluircaso", "notificacaoindividual.registrarsinan")
             .fieldset(
                 "Dados Gerais",
                 (
+                    "numero",
                     ("doenca", "data"),
                     ("notificante", "municipio"),
                     ("unidade", "unidade_referencia"),
@@ -1856,7 +1890,7 @@ class NotificacaoIndividual(models.Model):
             )
             .group()
                 .section('Envio da Ficha')
-                    .fieldset("Dados do Envio", (("data_envio", "devolvida"), ("validada", "data_validacao"), ("responsavel_validacao", "observacao")))
+                    .fieldset("Dados do Envio", (("data_envio", "get_responsavel_pelo_envio", "devolvida"), ("validada", "data_validacao", "responsavel_validacao"), "observacao"))
                     .queryset("get_historico_devolucao")
                     .parent()
                 .section('Dados do Indivíduo')
