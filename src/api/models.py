@@ -926,7 +926,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
             .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_status_infeccao", "get_situacao_hospitalar", "get_resultado_exame", "tipo_bloqueio")
-            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar")
+            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_primeiros_sintomas__gte")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
@@ -968,21 +968,14 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             'unidade', 'responsavel_bloqueio', 'get_status', 'get_bloqueio', 'data_bloqueio'
         ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.reatribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.devolverbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio', 'notificacaoindividual.detalhardevolucaobloqueio', 'notificacaoindividual.detalharjustificativabloqueio').xlsx2()
     
-    def xlsx(self):
+    def xlsx(self, *campos):
         return super().xlsx(
             'numero', 'sinan', 'doenca', 'unidade', "notificante", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "status",
             'get_qtd_dias_infectado_exportacao', 'get_endereco',
             'responsavel_bloqueio', 'data_bloqueio', 'tipo_bloqueio',
             'hospitalizacao', 'situacao_hospitalar', 'data_hospitalizacao', 'numero_prontuario', 'hospital', 'data_alta', 'data_obito',
             'classificacao_infeccao', 'criterio_confirmacao', 'apresentacao_clinica', 'evolucao_caso', 'data_encerramento'
-        )
-    
-    def xlsx2(self):
-        return super().xlsx(
-            'numero', 'sinan', 'doenca', 'data', 'data_primeiros_sintomas',
-            'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco',
-            'unidade', 'status', 'responsavel_bloqueio', 'data_bloqueio', 'tipo_bloqueio'
-        )
+        ) if not campos else super().xlsx(*campos)
     
     def xlsx2(self):
         return super().xlsx(
@@ -1076,7 +1069,7 @@ class NotificacaoIndividual(models.Model):
     doenca = models.ForeignKey(
         Doenca, verbose_name="Doença", on_delete=models.CASCADE, pick=True
     )
-    data = models.DateField(verbose_name="Data do Cadastro")
+    data = models.DateField(verbose_name="Data da Notificação")
     notificante = models.ForeignKey(
         Notificante, verbose_name="Notificante", on_delete=models.CASCADE
     )
@@ -1533,7 +1526,6 @@ class NotificacaoIndividual(models.Model):
         numeros = []
         for notificacao in NotificacaoIndividual.objects.filter(numero__startswith=self.numero.split('-')[0], sinan__isnull=False):
             numeros.append((notificacao.sinan, notificacao.doenca.get_sigla()))
-        print(numeros)
         return numeros
 
     @meta("Status")
@@ -2045,6 +2037,26 @@ class NotificacaoIndividual(models.Model):
 
     def is_pendente_correcao(self):
         return self.devolucao_set.filter(observacao_correcao__isnull=True)
+    
+    def get_nomes_sinais_clinicos(self):
+        return ", ".join(self.sinais_clinicos.values_list("nome", flat=True))
+    
+    def get_nomes_doencas_pre_existentes(self):
+        return ", ".join(self.doencas_pre_existentes.values_list("nome", flat=True))
+    
+    def get_nomes_sinais_alarme_dengue(self):
+        return ", ".join(self.sinais_alarme_dengue.values_list("nome", flat=True))
+    
+    def get_nomes_sinais_extravasamento_plasma(self):
+        return ", ".join(self.sinais_extravasamento_plasma.values_list("nome", flat=True))
+    
+    def get_nomes_sinais_sangramento_grave(self):
+        return ", ".join(self.sinais_sangramento_grave.values_list("nome", flat=True))
+    
+    def get_nomes_sinais_comprometimento_orgaos(self):
+        return ", ".join(self.sinais_comprometimento_orgaos.values_list("nome", flat=True))
+    
+    
 
 
 class RegistroLeituraResultado(models.Model):

@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="notificacaoindividual",
             name="data",
-            field=models.DateField(verbose_name="Data do Cadastro"),
+            field=models.DateField(verbose_name="Data da Notificação"),
         ),
         migrations.AlterField(
             model_name="unidadesaude",

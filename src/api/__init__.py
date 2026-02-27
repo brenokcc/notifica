@@ -39,6 +39,7 @@ class ApiApplication(Application):
             "estatistica.painel",
             "solicitacaocadastro.solicitacoescadastro",
             "chamado.chamados",
+            "exportacao.notificacoesindividuais",
         )
         self.dashboard.center.add(
             "termouso.checar",
