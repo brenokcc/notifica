@@ -962,10 +962,10 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         )
     
     def bloqueios(self):
-        return self.all().filters("doenca", "municipio", "unidade", "notificante", "status", "validada").filter(validada=True).fields(
+        return self.all().filters("doenca", "municipio", "unidade", "responsavel_bloqueio", "status_infeccao").filter(validada=True).fields(
             'id', 'numero', 'data', 'data_primeiros_sintomas',
             'get_qtd_dias_infectado', 'nome', 'get_endereco',
-            'unidade', 'responsavel_bloqueio', 'get_status', 'get_bloqueio', 'data_bloqueio'
+            'unidade', 'responsavel_bloqueio', 'get_status_infeccao', 'get_bloqueio', 'data_bloqueio'
         ).actions('notificacaoindividual.atribuirbloqueio', 'notificacaoindividual.reatribuirbloqueio', 'notificacaoindividual.registrarbloqueio', 'notificacaoindividual.devolverbloqueio', 'notificacaoindividual.justificarperdaprazobloqueio', 'notificacaoindividual.detalhardevolucaobloqueio', 'notificacaoindividual.detalharjustificativabloqueio').xlsx2()
     
     def xlsx(self, *campos):
@@ -991,13 +991,13 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return self.bloqueios().filter(data_primeiros_sintomas__lt=sete_dias_atras, motivo_perda_prazo_bloqueio__isnull=True)
     
     def aguardando_responsavel_bloqueio(self):
-        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=True)
+        return self.em_periodo_bloqueio().exclude(status_infeccao="Negativo").filter(responsavel_bloqueio__isnull=True)
     
     def aguardando_devolucao_bloqueio(self):
         return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, data_devolucao_bloqueio__isnull=False)
     
     def aguardando_bloqueio(self):
-        return self.em_periodo_bloqueio().filter(responsavel_bloqueio__isnull=False, tipo_bloqueio__isnull=True, data_devolucao_bloqueio__isnull=True)
+        return self.em_periodo_bloqueio().exclude(status_infeccao="Negativo").filter(responsavel_bloqueio__isnull=False, tipo_bloqueio__isnull=True, data_devolucao_bloqueio__isnull=True)
 
     def aguardando_validacao(self):
         return (
