@@ -902,7 +902,7 @@ class Hospital(models.Model):
 
 class SemanaEpidemiologicaQuerySet(models.QuerySet):
     def all(self):
-        return self
+        return self.search("descricao")
 
 
 class SemanaEpidemiologica(models.Model):
@@ -910,6 +910,7 @@ class SemanaEpidemiologica(models.Model):
     numero = models.IntegerField(verbose_name='Número')
     inicio = models.DateField(verbose_name='Início')
     termino = models.DateField(verbose_name='Término')
+    descricao = models.CharField(verbose_name='Descrição', null=True)
 
     class Meta:
         verbose_name = 'Semana Epidemiológica'
@@ -919,14 +920,19 @@ class SemanaEpidemiologica(models.Model):
 
     def __str__(self):
         return f'{self.numero}ª semana/{self.ano}'
-
+    
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            self.descricao = str(self)
+        super().save(*args, **kwargs)
+        
 
 class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
             .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_status_infeccao", "get_situacao_hospitalar", "get_resultado_exame", "tipo_bloqueio")
-            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_primeiros_sintomas__gte", "registrado_sinan")
+            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
@@ -1666,6 +1672,11 @@ class NotificacaoIndividual(models.Model):
         return self
     
     def save(self, *args, **kwargs):
+        if self.semana_epidemiologica is None:
+            self.semana_epidemiologica = SemanaEpidemiologica.objects.filter(
+                inicio__lte=self.data_primeiros_sintomas,
+                termino__gte=self.data_primeiros_sintomas,
+            ).first()
         if self.classificacao_infeccao is None:
             self.status_infeccao = 'Em Análise'
         elif self.classificacao_infeccao.positivo:
