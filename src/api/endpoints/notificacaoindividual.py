@@ -208,7 +208,7 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.redirect(f'/app/notificacaoindividual/visualizar/{clone.pk}/')
     
     def check_permission(self):
-        return self.check_role("regulador", "ru", "administrador")
+        return self.check_role("regulador", "ru", "administrador", "notificante")
 
 
 class Mixin:
