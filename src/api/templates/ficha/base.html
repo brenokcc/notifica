@@ -151,8 +151,11 @@
                     Este documento foi emitido pelo sistema <b>ArboNotifica</b>.<br>
                     Para visualizar sua versão digital, acesse o endereço abaixo ou leia o QrCode ao lado.<br><br>
                     <i>{{ obj.get_url_impressao }}</i><br>
-                    <div style="font-size: 1.1rem; text-align: center; margin: 20px;">
+                    <div style="font-size: 1.1rem; text-align: center; margin-top: 20px;">
                         <b>{{ obj.token }}</b>
+                    </div>
+                    <div style="text-align: center; margin-top: 5px;">
+                       <i>Notificado por</i> {{ obj.notificante.nome }}
                     </div>
                 </td>
                 <td width="130px">
