@@ -188,7 +188,7 @@ class Imprimir(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     def check_permission(self):
         return (
             (self.check_role("notificante", "regulador", "ru", "administrador", "gu", "gm") and self.check_instance() and self.instance.data_envio)
-            or self.request.GET.get("token") == self.instance.token
+            or self.request.GET.get("token") == self.instance.token or self.request.session.get("imprimir") == self.instance.token
         )
 
 
@@ -338,7 +338,7 @@ class Checar(endpoints.Endpoint):
         if not cpf and not cns:
             raise ValidationError(f'Informe o CPF ou CNS do paciente.')
         acao = self.cleaned_data['acao']
-        data_limite = datetime.today() - timedelta(days=30)
+        data_limite = datetime.today() - timedelta(days=90)
         qs1 = NotificacaoIndividual.objects.filter(cpf=cpf, data__gte=data_limite)
         qs2 = NotificacaoIndividual.objects.filter(cartao_sus=cns, data__gte=data_limite)
         if (qs1.exists() or qs2.exists()):
@@ -346,6 +346,8 @@ class Checar(endpoints.Endpoint):
                 raise ValidationError(f'Já existe uma ficha cadastrada para o CPF {cpf} nos últimos 30 dias. É necessário forçar o cadastro de uma nova ficha para prosseguir.')
             if acao == 'visualizar':
                 obj = qs1.first() or qs2.first()
+                self.request.session["imprimir"] = obj.token
+                self.request.session.save()
                 return self.redirect(f'/app/notificacaoindividual/visualizar/{obj.pk}/')
         return self.redirect(f'/app/notificacaoindividual/cadastrar/?cpf={cpf}')
 

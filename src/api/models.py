@@ -926,7 +926,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
             .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_status_infeccao", "get_situacao_hospitalar", "get_resultado_exame", "tipo_bloqueio")
-            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_primeiros_sintomas__gte")
+            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_primeiros_sintomas__gte", "registrado_sinan")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
