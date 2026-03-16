@@ -130,6 +130,7 @@ CAMPOS = [
    'data_cancelamento',
    'responsavel_pelo_cancelamento',
    'observacao_cancelamento',
+   'semana_epidemiologica',
 ]
 
 class NotificacoesIndividuais(endpoints.QuerySetEndpoint[NotificacaoIndividual]):

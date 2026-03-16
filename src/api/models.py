@@ -980,12 +980,12 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             'get_qtd_dias_infectado_exportacao', 'get_endereco',
             'responsavel_bloqueio', 'data_bloqueio', 'tipo_bloqueio',
             'hospitalizacao', 'situacao_hospitalar', 'data_hospitalizacao', 'numero_prontuario', 'hospital', 'data_alta', 'data_obito',
-            'classificacao_infeccao', 'criterio_confirmacao', 'apresentacao_clinica', 'evolucao_caso', 'data_encerramento'
+            'classificacao_infeccao', 'criterio_confirmacao', 'apresentacao_clinica', 'evolucao_caso', 'data_encerramento', 'semana_epidemiologica'
         ) if not campos else super().xlsx(*campos)
     
     def xlsx2(self):
         return super().xlsx(
-            'numero', 'sinan', 'doenca', 'data', 'data_primeiros_sintomas', 'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco', 'unidade', 'notificante', 'data_envio', 'data_validacao', 'qtd_dias_para_realizacao_validacao', 'get_data_limite_bloqueio', 'qtd_dias_disponiveis_para_atribuicao_agente', 'qtd_dias_para_atribuicao_agente', 'data_atribuicao_bloqueio', 'responsavel_bloqueio', 'qtd_dias_disponiveis_para_realizacao_bloqueio', 'qtd_dias_para_realizacao_bloqueio', 'status', 'tipo_bloqueio'
+            'numero', 'sinan', 'doenca', 'data', 'data_primeiros_sintomas', 'get_qtd_dias_infectado_exportacao', 'nome', 'get_endereco', 'unidade', 'notificante', 'data_envio', 'data_validacao', 'qtd_dias_para_realizacao_validacao', 'get_data_limite_bloqueio', 'qtd_dias_disponiveis_para_atribuicao_agente', 'qtd_dias_para_atribuicao_agente', 'data_atribuicao_bloqueio', 'responsavel_bloqueio', 'qtd_dias_disponiveis_para_realizacao_bloqueio', 'qtd_dias_para_realizacao_bloqueio', 'status', 'tipo_bloqueio', 'semana_epidemiologica'
         )
     
     def em_periodo_bloqueio(self):
