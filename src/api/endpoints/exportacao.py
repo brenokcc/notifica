@@ -142,10 +142,12 @@ class NotificacoesIndividuais(endpoints.QuerySetEndpoint[NotificacaoIndividual])
         return (
             super()
             .get()
+            .lookup("administrador")
+            .lookup("gu", unidade__gestores__cpf='username')
             .fields('numero', 'doenca', 'unidade', "notificante", "data", "cpf", "nome")
             .xlsx(*CAMPOS)
             .order_by("-numero")
         )
 
     def check_permission(self):
-        return self.check_role("administrador")
+        return self.check_role("administrador", "gu")
