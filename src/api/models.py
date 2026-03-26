@@ -337,10 +337,16 @@ class Doenca(models.Model):
     def get_sigla(self):
         return self.sigla or self.nome[0]
 
+class OcupacaoQuerySet(models.QuerySet):
+    def all(self):
+        return self.search('nome', 'codigo')
+
 
 class Ocupacao(models.Model):
     codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
+
+    objects = OcupacaoQuerySet()
 
     class Meta:
         verbose_name = "Ocupação"
@@ -932,7 +938,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
             .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_status_infeccao", "get_situacao_hospitalar", "get_resultado_exame", "tipo_bloqueio")
-            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica")
+            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_nascimento__gte", "data_nascimento__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')

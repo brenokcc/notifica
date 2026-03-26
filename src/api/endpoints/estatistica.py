@@ -10,14 +10,7 @@ class Painel(endpoints.PublicEndpoint):
 
     def get(self):
         return NotificacaoIndividual.objects.all().filter(data_envio__isnull=False).filters(
-            "doenca",
-            "unidade",
-            "notificante",
-            "sexo",
-            "data_primeiros_sintomas__gte",
-            "data_primeiros_sintomas__lte",
-            "status",
-            "status_infeccao",
+            "doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_nascimento__gte", "data_nascimento__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica"
         ).bi(
             ("get_total", "get_total_notificantes", "get_total_pacientes"),
             ("get_total_por_unidade", "get_total_por_sexo"),

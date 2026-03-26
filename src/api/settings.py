@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "api",
     "slth",
     "slthlib",
+    "django.contrib.postgres",
     "whitenoise.runserver_nostatic",
     "django.contrib.auth",
     "django.contrib.contenttypes",
