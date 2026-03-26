@@ -150,4 +150,4 @@ class NotificacoesIndividuais(endpoints.QuerySetEndpoint[NotificacaoIndividual])
         )
 
     def check_permission(self):
-        return self.check_role("administrador", "gu")
+        return self.check_role("administrador", "gu", "gm")
