@@ -1036,7 +1036,7 @@ class Migration(migrations.Migration):
                 (
                     "sinais_clinicos",
                     slth.db.models.ManyToManyField(
-                        blank=True,
+                        blank=False,
                         to="api.sinalclinico",
                         verbose_name="Sinais Clínicos",
                     ),

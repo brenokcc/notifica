@@ -1192,7 +1192,7 @@ class NotificacaoIndividual(models.Model):
 
     # Dados Clínicos
     sinais_clinicos = models.ManyToManyField(
-        SinalClinico, verbose_name="Sinais Clínicos", pick=True, blank=True
+        SinalClinico, verbose_name="Sinais Clínicos", pick=True, blank=False
     )
     doencas_pre_existentes = models.ManyToManyField(
         DoencaPreExistente, verbose_name="Doenças Pré-Existentes", pick=True, blank=True
@@ -1705,7 +1705,6 @@ class NotificacaoIndividual(models.Model):
                 "data_exame_ns1",
                 "data_isolamento",
                 "data_rt_pcr",
-                "data_ultima_vacina",
                 "data_hospitalizacao",
                 "data_alta",
                 "data_obito",
