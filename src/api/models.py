@@ -937,7 +937,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def all(self):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
-            .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_status_infeccao", "get_situacao_hospitalar", "get_resultado_exame", "tipo_bloqueio")
+            .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_status_infeccao", "get_situacao_hospitalar", "get_resultado_exame1", "get_resultado_exame2", "get_resultado_exame3", "get_resultado_exame4", "get_resultado_exame5", "tipo_bloqueio")
             .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_nascimento__gte", "data_nascimento__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
@@ -1439,6 +1439,8 @@ class NotificacaoIndividual(models.Model):
     resultado_exame = models.FileField(verbose_name='Resultado do 1º Exame', upload_to='resultados_exames', null=True, blank=True)
     resultado_exame2 = models.FileField(verbose_name='Resultado do 2º Exame', upload_to='resultados_exames', null=True, blank=True)
     resultado_exame3 = models.FileField(verbose_name='Resultado do 3º Exame', upload_to='resultados_exames', null=True, blank=True)
+    resultado_exame4 = models.FileField(verbose_name='Resultado do 4º Exame', upload_to='resultados_exames', null=True, blank=True)
+    resultado_exame5 = models.FileField(verbose_name='Resultado do 5º Exame', upload_to='resultados_exames', null=True, blank=True)
 
     # Dados Clínicos - Sinais de Alarme
     dengue_com_sinais_de_alarme = models.BooleanField(
@@ -1981,8 +1983,10 @@ class NotificacaoIndividual(models.Model):
                             ("classificacao_infeccao", "criterio_confirmacao"),
                             ("apresentacao_clinica", "evolucao_caso"),
                             ("data_obito", "data_encerramento"),
-                            ("get_resultado_exame1", "get_resultado_exame2", "get_resultado_exame3")
+                            ("get_resultado_exame1", "get_resultado_exame2", "get_resultado_exame3",
+                            "get_resultado_exame4", "get_resultado_exame5")
                         ),
+                        actions=['notificacaoindividual.excluirresultado']
                     )
                     .fieldset(
                         "Dados Clínicos - Sinais de Alarme",
@@ -2018,21 +2022,26 @@ class NotificacaoIndividual(models.Model):
     def get_url_impressao(self):
         return f"{settings.SITE_URL}/api/notificacaoindividual/imprimir/{self.id}/?token={self.token}"
 
-    @meta("Resultado do 1º Exame")
+    @meta("E1")
     def get_resultado_exame1(self):
         return FileLink(self.resultado_exame.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/') if self.resultado_exame else None
 
-    @meta("Resultado do 2º Exame")
+    @meta("E2")
     def get_resultado_exame2(self):
         return FileLink(self.resultado_exame2.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/?n=2') if self.resultado_exame2 else None
 
-    @meta("Resultado do 3º Exame")
+    @meta("E3")
     def get_resultado_exame3(self):
         return FileLink(self.resultado_exame3.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/?n=3') if self.resultado_exame3 else None
 
-    @meta("Resultado do Exame")
-    def get_resultado_exame(self):
-        return self.get_resultado_exame3() or self.get_resultado_exame2() or self.get_resultado_exame1()
+    @meta("E4")
+    def get_resultado_exame4(self):
+        return FileLink(self.resultado_exame4.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/?n=4') if self.resultado_exame4 else None
+
+    @meta("E5")
+    def get_resultado_exame5(self):
+        return FileLink(self.resultado_exame5.url, modal=True, icon='file', callback=f'/api/notificacaoindividual/registrarleituraresultado/{self.pk}/?n=5') if self.resultado_exame5 else None
+
 
     def generate_qr_code_base64(self):
         qr = qrcode.QRCode(

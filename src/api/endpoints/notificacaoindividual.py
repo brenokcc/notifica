@@ -160,6 +160,25 @@ class Visualizar(endpoints.ViewEndpoint[NotificacaoIndividual]):
     def check_permission(self):
         return self.check_role("notificante", "regulador", "ru", "administrador", "gu", "gm")# and self.check_instance()
 
+
+class ExcluirResultado(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+    n = endpoints.forms.ChoiceField(label="Exame", choices=[['', 'Selecione o exame...']] + [[x, f'E{x}'] for x in range(1, 6)])
+
+    class Meta:
+        icon = 'file-excel'
+        verbose_name = "Excluir Exame"
+
+    def post(self):
+        n = self.cleaned_data['n']
+        NotificacaoIndividual.objects.filter(pk=self.instance.pk).update(
+            **{f'resultado_exame{n}': ''}
+        )
+        return super().post()
+    
+    def check_permission(self):
+        return self.check_role("regulador", "ru", "administrador")
+
+
 class RegistrarLeituraResultado(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     def get(self):
         RegistroLeituraResultado.objects.create(notificacao=self.instance, user=self.request.user, data=datetime.now())

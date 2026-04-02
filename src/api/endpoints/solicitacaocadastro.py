@@ -42,7 +42,7 @@ class SolicitacoesCadastroPendentes(endpoints.ListEndpoint[SolicitacaoCadastro])
         return self.check_role("gm", "gu", "administrador") and super().get_queryset().exists()
 
 
-class RedefinirSenha(endpoints.AddEndpoint[SolicitacaoCadastro]):
+class RedefinirSenha(endpoints.Endpoint):
     cpf = endpoints.forms.CharField(label="CPF")
     email = endpoints.forms.CharField(label="E-mail")
     senha = endpoints.forms.CharField(label="Senha")
@@ -62,7 +62,7 @@ class RedefinirSenha(endpoints.AddEndpoint[SolicitacaoCadastro]):
         return self.formfactory().fields('cpf', 'email', 'senha').info("Você receberá um e-mail contendo o link para confirmar a alteração da senha.")
 
     def check_permission(self):
-        return not self.request.user.is_authenticated
+        return not self.request.user.is_authenticated or self.request.GET
     
     def post(self):
         to = self.cleaned_data['email']
