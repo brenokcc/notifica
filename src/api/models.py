@@ -1858,7 +1858,7 @@ class NotificacaoIndividual(models.Model):
                     ("classificacao_infeccao", "criterio_confirmacao"),
                     ("apresentacao_clinica", "evolucao_caso"),
                     ("data_obito", "data_encerramento"),
-                    'resultado_exame', 'resultado_exame2', 'resultado_exame3',
+                    'resultado_exame', 'resultado_exame2', 'resultado_exame3', 'resultado_exame4', 'resultado_exame5',
                 ),
             )
             .fieldset(
