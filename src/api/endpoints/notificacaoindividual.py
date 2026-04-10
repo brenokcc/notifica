@@ -223,7 +223,7 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return self.formfactory().fields('nova_doenca')
 
     def post(self):
-        clone = self.instance.clonar(self.cleaned_data['nova_doenca'])
+        clone = self.instance.clonar(self.cleaned_data['nova_doenca'], self.request.user)
         return self.redirect(f'/app/notificacaoindividual/visualizar/{clone.pk}/')
     
     def check_permission(self):

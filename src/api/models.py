@@ -1661,7 +1661,7 @@ class NotificacaoIndividual(models.Model):
             return Badge('#2196f3', 'Mecânico/Químico')
 
     @transaction.atomic
-    def clonar(self, doenca):
+    def clonar(self, doenca, user):
         m2m = [field for field in type(self)._meta.get_fields()  if isinstance(field, models.ManyToManyField)]
         objects = {}
         for field in m2m:
@@ -1674,7 +1674,7 @@ class NotificacaoIndividual(models.Model):
         self.doenca = doenca
         self.resultado_exame = None
         self.sinan = None
-        self.save()
+        self.enviar(user)
         for name, pks in objects.items():
             getattr(self, name).set(pks)
         return self
