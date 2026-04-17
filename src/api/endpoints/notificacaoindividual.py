@@ -251,6 +251,12 @@ class Mixin:
     #     em_investigacao = criterio_confirmacao and criterio_confirmacao.nome == 'Em investigação' or False
     #     self.form.controller.visible(not em_investigacao, 'data_encerramento')
 
+    def clean_data_vacina_chikungunya(self, data):
+        tomou_vacina_chikungunya = data.get('tomou_vacina_chikungunya')
+        data_vacina_chikungunya = data.get('data_vacina_chikungunya')
+        if tomou_vacina_chikungunya and not data_vacina_chikungunya:
+            raise ValidationError('Informe a data da vacina')
+
     def clean_hospitalizacao(self, data):
         hospitalizacao = data.get('hospitalizacao')
         situacao_hospitalar = data.get('situacao_hospitalar')

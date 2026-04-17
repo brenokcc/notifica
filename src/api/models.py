@@ -938,7 +938,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
         return (
             self.search("cpf", "nome", "cartao_sus", "numero")
             .fields("numero", "doenca", "unidade", "data", "cpf", "nome", "data_primeiros_sintomas", "data_envio", "validada", "get_status", "get_status_infeccao", "get_situacao_hospitalar", "get_resultado_exame1", "get_resultado_exame2", "get_resultado_exame3", "get_resultado_exame4", "get_resultado_exame5", "tipo_bloqueio")
-            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_nascimento__gte", "data_nascimento__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica")
+            .filters("doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_nascimento__gte", "data_nascimento__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica", "tomou_vacina_chikungunya")
             .lookup("administrador")
             .lookup("gm", unidade__municipio__gestores__cpf='username')
             .lookup("regulador", unidade__municipio__reguladores__cpf='username')
@@ -1519,6 +1519,9 @@ class NotificacaoIndividual(models.Model):
     responsavel_pelo_cancelamento = models.ForeignKey(User, verbose_name='Responsável pelo Cancelamento', on_delete=models.CASCADE, null=True, related_name='rc1')
     observacao_cancelamento = models.TextField(verbose_name='Observação', help_text='Informe o motivo pelo qual a ficha está sendo cancelada', null=True, blank=True)
 
+    tomou_vacina_chikungunya = models.BooleanField(verbose_name='Tomou vacina de Chikungunya?', default=False)
+    data_vacina_chikungunya = models.DateField(verbose_name='Data da Vacina da Chikungunya', null=True, blank=True)
+
     objects = NotificacaoIndividualQuerySet()
 
     class Meta:
@@ -1832,6 +1835,13 @@ class NotificacaoIndividual(models.Model):
                 ),
             )
             .fieldset(
+                "Vacina Chikungunya",
+                (
+                    ("tomou_vacina_chikungunya",
+                    "data_vacina_chikungunya"),
+                ),
+            )
+            .fieldset(
                 "Exame de Neutralização por Redução de Placas (PRNT)",
                 ("data_coleta_exame_prnt", "resultado_exame_prnt"),
             )
@@ -1950,6 +1960,13 @@ class NotificacaoIndividual(models.Model):
                             "resultado_primeira_amostra_chikungunya",
                             "data_segunda_amostra_chikungunya",
                             "resultado_segunda_amostra_chikungunya",
+                        ),
+                    )
+                    .fieldset(
+                        "Vacina Chikungunya",
+                        (
+                           ("tomou_vacina_chikungunya",
+                            "data_vacina_chikungunya"),
                         ),
                     )
                     .fieldset(

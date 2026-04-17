@@ -11,9 +11,10 @@ class Fila(endpoints.Endpoint):
         return [
             {k:serialize(v) for k, v in x.items()} for x in 
             NotificacaoIndividual.objects
-            .filter(status_infeccao='Positivo', doenca=2, unidade_referencia__codigo=self.request.GET['cnes'], data_primeiros_sintomas__gte=date.today() - timedelta(days=145))
+            # .filter(data_primeiros_sintomas__gte=date.today() - timedelta(days=15))
+            .filter(status_infeccao='Positivo', doenca=2, unidade_referencia__codigo=self.request.GET['cnes'])
             .values('nome', 'cpf', 'cartao_sus', 'sexo__nome', 'data_nascimento', 'email', 'telefone', 'ocupacao_investigacao__nome')
-            .order_by('data_primeiros_sintomas')[0:2]
+            .order_by('data_primeiros_sintomas')
         ]
     
     def check_permission(self):

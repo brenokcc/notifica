@@ -142,6 +142,7 @@
 
         <div class="title center">Informações Complementares e Observações</div>
         <div class="bloco bordered" style="height: 50px;">
+            {% if obj.tomou_vacina_chikungunya %}Vacina Shikungunya aplicada em {{ obj.data_vacina_chikungunya }}.<br>{% endif %}
             {{ obj.observacao|linebreaks }}
         </div>
 

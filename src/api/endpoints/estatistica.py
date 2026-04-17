@@ -15,7 +15,7 @@ class Painel(endpoints.PublicEndpoint):
             self.request.GET.update(data__gte=(date.today() - timedelta(days=7)).strftime('%Y-%m-%d'))
             self.request.GET._mutable = False
         return NotificacaoIndividual.objects.all().filter(data_envio__isnull=False).filters(
-            "doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_nascimento__gte", "data_nascimento__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica"
+            "doenca", "municipio", "unidade", "unidade_referencia", "notificante", "status", "status_infeccao", "validada", "tipo_bloqueio", "situacao_hospitalar", "data__lte", "data__gte", "data_primeiros_sintomas__lte", "data_nascimento__gte", "data_nascimento__lte", "data_primeiros_sintomas__gte", "registrado_sinan", "semana_epidemiologica", "tomou_vacina_chikungunya"
         ).bi(
             ("get_total", "get_total_notificantes", "get_total_pacientes"),
             ("get_total_por_unidade", "get_total_por_sexo"),
