@@ -1692,7 +1692,6 @@ class NotificacaoIndividual(models.Model):
         return self
     
     def save(self, *args, **kwargs):
-        self.resumo_clinico = self.get_resumo_clinico()
         if self.semana_epidemiologica is None:
             self.semana_epidemiologica = SemanaEpidemiologica.objects.filter(
                 inicio__lte=self.data_primeiros_sintomas,
@@ -1735,6 +1734,7 @@ class NotificacaoIndividual(models.Model):
                         f'A data informada no campo "{campo}" não pode anteceder a data dos primeiros sintomas.'
                     )
         super().save(*args, **kwargs)
+        self.resumo_clinico = self.get_resumo_clinico()
         if self.numero is None:
             self.numero = '{}'.format(str(self.id).rjust(5, "0"))
             super().save(*args, **kwargs)
