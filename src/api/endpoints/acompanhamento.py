@@ -1,6 +1,5 @@
 from slth import endpoints
 from ..models import *
-from datetime import date, timedelta
 from slth.serializer import serialize
 from django.conf import settings
 
@@ -11,9 +10,8 @@ class Fila(endpoints.Endpoint):
         return [
             {k:serialize(v) for k, v in x.items()} for x in 
             NotificacaoIndividual.objects
-            # .filter(data_primeiros_sintomas__gte=date.today() - timedelta(days=15))
-            .filter(status_infeccao='Positivo', doenca=2, unidade_referencia__codigo=self.request.GET['cnes'])
-            .values('nome', 'cpf', 'cartao_sus', 'sexo__nome', 'data_nascimento', 'email', 'telefone', 'ocupacao_investigacao__nome')
+            .filter(status_infeccao='Positivo', doenca=2, unidade_referencia__codigo=self.request.GET['cnes'], data_obito__isnull=True)
+            .values('nome', 'cpf', 'cartao_sus', 'sexo__nome', 'data_nascimento', 'email', 'telefone', 'ocupacao_investigacao__nome', 'ocupacao_investigacao__codigo', 'data_primeiros_sintomas', 'resumo_clinico')
             .order_by('data_primeiros_sintomas')
         ]
     

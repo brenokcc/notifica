@@ -1522,12 +1522,21 @@ class NotificacaoIndividual(models.Model):
     tomou_vacina_chikungunya = models.BooleanField(verbose_name='Tomou vacina de Chikungunya?', default=False)
     data_vacina_chikungunya = models.DateField(verbose_name='Data da Vacina da Chikungunya', null=True, blank=True)
 
+    resumo_clinico = models.TextField(verbose_name='Resumo Clínico', null=True, blank=True)
+
     objects = NotificacaoIndividualQuerySet()
 
     class Meta:
         icon = "person"
         verbose_name = "Notificação Individual"
         verbose_name_plural = "Notificações Individuais"
+
+    def get_resumo_clinico(self):
+        resumo = {}
+        resumo['Sinais Clínicos'] = ', '.join(self.sinais_clinicos.values_list('nome', flat=True))
+        resumo['Doenças Pré-existentes'] = ', '.join(self.doencas_pre_existentes.values_list('nome', flat=True)) or 'Nenhuma doença informada'
+        resumo['Foi Internado?'] = 'Sim' if self.hospitalizacao else 'Não'
+        return '\n'.join([f'{k}: {v}' for k, v in resumo.items()])
 
     @meta("Registro no SINAN")
     def get_sinan(self):
@@ -1683,6 +1692,7 @@ class NotificacaoIndividual(models.Model):
         return self
     
     def save(self, *args, **kwargs):
+        self.resumo_clinico = self.get_resumo_clinico()
         if self.semana_epidemiologica is None:
             self.semana_epidemiologica = SemanaEpidemiologica.objects.filter(
                 inicio__lte=self.data_primeiros_sintomas,
