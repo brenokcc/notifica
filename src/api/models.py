@@ -1519,7 +1519,7 @@ class NotificacaoIndividual(models.Model):
     responsavel_pelo_cancelamento = models.ForeignKey(User, verbose_name='Responsável pelo Cancelamento', on_delete=models.CASCADE, null=True, related_name='rc1')
     observacao_cancelamento = models.TextField(verbose_name='Observação', help_text='Informe o motivo pelo qual a ficha está sendo cancelada', null=True, blank=True)
 
-    tomou_vacina_chikungunya = models.BooleanField(verbose_name='Tomou vacina de Chikungunya?', default=False)
+    tomou_vacina_chikungunya = models.BooleanField(verbose_name='Tomou vacina de Chikungunya?', null=True)
     data_vacina_chikungunya = models.DateField(verbose_name='Data da Vacina da Chikungunya', null=True, blank=True)
 
     resumo_clinico = models.TextField(verbose_name='Resumo Clínico', null=True, blank=True)
