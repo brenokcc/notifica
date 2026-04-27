@@ -232,6 +232,10 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
 class Mixin:
 
+    def clean_tomou_vacina_chikungunya(self, data):
+        if data.get('tomou_vacina_chikungunya') is None:
+            raise ValidationError('Informe se a vacina da Chikungunya foi aplicada ou não.')
+
     def on_endereco_change(self, endereco):
         if endereco:
             self.form.controller.set(
