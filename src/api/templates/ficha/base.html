@@ -143,12 +143,12 @@
         <div class="title center">Informações Complementares e Observações</div>
         <div class="bloco bordered" style="height: 50px;">
             {% if obj.tomou_vacina_chikungunya is None %}
-                Informação sobre aplicação da vacina de Shikungunya ainda não fornecida.<br>
+                Informação sobre aplicação da vacina de Chikungunya ainda não fornecida.<br>
             {% else %}
                 {% if obj.tomou_vacina_chikungunya %}
-                    Vacina da Shikungunya aplicada em {{ obj.data_vacina_chikungunya }}.<br>
+                    Vacina da Chikungunya aplicada em {{ obj.data_vacina_chikungunya }}.<br>
                 {% else %}
-                    Vacina da Shikungunya ainda NÃO aplicada.<br>
+                    Vacina da Chikungunya ainda NÃO aplicada.<br>
                 {% endif %}
             {% endif %}
             {{ obj.observacao|linebreaks }}
