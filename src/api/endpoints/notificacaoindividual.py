@@ -9,6 +9,7 @@ from slth.utils import age
 from slth.components import FileViewer
 from requests.exceptions import Timeout
 from django.core.cache import cache
+from ..exportacao import CAMPOS
 
 
 class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
@@ -27,7 +28,7 @@ class NotificacoesIndividuais(endpoints.ListEndpoint[NotificacaoIndividual]):
                 "notificacaoindividual.imprimir",
                 "notificacaoindividual.clonar",
             )
-            .xlsx()
+            .xlsx(*CAMPOS)
             .order_by("-numero")
         )
 
