@@ -151,6 +151,9 @@
                     Vacina da Chikungunya ainda NÃO aplicada.<br>
                 {% endif %}
             {% endif %}
+            {% if obj.motivo_ausencia_sinais_clinicos %}
+                Motivo da ausência de sinais clínicos: {{ obj.motivo_ausencia_sinais_clinicos }}<br>
+            {% endif %}
             {{ obj.observacao|linebreaks }}
         </div>
 
