@@ -67,6 +67,7 @@ class ApiApplication(Application):
                     "Motivos para Devolução de Bloqueio": "motivodevolucaobloqueio.motivosdevolucaobloqueio",
                     "Motivos de Perda de Prazo de Bloqueio": "motivoperdaprazobloqueio.motivosperdaprazobloqueio",
                     "Ocupações": "ocupacao.ocupacoes",
+                    "Semanas Epidemiológicas": "semanaepidemiologica.semanasepidemiologicas",
                 },
                 "users:Usuários": {
                     "Administradores": "administrador.administradores",

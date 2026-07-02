@@ -232,6 +232,15 @@ class Clonar(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
 class Mixin:
 
+    def clean_motivo_ausencia_sinais_clinicos(self, data):
+        motivo = data.get('motivo_ausencia_sinais_clinicos')
+        sinais = data.get('sinais_clinicos')
+        if motivo and sinais:
+            raise ValidationError('O campo sinais clínicos e motivo da ausência de sinais clínicos não podem ser preenchidos ao mesmo tempo.')
+        if not motivo and not sinais:
+            raise ValidationError('O campo motivo da ausência de sinais clínicos deve ser preenchido quando nenhum sinal clínico é informado.')
+    
+
     def clean_tomou_vacina_chikungunya(self, data):
         if data.get('tomou_vacina_chikungunya') is None:
             raise ValidationError('Informe se a vacina da Chikungunya foi aplicada ou não.')
@@ -679,12 +688,15 @@ class EvoluirCaso(endpoints.RelationEndpoint[Evolucao]):
         return (
             super()
             .formfactory().fields(notificacao=self.source, notificante=self.request.user)
-            .fieldset("Dados Gerais", ("notificacao", "notificante", "data", "observacao"))
+            .fieldset("Dados Gerais", ("notificacao", "notificante", "unidade", "data", "observacao"))
             .initial(data=date.today())
         )
+    
+    def get_unidade_queryset(self, queryset):
+        return queryset.filter(equipe__notificantes__cpf=self.request.user.username).distinct()
 
     def check_permission(self):
-        return self.check_role("notificante") and self.source.validada # and not self.source.data_encerramento
+        return self.check_role("notificante") and (self.source is None or self.source.validada) and not self.source.data_encerramento
 
 
 class Bloqueios(endpoints.QuerySetEndpoint[NotificacaoIndividual]):

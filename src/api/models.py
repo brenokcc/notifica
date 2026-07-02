@@ -1192,8 +1192,9 @@ class NotificacaoIndividual(models.Model):
 
     # Dados Clínicos
     sinais_clinicos = models.ManyToManyField(
-        SinalClinico, verbose_name="Sinais Clínicos", pick=True, blank=False
+        SinalClinico, verbose_name="Sinais Clínicos", pick=True, blank=True
     )
+    motivo_ausencia_sinais_clinicos = models.TextField(verbose_name='Motivo da Ausência de Sinais Clínicos', null=True, blank=True, help_text='Preencher apenas nos casos em que nenhum sinal clínico é informado.')
     doencas_pre_existentes = models.ManyToManyField(
         DoencaPreExistente, verbose_name="Doenças Pré-Existentes", pick=True, blank=True
     )
@@ -1834,7 +1835,7 @@ class NotificacaoIndividual(models.Model):
                     "tipo_local_surto",
                 ),
             )
-            .fieldset("Dados Clínicos", ("sinais_clinicos", "doencas_pre_existentes"))
+            .fieldset("Dados Clínicos", ("sinais_clinicos", "motivo_ausencia_sinais_clinicos", "doencas_pre_existentes"))
             .fieldset(
                 "Sorologia (IgM) Chikungunya",
                 (
@@ -1962,7 +1963,7 @@ class NotificacaoIndividual(models.Model):
                             "tipo_local_surto",
                         ),
                     )
-                    .fieldset("Dados Clínicos", ("sinais_clinicos", "doencas_pre_existentes"))
+                    .fieldset("Dados Clínicos", ("sinais_clinicos", "motivo_ausencia_sinais_clinicos", "doencas_pre_existentes"))
                     .fieldset(
                         "Sorologia (IgM) Chikungunya",
                         (
@@ -2158,6 +2159,7 @@ class EvolucaoQuerySet(models.QuerySet):
 
 class Evolucao(models.Model):
 
+    unidade = models.ForeignKey(UnidadeSaude, verbose_name='Unidade', on_delete=models.CASCADE, null=True)
     notificacao = models.ForeignKey(NotificacaoIndividual, verbose_name='Notificação', on_delete=models.CASCADE)
     notificante = models.ForeignKey(User, verbose_name='Notificante', on_delete=models.CASCADE)
     data = models.DateTimeField(verbose_name='Data', auto_created=True)
