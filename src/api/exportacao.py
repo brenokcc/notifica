@@ -120,3 +120,18 @@ CAMPOS = [
    'observacao_cancelamento',
    'semana_epidemiologica',
 ]
+
+def gerar_arquivo(arquivo_exportacao):
+      from django.core.files import File
+      from api.models import NotificacaoIndividual
+
+      print('Iniciando geração de arquivo...')
+      qs = NotificacaoIndividual.objects.xlsx(*CAMPOS)
+      file_path, _ = qs.to_file()
+      with open(file_path, mode="rb") as f:
+         ext = file_path.split('.')[-1]
+         file_name = 'arquivo-{}.{}'.format(arquivo_exportacao.pk, ext)
+         django_file = File(f, name=file_name)
+         arquivo_exportacao.arquivo.save(file_name, django_file, save=False) 
+         arquivo_exportacao.save()
+      print('Geração de arquivo concluída')

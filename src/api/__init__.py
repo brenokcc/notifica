@@ -39,6 +39,7 @@ class ApiApplication(Application):
             "estatistica.painel",
             "solicitacaocadastro.solicitacoescadastro",
             "chamado.chamados",
+            "arquivoexportacao.arquivosexportacao",
             "exportacao.notificacoesindividuais",
         )
         self.dashboard.center.add(

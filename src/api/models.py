@@ -1,5 +1,6 @@
 from slth.db import models, role, meta
 import os
+import threading
 import json
 from django.conf import settings
 from slth.components import GeoMap, FileLink, TemplateContent
@@ -14,8 +15,46 @@ from datetime import datetime, timedelta
 from django.db import transaction
 from slth.models import Email
 from slth.components import Badge
+from . import exportacao
 
 
+class ArquivoExportacaoQuerySet(models.QuerySet):
+    def all(self):
+        return self.search('nome')
+
+
+class ArquivoExportacao(models.Model):
+    nome = models.CharField(verbose_name='Nome', blank=True)
+    arquivo = models.FileField(verbose_name='Arquivo', upload_to='exportacao', null=True, blank=True)
+
+    class Meta:
+        icon = 'file-export'
+        verbose_name = 'Arquivo de Exportação'
+        verbose_name_plural = 'Arquivos de Exportação'
+
+    objects = ArquivoExportacaoQuerySet()
+
+    def __str__(self):
+        return f'Arquivo de Exportação {self.id}'
+    
+    def save(self, *args, **kwargs):
+        pk = self.pk
+        if not self.nome:
+            self.nome = datetime.now().strftime('%d/%m/%Y %H:%M')
+        super().save(*args, **kwargs)
+        if pk is None:
+            self.gerar_arquivo()
+
+    def gerar_arquivo(self):
+        threading.Thread(target=exportacao.gerar_arquivo, args=(self,)).start()
+
+    def formfactory(self):
+        return super().formfactory().fields('nome')
+    
+    @meta("Arquivo")
+    def get_arquivo(self):
+        return FileLink(self.arquivo.url, modal=False, icon='file') if self.arquivo else None
+                
 
 class TermoUso(models.Model):
     user = models.ForeignKey(User, verbose_name='Usuário', on_delete=models.CASCADE)
