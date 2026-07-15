@@ -26,6 +26,8 @@ class ArquivoExportacaoQuerySet(models.QuerySet):
 class ArquivoExportacao(models.Model):
     nome = models.CharField(verbose_name='Nome', blank=True)
     arquivo = models.FileField(verbose_name='Arquivo', upload_to='exportacao', null=True, blank=True)
+    data_inicio_envio = models.DateField(verbose_name='Data de Início do Envio das Fichas', null=True, blank=True)
+    data_fim_envio = models.DateField(verbose_name='Data de Fim do Envio das Fichas', null=True, blank=True)
 
     class Meta:
         icon = 'file-export'
@@ -49,7 +51,7 @@ class ArquivoExportacao(models.Model):
         threading.Thread(target=exportacao.gerar_arquivo, args=(self,)).start()
 
     def formfactory(self):
-        return super().formfactory().fields('nome')
+        return super().formfactory().fieldset('Dados Gerais', ('nome',)).fieldset('Período do Cadastro', (('data_inicio_envio', 'data_fim_envio'),))
     
     @meta("Arquivo")
     def get_arquivo(self):
