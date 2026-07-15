@@ -128,9 +128,9 @@ def gerar_arquivo(arquivo_exportacao):
       print('Iniciando geração de arquivo...')
       qs = NotificacaoIndividual.objects.xlsx(*CAMPOS)
       if arquivo_exportacao.data_inicio_envio:
-           qs = qs.filter(data__gte=arquivo_exportacao.data_inicio_envio)
+           qs = qs.filter(data_envio__gte=arquivo_exportacao.data_inicio_envio)
       if arquivo_exportacao.data_fim_envio:
-           qs = qs.filter(data__lte=arquivo_exportacao.data_fim_envio)
+           qs = qs.filter(data_envio__lte=arquivo_exportacao.data_fim_envio)
       file_path, _ = qs.to_file()
       with open(file_path, mode="rb") as f:
          ext = file_path.split('.')[-1]
