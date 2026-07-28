@@ -171,6 +171,7 @@ class ExcluirResultado(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def post(self):
         n = self.cleaned_data['n']
+        if str(n) == '1': n = ''
         NotificacaoIndividual.objects.filter(pk=self.instance.pk).update(
             **{f'resultado_exame{n}': ''}
         )
