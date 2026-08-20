@@ -767,6 +767,40 @@ class Raca(models.Model):
         return self.nome
 
 
+class Bairro(models.Model):
+    codigo = models.CharField(verbose_name="Código")
+    nome = models.CharField(verbose_name="Nome")
+
+    class Meta:
+        verbose_name = "Bairro"
+        verbose_name_plural = "Bairros"
+
+    def __str__(self):
+        return self.nome
+
+
+class MapeamentoBairrosQuerySet(models.QuerySet):
+    def all(self):
+        return self
+
+    def pendentes(self):
+        return self.filter(bairro__isnull=True)
+
+
+class MapeamentoBairro(models.Model):
+    nome = models.CharField(verbose_name='Nome')
+    bairro = models.ForeignKey(Bairro, verbose_name='Bairro', on_delete=models.CASCADE, null=True)
+
+    objects = MapeamentoBairrosQuerySet()
+
+    class Meta:
+        verbose_name = 'Mapeamento de Bairro'
+        verbose_name_plural = 'Mapeamento de Bairros'
+
+    def __str__(self):
+        return self.nome
+
+
 class Escolaridade(models.Model):
     codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
@@ -972,6 +1006,11 @@ class SemanaEpidemiologica(models.Model):
         if self.pk is None:
             self.descricao = str(self)
         super().save(*args, **kwargs)
+
+    @classmethod
+    def semana(cls, data):
+        numero = cls.objects.filter(inicio__lte=data, termino__gte=data).values_list('numero', flat=True).first()
+        return str(numero).zfill(2)
         
 
 class NotificacaoIndividualQuerySet(models.QuerySet):
@@ -1949,7 +1988,7 @@ class NotificacaoIndividual(models.Model):
         return (
             super()
             .serializer()
-            .actions("notificacaoindividual.editar", "notificacaoindividual.enviar", "notificacaoindividual.receber", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.imprimir", "notificacaoindividual.clonar", "notificacaoindividual.evoluircaso", "notificacaoindividual.registrarsinan")
+            .actions("notificacaoindividual.editar", "notificacaoindividual.enviar", "notificacaoindividual.receber", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.imprimir", "notificacaoindividual.clonar", "notificacaoindividual.evoluircaso", "notificacaoindividual.registrarsinan", "notificacaoindividual.enviarsinan")
             .fieldset(
                 "Dados Gerais",
                 (
@@ -2150,7 +2189,41 @@ class NotificacaoIndividual(models.Model):
     def get_nomes_sinais_comprometimento_orgaos(self):
         return ", ".join(self.sinais_comprometimento_orgaos.values_list("nome", flat=True))
     
+    def enviar_sinan(self):
+        dados = {
+            "numero_notificacao": self.sinan,
+            "agravo": "A92.0 - FEBRE DE CHIKUNGUNYA",
+            "data_notificacao": self.data.strftime('%d/%m/%Y'), # "DD/MM/AAAA"
+            "mes_referencia": self.data.strftime('%d/%m/%Y'), #"MM/AAAA"
+            "semana_notificacao": '{}{}'.format(self.data.strftime('%Y'), SemanaEpidemiologica.semana(self.data)), #"AAAASS"
+            "data_primeiros_sintomas": self.data_primeiros_sintomas.strftime('%d/%m/%Y'),
+            "semana_primeiros_sintomas": '{}{}'.format(self.data.strftime('%Y'), SemanaEpidemiologica.semana(self.data_primeiros_sintomas)), #"AAAASS"
+            "uf_unidade_id": self.municipio.estado.codigo,
+            "municipio_unidade_id": self.municipio.codigo,
+            "municipio_unidade": self.municipio.nome,
+            "cnes": self.unidade.codigo,
+            "unidade_saude": self.unidade.nome,
+            "nome_paciente": self.nome,
+            "data_nascimento": self.data_nascimento.strftime('%d/%m/%Y'),
+            "idade": self.get_idade(),
+            "tipo_idade": "4",
+            "sexo": self.sexo.codigo,
+            "gestante": "",
+            "raca": self.raca.codigo,
+            "escolaridade": "", #  TODO
+            "nome_mae": self.nome_mae,
+            "uf_residencia_id": self.municipio_residencia.estado.codigo,
+            "municipio_residencia_id": self.municipio_residencia.codigo,
+            "municipio_residencia": self.municipio_residencia.nome,
+            "bairro_id": "", #  TODO
+            "bairro": self.bairro,
+            "logradouro": self.logradouro,
+            "numero_residencia": self.numero_residencia,
+            "zona": self.zona.codigo
+            }
+        print(json.dumps(dados, ensure_ascii=False, indent=2))
     
+
 
 
 class RegistroLeituraResultado(models.Model):

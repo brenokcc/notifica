@@ -46,6 +46,7 @@ class ApiApplication(Application):
             "termouso.checar",
         )
         self.dashboard.todo.add(
+            "mapeamentobairro.pendentes",
             "notificacaoindividual.aguardandoenvio",
             "notificacaoindividual.aguardandoresponsavelbloqueio",
             "notificacaoindividual.aguardandobloqueio",
@@ -64,7 +65,10 @@ class ApiApplication(Application):
                     "Raças": "raca.racas",
                     "Sexos": "sexo.sexos",
                     "Escolaridades": "escolaridade.escolaridades",
+                    "Estados": "estado.estados",
                     "Municípios": "municipio.municipios",
+                    "Bairros": "bairro.bairros",
+                    "Mapeamento de Bairros": "mapeamentobairro.mapeamentobairros",
                     "Motivos para Devolução de Bloqueio": "motivodevolucaobloqueio.motivosdevolucaobloqueio",
                     "Motivos de Perda de Prazo de Bloqueio": "motivoperdaprazobloqueio.motivosperdaprazobloqueio",
                     "Ocupações": "ocupacao.ocupacoes",

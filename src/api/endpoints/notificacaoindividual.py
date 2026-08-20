@@ -748,10 +748,28 @@ class RegistrarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     def post(self):
         if self.cleaned_data['registrado_sinan'] and not self.cleaned_data['sinan']:
             raise ValidationError("Informe o número no SINAN")
+        
         return super().post()
     
     def check_permission(self):
         return self.check_role('gm') and not self.instance.registrado_sinan
+
+
+class EnviarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
+
+    class Meta:
+        icon = "circle-chevron-right"
+        verbose_name = "Enviar SINAN"
+
+    def get(self):
+        return self.formfactory().fields()
+    
+    def post(self):
+        self.instance.enviar_sinan()
+        return super().post()
+        
+    def check_permission(self):
+        return 0 and (self.check_role('gm') and self.instance.sinan)
     
 
 class ReatribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
