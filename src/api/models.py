@@ -770,6 +770,10 @@ class Raca(models.Model):
 class Bairro(models.Model):
     codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
+    municipio = models.ForeignKey(
+        Municipio, verbose_name="Município", on_delete=models.CASCADE, null=True, blank=True
+    )
+
 
     class Meta:
         verbose_name = "Bairro"
@@ -784,11 +788,12 @@ class MapeamentoBairrosQuerySet(models.QuerySet):
         return self
 
     def pendentes(self):
-        return self.filter(bairro__isnull=True)
+        return self.filter(bairro__isnull=True, municipio='Dourados/MS').fields('nome', 'municipio')
 
 
 class MapeamentoBairro(models.Model):
     nome = models.CharField(verbose_name='Nome')
+    municipio = models.CharField(verbose_name='Município', null=True)
     bairro = models.ForeignKey(Bairro, verbose_name='Bairro', on_delete=models.CASCADE, null=True)
 
     objects = MapeamentoBairrosQuerySet()
@@ -1430,6 +1435,40 @@ class NotificacaoIndividual(models.Model):
         pick=True,
     )
 
+    # Sorologia (IgM) Zika
+    data_amostra_zica = models.DateField(
+        verbose_name="Data da Coleta", null=True, blank=True
+    )
+    resultado_amostra_zica = models.IntegerField(
+        verbose_name="Resultado Coleta",
+        null=True,
+        blank=True,
+        choices=[
+            [i + 1, x]
+            for i, x in enumerate(
+                ["Positivo", "Negativo", "Inconclusivo", "Não Realizado"]
+            )
+        ],
+        pick=True,
+    )
+    
+    # RT-PCR Zika
+    data_rt_pcr_zica = models.DateField(
+        verbose_name="Data da Coleta RT-PCR", null=True, blank=True
+    )
+    resultado_rt_pcr_zica = models.IntegerField(
+        verbose_name="Resultado RT-PCR",
+        null=True,
+        blank=True,
+        choices=[
+            [i + 1, x]
+            for i, x in enumerate(
+                ["Positivo", "Negativo", "Inconclusivo", "Não Realizado"]
+            )
+        ],
+        pick=True,
+    )
+
     # Vacinação
     vacinado = models.BooleanField(verbose_name="Vacinado (1ª Dose)", null=True)
     vacinado2 = models.BooleanField(verbose_name="Vacinado (2ª Dose)", null=True)
@@ -1942,6 +1981,11 @@ class NotificacaoIndividual(models.Model):
             )
             .fieldset("Exame NS1", ("data_exame_ns1", "resultado_exame_ns1"))
             .fieldset("Outros Exames", ("histopatologia", "imunohistoquimica"))
+            .fieldset(
+                "Sorologia (IgM) Zika",
+                ("data_amostra_zica", "resultado_amostra_zica"),
+            )
+            .fieldset("RT-PCR (Zika)", ("data_rt_pcr_zica", "resultado_rt_pcr_zica"))
             .fieldset("RT-PCR", ("data_rt_pcr", "resultado_rt_pcr", "sorotipo"))
             .fieldset("Isolamento", ("data_isolamento", "resultado_isolamento"))
             .fieldset("Vacinação", ("vacinado", "vacinado2", "data_ultima_vacina"))
@@ -2070,6 +2114,11 @@ class NotificacaoIndividual(models.Model):
                     )
                     .fieldset("Exame NS1", ("data_exame_ns1", "resultado_exame_ns1"))
                     .fieldset("Outros Exames", ("histopatologia", "imunohistoquimica"))
+                    .fieldset(
+                        "Sorologia (IgM) Zika",
+                        ("data_amostra_zica", "resultado_amostra_zica"),
+                    )
+                    .fieldset("RT-PCR (Zika)", ("data_rt_pcr_zica", "resultado_rt_pcr_zica"))
                     .fieldset("Isolamento", ("data_isolamento", "resultado_isolamento"))
                     .fieldset("RT-PCR", ("data_rt_pcr", "resultado_rt_pcr", "sorotipo"))
                     .fieldset("Vacinação", ("vacinado", "vacinado2", "data_ultima_vacina"))

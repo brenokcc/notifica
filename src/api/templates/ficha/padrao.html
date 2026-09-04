@@ -308,7 +308,48 @@
                     <label>Data do Encerramento:</label><div>{{ obj.data_encerramento|date:"d/m/Y"|default:"-" }}</div>
                 </div>
             </div>
+
         </div>
+
+        {% if obj.data_amostra_zica or obj.data_rt_pcr_zica %}
+        <div class="subtitle center">Exames</div>
+        <div class="bloco bordered">
+            <div class="group" style="width: 49%">
+                <div>Sorologia (IgM) Zika</div>
+                <div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">47</div>
+                        <div class="cell">
+                            <label>Data da Coleta:</label><div>{{ obj.data_amostra_zica|date:"d/m/Y"|default:"-" }}</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">48</div>
+                        <div class="cell">
+                            <label>Resultado:</label><div>{{ obj.get_resultado_amostra_zica_display|default:"-" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="group" style="width: 49%">
+                <div>Data da Coleta RT-PCR</div>
+                <div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">49</div>
+                        <div class="cell">
+                            <label>Data da Coleta:</label><div>{{ obj.data_rt_pcr_zica|date:"d/m/Y"|default:"-" }}</div>
+                        </div>
+                    </div>
+                    <div class="item" style="width: 48%">
+                        <div class="number">42</div>
+                        <div class="cell">
+                            <label>Resultado:</label><div>{{ obj.get_resultado_rt_pcr_zica_display|default:"-" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <div class="subtitle center">Notificante</div>
         <div class="bloco bordered">

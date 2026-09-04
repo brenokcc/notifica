@@ -8,7 +8,7 @@ class Bairros(endpoints.ListEndpoint[Bairro]):
 
     def get(self):
         return (
-            super().get().search('nome', 'codigo')
+            super().get().search('nome', 'codigo').filters('municipio')
             .actions('bairro.cadastrar', 'bairro.visualizar', 'bairro.editar', 'bairro.excluir')
         )
 
