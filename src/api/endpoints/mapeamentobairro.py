@@ -9,7 +9,7 @@ class MapeamentoBairros(endpoints.ListEndpoint[MapeamentoBairro]):
     def get(self):
         return (
             super().get().search('nome').filters('bairro')
-            .actions('mapeamentobairro.cadastrar', 'mapeamentobairro.visualizar', 'mapeamentobairro.editar', 'mapeamentobairro.excluir')
+            .actions('mapeamentobairro.cadastrar', 'mapeamentobairro.visualizar', 'mapeamentobairro.editar', 'mapeamentobairro.excluir').xlsx('nome')
         )
 
     def check_permission(self):

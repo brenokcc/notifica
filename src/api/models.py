@@ -768,7 +768,6 @@ class Raca(models.Model):
 
 
 class Bairro(models.Model):
-    codigo = models.CharField(verbose_name="Código")
     nome = models.CharField(verbose_name="Nome")
     municipio = models.ForeignKey(
         Municipio, verbose_name="Município", on_delete=models.CASCADE, null=True, blank=True
