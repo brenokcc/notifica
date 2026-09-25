@@ -11,7 +11,7 @@ class Municipios(endpoints.ListEndpoint[Municipio]):
             super()
             .get()
             .actions("municipio.visualizar", "municipio.cadastrar", "municipio.editar", "municipio.excluir")
-        )
+        ).distinct()
 
     def check_permission(self):
         return self.check_role("administrador", "gm", "supervisor")

@@ -29,7 +29,7 @@ CAMPOS = [
    'municipio_residencia',
    'distrito',
    'zona',
-   'bairro',
+   'get_nome_bairro',
    'logradouro',
    'codigo_logradouro',
    'numero_residencia',

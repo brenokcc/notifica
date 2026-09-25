@@ -16,6 +16,8 @@ from django.db import transaction
 from slth.models import Email
 from slth.components import Badge
 from . import exportacao
+from . import sinan
+from django.utils.text import slugify
 
 
 class ArquivoExportacaoQuerySet(models.QuerySet):
@@ -767,12 +769,22 @@ class Raca(models.Model):
         return self.nome
 
 
+class BairroQuerySet(models.QuerySet):
+    def all(self):
+        return self.search('nome').filters('municipio').fields('nome', 'municipio')
+
+    def get_by_indice(self, municipio, nome):
+        return self.filter(municipio=municipio, indice=slugify(nome)).first()
+
+
 class Bairro(models.Model):
     nome = models.CharField(verbose_name="Nome")
     municipio = models.ForeignKey(
         Municipio, verbose_name="Município", on_delete=models.CASCADE, null=True, blank=True
     )
+    indice = models.CharField("Índice", null=True, blank=True)
 
+    objects = BairroQuerySet()
 
     class Meta:
         verbose_name = "Bairro"
@@ -780,6 +792,24 @@ class Bairro(models.Model):
 
     def __str__(self):
         return self.nome
+
+    def formfactory(self):
+        return (
+            super()
+            .formfactory()
+            .fieldset(
+                "Dados Gerais",
+                (
+                    "nome", "municipio",
+                )
+            )
+        )
+
+    
+    def save(self, *args, **kwargs):
+        if self.indice is None:
+            self.indice = slugify(self.nome)
+        super().save(*args, **kwargs)
 
 
 class MapeamentoBairrosQuerySet(models.QuerySet):
@@ -1131,7 +1161,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     
     @meta("Total por Bairro")
     def get_total_por_bairro(self):
-        return self.counter("bairro")
+        return self.counter("bairro2")
 
     @meta("Dourados/MS")
     def get_mapa(self):
@@ -1251,6 +1281,7 @@ class NotificacaoIndividual(models.Model):
         Zona, verbose_name="Zona", on_delete=models.CASCADE, null=True, pick=True
     )
     bairro = models.CharField(verbose_name="Bairro", null=True, blank=True)
+    bairro2 = models.ForeignKey(Bairro, verbose_name="Bairro", null=True, blank=True)
     logradouro = models.CharField(verbose_name="Logradouro", null=True, blank=True)
     codigo_logradouro = models.CharField(
         verbose_name="Código do Logradouro", null=True, blank=True
@@ -1705,7 +1736,7 @@ class NotificacaoIndividual(models.Model):
             self.logradouro,
             self.numero_residencia,
             self.complemento,
-            self.bairro,
+            self.get_nome_bairro(),
             self.cep,
             self.distrito,
             self.municipio_residencia,
@@ -1934,8 +1965,8 @@ class NotificacaoIndividual(models.Model):
                 (
                     "endereco",
                     "pais:pais.cadastrar",
-                    ("cep", "bairro"),
-                    ("municipio_residencia:notificacaoindividual.cadastrarmunicipio", "distrito"),
+                    ("cep", "distrito"),
+                    ("bairro2", "municipio_residencia:notificacaoindividual.cadastrarmunicipio"),
                     ("logradouro", "codigo_logradouro"),
                     ("numero_residencia", "complemento"),
                     "zona",
@@ -2067,7 +2098,7 @@ class NotificacaoIndividual(models.Model):
                             "endereco",
                             "pais",
                             ("cep", "municipio_residencia"),
-                            ("distrito", "bairro"),
+                            ("distrito", "get_nome_bairro"),
                             ("logradouro", "codigo_logradouro"),
                             ("numero_residencia", "complemento"),
                             "zona",
@@ -2218,6 +2249,9 @@ class NotificacaoIndividual(models.Model):
 
     def is_pendente_correcao(self):
         return self.devolucao_set.filter(observacao_correcao__isnull=True)
+
+    def get_nome_bairro(self):
+        return self.bairro2.nome if self.bairro2 else self.bairro
     
     def get_nomes_sinais_clinicos(self):
         return ", ".join(self.sinais_clinicos.values_list("nome", flat=True))
@@ -2242,12 +2276,12 @@ class NotificacaoIndividual(models.Model):
             "numero_notificacao": self.sinan,
             "agravo": "A92.0 - FEBRE DE CHIKUNGUNYA",
             "data_notificacao": self.data.strftime('%d/%m/%Y'), # "DD/MM/AAAA"
-            "mes_referencia": self.data.strftime('%d/%m/%Y'), #"MM/AAAA"
+            "mes_referencia": self.data.strftime('%m/%Y'), #"MM/AAAA"
             "semana_notificacao": '{}{}'.format(self.data.strftime('%Y'), SemanaEpidemiologica.semana(self.data)), #"AAAASS"
             "data_primeiros_sintomas": self.data_primeiros_sintomas.strftime('%d/%m/%Y'),
             "semana_primeiros_sintomas": '{}{}'.format(self.data.strftime('%Y'), SemanaEpidemiologica.semana(self.data_primeiros_sintomas)), #"AAAASS"
             "uf_unidade_id": self.municipio.estado.codigo,
-            "municipio_unidade_id": self.municipio.codigo,
+            "municipio_unidade_id": self.municipio.codigo[0:-1],
             "municipio_unidade": self.municipio.nome,
             "cnes": self.unidade.codigo,
             "unidade_saude": self.unidade.nome,
@@ -2256,22 +2290,21 @@ class NotificacaoIndividual(models.Model):
             "idade": self.get_idade(),
             "tipo_idade": "4",
             "sexo": self.sexo.codigo,
-            "gestante": "",
+            "gestante": self.periodo_gestacao.codigo,
             "raca": self.raca.codigo,
-            "escolaridade": "", #  TODO
+            "escolaridade": self.escolaridade.codigo,
             "nome_mae": self.nome_mae,
             "uf_residencia_id": self.municipio_residencia.estado.codigo,
-            "municipio_residencia_id": self.municipio_residencia.codigo,
+            "municipio_residencia_id": self.municipio_residencia.codigo[0:-1],
             "municipio_residencia": self.municipio_residencia.nome,
-            "bairro_id": "", #  TODO
-            "bairro": self.bairro,
+            "bairro_id": "",
+            "bairro": self.bairro2.nome,
             "logradouro": self.logradouro,
             "numero_residencia": self.numero_residencia,
             "zona": self.zona.codigo
             }
         print(json.dumps(dados, ensure_ascii=False, indent=2))
-    
-
+        sinan.enviar(dados)
 
 
 class RegistroLeituraResultado(models.Model):
@@ -2380,7 +2413,7 @@ class Video(models.Model):
 
 class EnderecoQuerySet(models.QuerySet):
     def all(self):
-        return self.fields('local', 'get_endereco')
+        return self.search('local').fields('local', 'get_endereco')
 
 
 class Endereco(models.Model):
@@ -2405,6 +2438,7 @@ class Endereco(models.Model):
         Zona, verbose_name="Zona", on_delete=models.CASCADE, null=True, pick=True
     )
     bairro = models.CharField(verbose_name="Bairro", null=True, blank=True)
+    bairro2 = models.ForeignKey(Bairro, verbose_name="Bairro", null=True, blank=True)
     logradouro = models.CharField(verbose_name="Logradouro", null=True, blank=True)
     codigo_logradouro = models.CharField(
         verbose_name="Código do Logradouro", null=True, blank=True
@@ -2442,7 +2476,7 @@ class Endereco(models.Model):
                 "Dados do Endereço",
                 (
                     "pais:pais.cadastrar",
-                    ("cep", "bairro"),
+                    ("cep", "bairro2"),
                     ("municipio", "distrito"),
                     ("logradouro", "codigo_logradouro"),
                     ("numero", "complemento"),
@@ -2467,7 +2501,7 @@ class Endereco(models.Model):
                 "Dados Residenciais",
                 (
                     "pais:pais.cadastrar",
-                    ("cep", "bairro"),
+                    ("cep", "bairro2"),
                     ("municipio", "distrito"),
                     ("logradouro", "codigo_logradouro"),
                     ("numero", "complemento"),

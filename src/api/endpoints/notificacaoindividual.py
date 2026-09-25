@@ -254,7 +254,7 @@ class Mixin:
                 logradouro=endereco.logradouro,
                 numero_residencia=endereco.numero,
                 complemento=endereco.complemento,
-                bairro=endereco.bairro,
+                bairro2=endereco.bairro2,
                 cep=endereco.cep,
                 distrito=endereco.distrito,
                 municipio_residencia=endereco.municipio,
@@ -444,6 +444,8 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
             raca = Raca.objects.filter(nome__iexact=dados['raca_cor']).first() if dados['raca_cor'] else None
             escolaridade = Escolaridade.objects.filter(nome__iexact=dados['escolaridade']).first() if dados['escolaridade'] else None
             municipio = Municipio.objects.filter(nome__iexact=dados['municipio']).first() if dados['municipio'] else None
+            if municipio and dados['bairro']:
+                dados['bairro'] = Bairro.objects.get_by_indice(municipio, dados['bairro'])
             data_atualizado_cadsus = datetime.strptime(dados['dt_atualizado_cadsus'], "%Y-%m-%d").date() if dados['dt_atualizado_cadsus'] else None
             latitude=dados['latitude']
             longitude=dados['longitude']
@@ -490,8 +492,10 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         return self.check_role("notificante", "administrador")
 
     def on_cep_change(self, cep):
+        endereco = buscar_endereco(cep, municipio="municipio_residencia", bairro="bairro2")
+        endereco['bairro2'] = Bairro.objects.get_by_indice(endereco['municipio_residencia'], endereco['bairro2'])
         self.form.controller.set(
-            **buscar_endereco(cep, municipio="municipio_residencia")
+            **endereco
         ) if not self.form.controller.get('bairro') else None
 
     def on_numero_residencia_change(self, numero):
@@ -554,9 +558,11 @@ class Editar(endpoints.EditEndpoint[NotificacaoIndividual], Mixin):
 
     def on_cep_change(self, cep):
         alterou_cep = NotificacaoIndividual.objects.filter(pk=self.instance.pk).values_list('cep', flat=True).first() != cep
+        endereco = buscar_endereco(cep, municipio="municipio_residencia", bairro="bairro2")
+        endereco['bairro2'] = Bairro.objects.get_by_indice(endereco['municipio_residencia'], endereco['bairro2'])
         self.form.controller.set(
-            **buscar_endereco(cep, municipio="municipio_residencia")
-        ) if (not self.form.controller.get('bairro') or alterou_cep) else None
+            **endereco
+        ) if (not self.form.controller.get('bairro2') or alterou_cep) else None
 
     def check_permission(self):
         return (self.check_role("regulador", "ru") and self.instance.data_envio and not self.instance.devolvida) or ((self.instance.data_envio is None or self.instance.devolvida) and self.instance.notificante.cpf == self.request.user.username)
@@ -748,7 +754,6 @@ class RegistrarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
     def post(self):
         if self.cleaned_data['registrado_sinan'] and not self.cleaned_data['sinan']:
             raise ValidationError("Informe o número no SINAN")
-        
         return super().post()
     
     def check_permission(self):
@@ -769,7 +774,7 @@ class EnviarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
         
     def check_permission(self):
-        return 0 and (self.check_role('gm') and self.instance.sinan)
+        return 1 and (self.check_role('gm') and self.instance.sinan)
     
 
 class ReatribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
