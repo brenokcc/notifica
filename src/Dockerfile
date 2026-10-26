@@ -1,5 +1,5 @@
 FROM python:alpine
-RUN apk add --no-cache gcc build-base libffi-dev postgresql-dev curl
+RUN apk add --no-cache gcc build-base libffi-dev postgresql-dev curl libjpeg vim
 RUN pip install -U pip
 WORKDIR /opt/arbonotifica
 ADD requirements.txt .
