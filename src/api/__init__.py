@@ -46,6 +46,7 @@ class ApiApplication(Application):
             "termouso.checar",
         )
         self.dashboard.todo.add(
+            "bairro.pendentes",
             "mapeamentobairro.pendentes",
             "notificacaoindividual.aguardandoenvio",
             "notificacaoindividual.aguardandoresponsavelbloqueio",

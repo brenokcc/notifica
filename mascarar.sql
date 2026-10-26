@@ -1,0 +1,12 @@
+update api_administrador set email = '***@email.com';
+update api_agente set email = '***@email.com';
+update api_supervisor set email = '***@email.com';
+update api_notificante set email = '***@email.com';
+update api_gestorUnidade set email = '***@email.com';
+update api_gestorMunicipal set email = '***@email.com';
+update api_regulador set email = '***@email.com';
+update api_reguladorUnidade set email = '***@email.com';
+update api_solicitacaoCadastro set email = '***@email.com';
+update api_notificacaoIndividual set email = '***@email.com';
+update api_notificacaoIndividual set telefone = '(99) 99999-9999';
+update auth_user set email = '***@email.com';

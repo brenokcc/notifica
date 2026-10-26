@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             model_name="bairro",
             name="municipio",
             field=slth.db.models.ForeignKey(
-                blank=True,
+                blank=False,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 to="api.municipio",

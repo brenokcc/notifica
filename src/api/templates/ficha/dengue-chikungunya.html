@@ -482,7 +482,7 @@
             <div class="item" style="width: 23%">
                 <div class="number">61</div>
                 <div class="cell">
-                    <label>Bairro:</label><div>{{ obj.bairro_infeccao|default:"-" }}</div>
+                    <label>Bairro:</label><div>{{ obj.get_nome_bairro_infeccao|default:"-" }}</div>
                 </div>
             </div>
 

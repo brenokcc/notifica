@@ -19,7 +19,7 @@ class Painel(endpoints.PublicEndpoint):
         ).bi(
             ("get_total", "get_total_notificantes", "get_total_pacientes"),
             ("get_total_por_unidade", "get_total_por_sexo"),
-            "get_mapa",
+            "get_mapa", "get_mapa_calor",
             "get_total_por_bairro",
         )
 

@@ -12,15 +12,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="endereco",
-            name="bairro2",
-            field=slth.db.models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                to="api.bairro",
-                verbose_name="Bairro",
-            ),
-        ),
+        
     ]

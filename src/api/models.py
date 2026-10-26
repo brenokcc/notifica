@@ -16,7 +16,7 @@ from django.db import transaction
 from slth.models import Email
 from slth.components import Badge
 from . import exportacao
-from . import sinan
+from .sinan import client
 from django.utils.text import slugify
 
 
@@ -776,12 +776,16 @@ class BairroQuerySet(models.QuerySet):
     def get_by_indice(self, municipio, nome):
         return self.filter(municipio=municipio, indice=slugify(nome)).first()
 
+    def pendentes(self):
+        return self.filter(validado=False)
+
 
 class Bairro(models.Model):
     nome = models.CharField(verbose_name="Nome")
     municipio = models.ForeignKey(
-        Municipio, verbose_name="Município", on_delete=models.CASCADE, null=True, blank=True
+        Municipio, verbose_name="Município", on_delete=models.CASCADE, null=True, blank=False
     )
+    validado = models.BooleanField(verbose_name='Validado', default=True)
     indice = models.CharField("Índice", null=True, blank=True)
 
     objects = BairroQuerySet()
@@ -805,11 +809,13 @@ class Bairro(models.Model):
             )
         )
 
-    
     def save(self, *args, **kwargs):
         if self.indice is None:
             self.indice = slugify(self.nome)
         super().save(*args, **kwargs)
+
+    def is_unico(self):
+        return not Bairro.objects.exclude(pk=None).filter(indice=slugify(self.nome), municipio_id=self.municipio_id)
 
 
 class MapeamentoBairrosQuerySet(models.QuerySet):
@@ -1163,8 +1169,8 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
     def get_total_por_bairro(self):
         return self.counter("bairro2")
 
-    @meta("Dourados/MS")
-    def get_mapa(self):
+    @meta("Dourados/MS (Mapa de Notificações)")
+    def get_mapa(self, calor=False):
         map = GeoMap(
             -54.815434332605591,
             -22.251316151125515,
@@ -1172,6 +1178,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
             max_zoom=20,
             min_zoom=10,
             title="Geovisualização",
+            heatmap=calor,
         )
         with open(os.path.join(settings.BASE_DIR, "api", "dourados.json")) as file:
             features = json.loads(file.read()).get("features")
@@ -1186,12 +1193,17 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
                 map.add_point(notificacao.longitude_bloqueio, notificacao.latitude_bloqueio, descricao, color='yellow')
             return map
 
+    @meta("Dourados/MS (Mapa de Calor)")
+    def get_mapa_calor(self):
+        return self.get_mapa(calor=True)
+
 
 class NotificacaoIndividual(models.Model):
     # Dados Gerais
     numero = models.CharField(verbose_name='Número', max_length=10, null=True, db_index=True)
-    sinan = models.CharField(verbose_name='Número da Notificação no SINAN', null=True, blank=True)
+    sinan = models.CharField(verbose_name='Número da Notificação no SINAN', null=True, blank=False)
     registrado_sinan = models.BooleanField(verbose_name='Registrado no SINAN', default=False)
+    relatorio_sinan = models.TextField(verbose_name='Relatório SINAN', null=True, blank=True)
     doenca = models.ForeignKey(
         Doenca, verbose_name="Doença", on_delete=models.CASCADE, pick=True
     )
@@ -1552,6 +1564,7 @@ class NotificacaoIndividual(models.Model):
     bairro_infeccao = models.CharField(
         verbose_name="Bairro da Infecção", null=True, blank=True
     )
+    bairro_infeccao2 = models.ForeignKey(Bairro, verbose_name="Bairro da Infecção", null=True, blank=True, related_name='r2')
     classificacao_infeccao = models.ForeignKey(
         ClassificacaoInfeccao,
         verbose_name="Classificação da Infecção",
@@ -1966,7 +1979,7 @@ class NotificacaoIndividual(models.Model):
                     "endereco",
                     "pais:pais.cadastrar",
                     ("cep", "distrito"),
-                    ("bairro2", "municipio_residencia:notificacaoindividual.cadastrarmunicipio"),
+                    ("bairro2:notificacaoindividual.cadastrarbairro", "municipio_residencia:notificacaoindividual.cadastrarmunicipio"),
                     ("logradouro", "codigo_logradouro"),
                     ("numero_residencia", "complemento"),
                     "zona",
@@ -2029,7 +2042,7 @@ class NotificacaoIndividual(models.Model):
                         "pais_infeccao:pais.cadastrar",
                         "municipio_infeccao:municipio.cadastrar",
                     ),
-                    ("distrito_infeccao", "bairro_infeccao"),
+                    ("distrito_infeccao", "bairro_infeccao2:notificacaoindividual.cadastrarbairro"),
                     ("classificacao_infeccao", "criterio_confirmacao"),
                     ("apresentacao_clinica", "evolucao_caso"),
                     ("data_obito", "data_encerramento"),
@@ -2062,7 +2075,7 @@ class NotificacaoIndividual(models.Model):
         return (
             super()
             .serializer()
-            .actions("notificacaoindividual.editar", "notificacaoindividual.enviar", "notificacaoindividual.receber", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.imprimir", "notificacaoindividual.clonar", "notificacaoindividual.evoluircaso", "notificacaoindividual.registrarsinan", "notificacaoindividual.enviarsinan")
+            .actions("notificacaoindividual.editar", "notificacaoindividual.enviar", "notificacaoindividual.receber", "notificacaoindividual.devolver", "notificacaoindividual.reenviar", "notificacaoindividual.finalizar", "notificacaoindividual.imprimir", "notificacaoindividual.clonar", "notificacaoindividual.evoluircaso", "notificacaoindividual.registrarsinan")
             .fieldset(
                 "Dados Gerais",
                 (
@@ -2070,7 +2083,7 @@ class NotificacaoIndividual(models.Model):
                     ("doenca", "data"),
                     ("notificante", "municipio"),
                     ("unidade", "unidade_referencia"),
-                    ("data_primeiros_sintomas", "get_sinan")
+                    ("data_primeiros_sintomas", "get_sinan",)
                 ),
             )
             .group()
@@ -2166,7 +2179,7 @@ class NotificacaoIndividual(models.Model):
                         "Conclusão",
                         (
                             ("pais_infeccao", "municipio_infeccao"),
-                            ("distrito_infeccao", "bairro_infeccao"),
+                            ("distrito_infeccao", "get_nome_bairro_infeccao"),
                             ("classificacao_infeccao", "criterio_confirmacao"),
                             ("apresentacao_clinica", "evolucao_caso"),
                             ("data_obito", "data_encerramento"),
@@ -2195,6 +2208,9 @@ class NotificacaoIndividual(models.Model):
                         ),
                     )
                     .queryset("get_registros_leitura_resultado")
+                .parent()
+                .section('SINAN')
+                    .fields("relatorio_sinan")
                 .parent()
             .parent()
         )
@@ -2253,6 +2269,9 @@ class NotificacaoIndividual(models.Model):
     def get_nome_bairro(self):
         return self.bairro2.nome if self.bairro2 else self.bairro
     
+    def get_nome_bairro_infeccao(self):
+        return self.bairro_infeccao2.nome if self.bairro_infeccao2 else self.bairro_infeccao
+    
     def get_nomes_sinais_clinicos(self):
         return ", ".join(self.sinais_clinicos.values_list("nome", flat=True))
     
@@ -2280,7 +2299,7 @@ class NotificacaoIndividual(models.Model):
             "semana_notificacao": '{}{}'.format(self.data.strftime('%Y'), SemanaEpidemiologica.semana(self.data)), #"AAAASS"
             "data_primeiros_sintomas": self.data_primeiros_sintomas.strftime('%d/%m/%Y'),
             "semana_primeiros_sintomas": '{}{}'.format(self.data.strftime('%Y'), SemanaEpidemiologica.semana(self.data_primeiros_sintomas)), #"AAAASS"
-            "uf_unidade_id": self.municipio.estado.codigo,
+            "uf_unidade_id": '12',
             "municipio_unidade_id": self.municipio.codigo[0:-1],
             "municipio_unidade": self.municipio.nome,
             "cnes": self.unidade.codigo,
@@ -2294,7 +2313,7 @@ class NotificacaoIndividual(models.Model):
             "raca": self.raca.codigo,
             "escolaridade": self.escolaridade.codigo,
             "nome_mae": self.nome_mae,
-            "uf_residencia_id": self.municipio_residencia.estado.codigo,
+            "uf_residencia_id": '12',
             "municipio_residencia_id": self.municipio_residencia.codigo[0:-1],
             "municipio_residencia": self.municipio_residencia.nome,
             "bairro_id": "",
@@ -2304,7 +2323,13 @@ class NotificacaoIndividual(models.Model):
             "zona": self.zona.codigo
             }
         print(json.dumps(dados, ensure_ascii=False, indent=2))
-        sinan.enviar(dados)
+        relatorio = client.enviar_ficha(dados, simular=settings.DEBUG)
+        if relatorio.get("resultado") == "CADASTRO_CONFIRMADO":
+            self.relatorio_sinan = 'Registro enviado com sucesso.'
+            return True
+        else:
+            self.relatorio_sinan = json.dumps(relatorio, ensure_ascii=False, indent=2)
+            return False
 
 
 class RegistroLeituraResultado(models.Model):

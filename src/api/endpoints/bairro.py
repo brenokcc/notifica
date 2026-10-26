@@ -59,6 +59,23 @@ class Editar(endpoints.EditEndpoint[Bairro]):
         return self.check_role('administrador')
 
 
+class Validar(endpoints.EditEndpoint[Bairro]):
+    class Meta:
+        icon = 'check'
+        verbose_name = 'Validar'
+
+    def get(self):
+        return self.formfactory(self.get_instance()).fields()
+    
+    def post(self):
+        self.instance.validado = True
+        self.instance.save()
+        return super().post()
+
+    def check_permission(self):
+        return self.check_role('administrador')
+
+
 class Excluir(endpoints.DeleteEndpoint[Bairro]):
     class Meta:
         icon = 'trash'
@@ -68,3 +85,16 @@ class Excluir(endpoints.DeleteEndpoint[Bairro]):
         return (
             super().get()
         )
+
+
+class Pendentes(endpoints.QuerySetEndpoint[Bairro]):
+    class Meta:
+        modal = False
+        icon = "bell"
+        verbose_name = "Bairros aguardando validação"
+
+    def get_queryset(self):
+        return super().get_queryset().pendentes().search('nome').actions('bairro.validar')
+
+    def check_permission(self):
+        return self.check_role('administrador')

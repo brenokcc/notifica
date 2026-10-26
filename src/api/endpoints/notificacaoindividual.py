@@ -677,6 +677,26 @@ class CadastrarMunicipio(endpoints.AddEndpoint[Municipio]):
     def check_permission(self):
         return self.check_role("notificante", "administrador")
 
+class CadastrarBairro(endpoints.AddEndpoint[Bairro]):
+    class Meta:
+        verbose_name = "Cadastrar Novo Bairro"
+    
+    def get(self):
+        return self.formfactory(self.instance).fieldset('Dados Gerais', (('nome', 'municipio')))
+    
+    def clean_nome(self, nome):
+        if not self.instance.is_unico():
+            raise ValidationError('Bairro já cadastrado.')
+        return nome
+
+    def post(self):
+        self.instance.validado = False
+        self.instance.save()
+        return super().post()
+
+    def check_permission(self):
+        return self.check_role("notificante", "administrador")
+
 
 class EvoluirCaso(endpoints.RelationEndpoint[Evolucao]):
     class Meta:
@@ -746,35 +766,23 @@ class RegistrarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     class Meta:
         icon = "file-circle-check"
-        verbose_name = "Registro SINAN"
+        verbose_name = "Registrar no SINAN"
 
     def get(self):
-        return self.formfactory().fields('sinan', 'registrado_sinan')
+        return self.formfactory().fields('sinan')
     
     def post(self):
-        if self.cleaned_data['registrado_sinan'] and not self.cleaned_data['sinan']:
-            raise ValidationError("Informe o número no SINAN")
+        if self.instance.enviar_sinan():
+            self.instance.registrado_sinan = True
+            self.instance.save()
+        else:
+            self.instance.sinan = None
+            self.instance.registrado_sinan = False
+            self.instance.save()
         return super().post()
     
     def check_permission(self):
-        return self.check_role('gm') and not self.instance.registrado_sinan
-
-
-class EnviarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
-
-    class Meta:
-        icon = "circle-chevron-right"
-        verbose_name = "Enviar SINAN"
-
-    def get(self):
-        return self.formfactory().fields()
-    
-    def post(self):
-        self.instance.enviar_sinan()
-        return super().post()
-        
-    def check_permission(self):
-        return 1 and (self.check_role('gm') and self.instance.sinan)
+        return self.check_role('gm')#  and not self.instance.registrado_sinan
     
 
 class ReatribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
