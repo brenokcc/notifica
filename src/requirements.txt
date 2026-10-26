@@ -2,3 +2,4 @@ slthlib
 slthcore
 weasyprint # apt-get install -y libpangocairo-1.0-0
 truststore==0.10.4
+beautifulsoup4==4.15.0
