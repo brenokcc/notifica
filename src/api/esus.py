@@ -40,7 +40,7 @@ def consulta_cpf(cpf):
             where tc.st_ativo = 1 
                 and tc.dt_obito is null
                 --and tc.nu_cpf is not null
-                and tc.nu_cpf = (select cpf_busca from stg_cpf_busca)
+                and (tc.nu_cpf = (select cpf_busca from stg_cpf_busca) OR tc.nu_cns = (select cpf_busca from stg_cpf_busca))
             group by tc.nu_cpf 
     
         ),

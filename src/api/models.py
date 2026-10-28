@@ -79,7 +79,7 @@ class TermoUso(models.Model):
 
 @role("administrador", username="cpf", email="email", first_name='nome', last_name='nome')
 class Administrador(models.Model):
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
 
@@ -99,7 +99,7 @@ class AgenteQuerySet(models.QuerySet):
 
 
 class Agente(models.Model):
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
 
@@ -119,7 +119,7 @@ class Agente(models.Model):
 
 
 class Supervisor(models.Model):
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
 
@@ -155,7 +155,7 @@ class NotificanteQuerySet(models.QuerySet):
 
 
 class Notificante(models.Model):
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
     funcao = models.ForeignKey(Funcao, verbose_name="Função", on_delete=models.CASCADE)
@@ -186,7 +186,7 @@ class GestorUnidadeQuerySet(models.QuerySet):
 
 
 class GestorUnidade(models.Model):
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
 
@@ -210,7 +210,7 @@ class GestorMunicipalQuerySet(models.QuerySet):
 
 
 class GestorMunicipal(models.Model):
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
 
@@ -234,7 +234,7 @@ class ReguladorQuerySet(models.QuerySet):
 
 
 class Regulador(models.Model):
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
 
@@ -258,7 +258,7 @@ class ReguladorUnidadeQuerySet(models.QuerySet):
 
 
 class ReguladorUnidade(models.Model):
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail", null=True)
 
@@ -609,7 +609,7 @@ class SolicitacaoCadastro(models.Model):
 
     objects = SolicitacaoCadastroQuerySet()
 
-    cpf = models.CharField(verbose_name="CPF", blank=False)
+    cpf = models.CharField(verbose_name="CPF", blank=False, db_index=True)
     nome = models.CharField(verbose_name="Nome")
     email = models.CharField(verbose_name="E-mail")
     funcao = models.ForeignKey(Funcao, verbose_name="Profissão/Função", on_delete=models.CASCADE)
