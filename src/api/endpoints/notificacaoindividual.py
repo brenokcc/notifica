@@ -770,6 +770,10 @@ class RegistrarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
 
     def get(self):
         return self.formfactory().fields('sinan')
+
+    def clean_sinan(self, data):
+        if not data.get('sinan') is None:
+            raise ValidationError('Informe o número SINAN')
     
     def post(self):
         if self.instance.enviar_sinan():

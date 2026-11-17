@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
             model_name="notificacaoindividual",
             name="sinan",
             field=slth.db.models.CharField(
-                max_length=255, null=True, verbose_name="Número da Notificação no SINAN"
+                max_length=255, null=True, verbose_name="Número da Notificação no SINAN", blank=True
             ),
         ),
     ]

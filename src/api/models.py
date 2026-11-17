@@ -1201,7 +1201,7 @@ class NotificacaoIndividualQuerySet(models.QuerySet):
 class NotificacaoIndividual(models.Model):
     # Dados Gerais
     numero = models.CharField(verbose_name='Número', max_length=10, null=True, db_index=True)
-    sinan = models.CharField(verbose_name='Número da Notificação no SINAN', null=True, blank=False)
+    sinan = models.CharField(verbose_name='Número da Notificação no SINAN', null=True, blank=True)
     registrado_sinan = models.BooleanField(verbose_name='Registrado no SINAN', default=False)
     relatorio_sinan = models.TextField(verbose_name='Relatório SINAN', null=True, blank=True)
     doenca = models.ForeignKey(
