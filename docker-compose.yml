@@ -20,3 +20,32 @@ services:
     working_dir: /opt/arbonotifica
     entrypoint: ./entrypoint.sh
 
+  db:
+    image: postgres:15 # Specifies the PostgreSQL image and version
+    restart: always # Restarts the container automatically
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432" # Maps host port 5432 to container port 5432
+    volumes:
+      - .docker/postgres:/var/lib/postgresql/data
+    profiles:
+      - dev
+
+  mail:
+      image: axllent/mailpit:latest
+      expose:
+        - 8025 # Web UI
+        - 1025 # SMTP
+      environment:
+        MP_MAX_MESSAGES: 500
+        TZ: America/Recife
+      healthcheck:
+        test: ["CMD", "/mailpit", "readyz"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 10s
+      profiles:
+      - dev
