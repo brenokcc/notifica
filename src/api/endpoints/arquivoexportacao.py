@@ -13,7 +13,7 @@ class ArquivosExportacao(endpoints.ListEndpoint[ArquivoExportacao]):
         )
     
     def check_permission(self):
-        return self.check_role("notificante")
+        return self.check_role("administrador", "gm")
 
 
 class Cadastrar(endpoints.AddEndpoint[ArquivoExportacao]):
@@ -27,7 +27,7 @@ class Cadastrar(endpoints.AddEndpoint[ArquivoExportacao]):
         )
     
     def check_permission(self):
-        return self.check_role("notificante")
+        return self.check_role("administrador", "gm")
 
         
 class Visualizar(endpoints.ViewEndpoint[ArquivoExportacao]):

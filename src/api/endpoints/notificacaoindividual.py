@@ -519,7 +519,7 @@ class Cadastrar(endpoints.AddEndpoint[NotificacaoIndividual], Mixin):
         if self.request.user.is_superuser:
             return queryset
         role = Role.objects.filter(username=self.request.user.username).filter(active=True, name='notificante').first()
-        return queryset.filter(pk=role.get_scope_value().unidade_id).distinct()
+        return queryset.filter(pk=role.get_scope_value().unidade_id).distinct() if role else queryset
     
     def get_unidade_referencia_queryset(self, queryset):
         return queryset.nolookup().filter(referencia=True)
