@@ -1,0 +1,55 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Setup",
+            "type": "shell",
+            "command": "sh",
+            "args": ["${workspaceFolder}/setup.sh"],
+            "runOptions": { "runOn": "folderOpen" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": { "reveal": "never", "panel": "dedicated", "close": true }
+        },
+        {
+            "label": "Terminal with .env",
+            "type": "shell",
+            "command": "set -a && source .env && set +a && exec ${SHELL:-bash} -i",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated",
+                "clear": false
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+        },
+        {
+            "label": "Django (runserver)",
+            "type": "shell",
+            "command": "export DATABASE_HOST=localhost && export DATABASE_DB=arbonotifica && /Users/breno/.virtualenvs/slth/bin/python manage.py runserver",
+            "options": {
+                "cwd": "${workspaceFolder}/src",
+            }
+        },
+        {
+            "label": "Django (shell)",
+            "type": "shell",
+            "command": "export DATABASE_HOST=localhost && export DATABASE_DB=arbonotifica && /Users/breno/.virtualenvs/slth/bin/python manage.py shell",
+            "options": {
+                "cwd": "${workspaceFolder}/src",
+            }
+        },
+        {
+            "label": "Django (sync)",
+            "type": "shell",
+            "command": "export DATABASE_HOST=localhost && export DATABASE_DB=arbonotifica && /Users/breno/.virtualenvs/slth/bin/python manage.py sync",
+            "options": {
+                "cwd": "${workspaceFolder}/src",
+            }
+        },
+    ]
+}

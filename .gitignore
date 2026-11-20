@@ -1,7 +1,6 @@
 media
 .DS_Store
 db.sqlite3
-.vscode
 .docker
 *.pyc
 docs

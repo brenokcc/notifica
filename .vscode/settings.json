@@ -1,0 +1,23 @@
+{
+  "files.watcherExclude": {
+    "**/.git/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true
+  },
+  "search.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true
+  },
+  "editor.codeActionsOnSave": [],
+  "editor.formatOnSave": false,
+  "[javascript]": {
+    "editor.formatOnSave": false
+  },
+  "git.enabled": true,
+  "git.autorefresh": false,
+  "git.decorations.enabled": false,
+  "python.defaultInterpreterPath": "/Users/breno/.virtualenvs/slth/bin/python"
+}
