@@ -202,3 +202,6 @@ if os.path.exists('/Users'):
 else:
     DEBUG = False
     DEFAULT_PASSWORD = lambda user: uuid1().hex
+
+DEFAULT_SUPERUSER = '000.000.000-00'
+
