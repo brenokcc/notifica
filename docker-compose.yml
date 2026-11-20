@@ -2,7 +2,10 @@ services:
   app: &app
     hostname: app
     env_file:
-      - .env
+    - path: .env
+      required: true
+    - path: override.env
+      required: false
     ports:
       - "8000:8000"
     build:
@@ -21,23 +24,30 @@ services:
     entrypoint: ./entrypoint.sh
 
   db:
-    image: postgres:15 # Specifies the PostgreSQL image and version
-    restart: always # Restarts the container automatically
+    image: postgres:15
+    restart: always
+    env_file:
+    - path: .env
+      required: true
+    - path: override.env
+      required: false
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "5432" # Maps host port 5432 to container port 5432
+      - 5432
     volumes:
       - .docker/postgres:/var/lib/postgresql/data
     profiles:
       - dev
-
+    
   mail:
       image: axllent/mailpit:latest
-      expose:
-        - 8025 # Web UI
-        - 1025 # SMTP
+      ports:
+        - "8025:8025"
+        - "1025"
       environment:
         MP_MAX_MESSAGES: 500
         TZ: America/Recife

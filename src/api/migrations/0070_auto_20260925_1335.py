@@ -15,7 +15,7 @@ def migrate(apps, schema):
 
     for nome1, nome2 in [('Aldeia Jaguapiru II', 'ALDEIA JAGUAPIRU II — UBSI PAY KWYARA RENDY'), ('Aldeia Bororó I', 'ALDEIA BORORÓ I — UBSI IRENO ISNARD'), ('Aldeia Bororó II', 'ALDEIA BORORÓ II — UBSI ZELIK'), ('Aldeia Jaguapiru I', 'ALDEIA JAGUAPIRU I — UBSI GUATEKA')]:
         print(nome1, nome2)
-        Endereco.objects.filter(bairro=nome1).update(bairro2=Bairro.objects.get(nome=nome2))
+        Endereco.objects.filter(bairro=nome1).update(bairro2=Bairro.objects.filter(nome=nome2).first())
 
 
 def unmigrate(apps, schema):
