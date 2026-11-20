@@ -197,7 +197,7 @@ TOKEN_LIFE_TIME = 30
 
 if os.environ.get('DEBUG'):
     DEBUG = True
-    DEFAULT_PASSWORD = '123'
+    DEFAULT_PASSWORD = lambda user: '123'
     # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
     DEBUG = False
