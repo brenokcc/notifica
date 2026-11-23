@@ -786,7 +786,7 @@ class RegistrarSINAN(endpoints.InstanceEndpoint[NotificacaoIndividual]):
         return super().post()
     
     def check_permission(self):
-        return self.check_role('gm')#  and not self.instance.registrado_sinan
+        return self.check_role('gm', 'regulador')#  and not self.instance.registrado_sinan
     
 
 class ReatribuirBloqueio(endpoints.InstanceEndpoint[NotificacaoIndividual]):
