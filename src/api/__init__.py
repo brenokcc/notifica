@@ -1,9 +1,29 @@
-from slth.application import Application
+import os
+
+from slth.application import Application, Light
+
+
+COR_PADRAO_HOMOLOG = "#F57C00"
+
+
+class TemaClaro(Light):
+    def to_css(self):
+        return super().to_css() + "<style>header{background-color:var(--header-background);}</style>"
+
+
+def cor_homologacao():
+    valor = os.environ.get("HOMOLOG", "").strip()
+    if not valor or valor.lower() in ("0", "false", "no", "nao", "não"):
+        return None
+    if valor.lower() in ("1", "true", "yes", "sim"):
+        return COR_PADRAO_HOMOLOG
+    return valor
 
 
 class ApiApplication(Application):
     def __init__(self):
         super().__init__()
+        self.theme.light = TemaClaro()
         self.title = "ArboNotifica"
         self.subtitle = "Sistema de notificação de arboviroses da cidade de Dourados/MS"
         self.icon = "/static/images/logo.png"
@@ -127,6 +147,9 @@ class ApiApplication(Application):
         self.theme.light.primary.update(color="#033770", background="#033770")
         self.theme.light.auxiliary.update(color="#f9c72a", background="#fceab7")
         self.theme.light.success.update(color="#033770", background="#FFCC29")
+        cor = cor_homologacao()
+        if cor:
+            self.theme.light.header.update(background=cor)
         for imagem in [
             "prefeitura.png",
             "secretaria.png",
